@@ -22,3 +22,14 @@ POST /auth/register
 ```
 201 OK
 ```
+
+## Client
+
+### Команды
+
+#### Регистрация пользователя
+
+```
+go run ./cmd/client register --email= --password=
+make client-reg email=t1@dd.kz pass=qwerty
+```

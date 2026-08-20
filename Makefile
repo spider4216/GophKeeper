@@ -6,6 +6,9 @@ LOG_LEVEL?=debug
 run-srv:
 	SERVER_ADDRESS=:8080 DB_DSN=$(DSN) LOG_LEVEL=${LOG_LEVEL} go run ./cmd/server
 
+client-reg:
+	go run ./cmd/client register --email=${email} --password=${pass}
+
 migration-gen:
 	migrate create -ext sql -dir ./migrations/${path} -seq $(name)
 
