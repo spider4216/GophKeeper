@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/spider4216/GophKeeper/internal/client/config"
+	"github.com/spider4216/GophKeeper/internal/client/repositories"
 	"github.com/spider4216/GophKeeper/internal/logger"
-	"github.com/spider4216/GophKeeper/internal/server/config"
-	"github.com/spider4216/GophKeeper/internal/server/repositories"
-	migSrv "github.com/spider4216/GophKeeper/migrations/server"
+	migCli "github.com/spider4216/GophKeeper/migrations/client"
 	"go.uber.org/zap"
 )
 
@@ -73,7 +73,7 @@ func (app *app) initRepo() error {
 func (app *app) initMigrations() error {
 	app.logger.Debug("Up migrations")
 
-	repo, ok := app.repo.(*repositories.SrvRepository)
+	repo, ok := app.repo.(*repositories.ClientRepository)
 
 	if !ok {
 		return fmt.Errorf("cannot cast to pgx store type in init migration")
@@ -81,7 +81,7 @@ func (app *app) initMigrations() error {
 
 	src := repo.Source().(*sql.DB)
 
-	if err := migSrv.MigrateSrv(src); err != nil {
+	if err := migCli.MigrateClient(src); err != nil {
 		return err
 	}
 

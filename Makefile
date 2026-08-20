@@ -1,6 +1,8 @@
 APP_NAME=gophkeeper
 
 DSN?=postgres://postgres:postgres@localhost:5432/gophkeeper
+DSN_CLIENT?=postgres://postgres:postgres@localhost:5432/gophkeeper_client
+
 LOG_LEVEL?=debug
 JWT_KEY?=qwerty
 
@@ -8,10 +10,10 @@ run-srv:
 	JWT_KEY=${JWT_KEY} SERVER_ADDRESS=:8080 DB_DSN=$(DSN) LOG_LEVEL=${LOG_LEVEL} go run ./cmd/server
 
 client-reg:
-	go run ./cmd/client register --email=${email} --password=${pass}
+	DB_DSN=$(DSN_CLIENT) go run ./cmd/client register --email=${email} --password=${pass}
 
 client-login:
-	go run ./cmd/client login --email=${email} --password=${pass}
+	DB_DSN=$(DSN_CLIENT) go run ./cmd/client login --email=${email} --password=${pass}
 
 migration-gen:
 	migrate create -ext sql -dir ./migrations/${path} -seq $(name)

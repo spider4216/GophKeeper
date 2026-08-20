@@ -10,7 +10,7 @@ import (
 	"github.com/spider4216/GophKeeper/internal/server/models"
 )
 
-// PgxStorage хранилище где данные складываются в БД PostgreSQL.
+// хранилище где данные складываются в БД PostgreSQL.
 type SrvRepository struct {
 	con    *sql.DB
 	logger *zap.SugaredLogger
