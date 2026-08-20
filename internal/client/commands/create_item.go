@@ -52,14 +52,17 @@ func (c *Command) CreateItem(args []string) {
 	// todo подумать как сдесь релизовать middleware
 	ctx := context.WithValue(context.Background(), "userID", claims.UserID)
 
+	// todo transaction
 	// todo подумать что сделать с контекстом
 	// todo тип в коснтанту
-	_, err = c.Service.CreateItem(ctx, "login_pass", req, c.Cfg.EncryptKey, claims.UserID)
+	itemID, err := c.Service.CreateItem(ctx, "login_pass", req, c.Cfg.EncryptKey, claims.UserID)
 
 	if err != nil {
 		fmt.Printf("cannot create item: %s", err)
 		os.Exit(1)
 	}
+
+	c.Service.CreateMeta(ctx, itemID, "Title", req.Title)
 
 	fmt.Println("Item successfully created")
 }

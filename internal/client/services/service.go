@@ -59,7 +59,7 @@ func (s *Service) CreateItem(ctx context.Context, t string, data models.LoginPas
 	return s.repo.CreateItem(ctx, item)
 }
 
-func (s Service) SignData(data []byte, key string) (string, error) {
+func (s *Service) SignData(data []byte, key string) (string, error) {
 	h := hmac.New(sha256.New, []byte(key))
 
 	if _, err := h.Write(data); err != nil {
@@ -69,4 +69,8 @@ func (s Service) SignData(data []byte, key string) (string, error) {
 	sign := h.Sum(nil)
 
 	return hex.EncodeToString(sign), nil
+}
+
+func (s *Service) CreateMeta(ctx context.Context, itemID int64, k string, v string) (int64, error) {
+	return s.repo.CreateMeta(ctx, itemID, k, v)
 }

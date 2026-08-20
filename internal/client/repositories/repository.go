@@ -41,3 +41,15 @@ func (repo *ClientRepository) CreateItem(ctx context.Context, item models.ItemRe
 
 	return id, nil
 }
+
+func (repo *ClientRepository) CreateMeta(ctx context.Context, itemID int64, k string, v string) (int64, error) {
+	sql := "INSERT INTO metadata (item_id,key,value) VALUES ($1,$2,$3) RETURNING id"
+
+	var id int64
+
+	if err := repo.con.QueryRowContext(ctx, sql, itemID, k, v).Scan(&id); err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}

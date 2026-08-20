@@ -10,4 +10,5 @@ type Repository interface {
 	// Source возвращает инкапсулированное хранилище (источник).
 	Source() any
 	CreateItem(ctx context.Context, item models.ItemRepo) (int64, error)
+	CreateMeta(ctx context.Context, itemID int64, k string, v string) (int64, error)
 }
