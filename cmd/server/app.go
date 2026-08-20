@@ -1,19 +1,20 @@
 package main
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 
 	"github.com/spider4216/GophKeeper/internal/logger"
 	"github.com/spider4216/GophKeeper/internal/server/config"
-	"github.com/spider4216/GophKeeper/internal/storage"
+	"github.com/spider4216/GophKeeper/internal/server/repositories"
 	migSrv "github.com/spider4216/GophKeeper/migrations/server"
 	"go.uber.org/zap"
 )
 
 type app struct {
 	logger *zap.SugaredLogger
-	store  storage.Storage
+	repo   repositories.Repository
 	cfg    *config.Config
 }
 
@@ -31,7 +32,7 @@ func (app *app) Run() error {
 		return err
 	}
 
-	if err := app.initStore(); err != nil {
+	if err := app.initRepo(); err != nil {
 		return err
 	}
 
@@ -59,13 +60,13 @@ func (app *app) initConfig() error {
 	return nil
 }
 
-func (app *app) initStore() error {
-	store, err := storage.NewPgx(app.cfg.DbDsn, app.logger)
+func (app *app) initRepo() error {
+	repo, err := repositories.NewRepository(app.cfg.DbDsn, app.logger)
 	if err != nil {
 		return err
 	}
 
-	app.store = store
+	app.repo = repo
 
 	return nil
 }
@@ -73,13 +74,15 @@ func (app *app) initStore() error {
 func (app *app) initMigrations() error {
 	app.logger.Debug("Up migrations")
 
-	st, ok := app.store.(*storage.PgxStorage)
+	repo, ok := app.repo.(*repositories.SrvRepository)
 
 	if !ok {
 		return fmt.Errorf("cannot cast to pgx store type in init migration")
 	}
 
-	if err := migSrv.MigrateSrv(st.Con); err != nil {
+	src := repo.Source().(*sql.DB)
+
+	if err := migSrv.MigrateSrv(src); err != nil {
 		return err
 	}
 
