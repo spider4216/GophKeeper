@@ -58,7 +58,7 @@ POST /auth/login
 
 ```
 go run ./cmd/client register --email= --password=
-make client-reg email=t1@dd.kz pass=qwerty
+make client-reg email= pass=
 ```
 
 Ожидаемый результат
@@ -69,8 +69,20 @@ Register is OK
 #### Авторизация пользователя
 
 ```
-go run ./cmd/client login --email=${email} --password=${pass}
+go run ./cmd/client login --email= --password=
 make client-login email= pass=
+```
+
+Ожидаемый результат
+```
+JWT token
+```
+
+#### Создание пары логин / пароль
+
+```
+go run ./cmd/client  insert-loginpass --login= --password=
+make client-insert-loginpass login= pass= title= jwt=
 ```
 
 Ожидаемый результат

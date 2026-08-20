@@ -3,8 +3,9 @@ package config
 import "github.com/caarlos0/env/v11"
 
 type Config struct {
-	DbDsn  string `env:"DB_DSN"`    // Connection string для БД
-	LogLvl string `env:"LOG_LEVEL"` // Уровень логирования
+	DbDsn      string `env:"DB_DSN"`      // Connection string для БД
+	LogLvl     string `env:"LOG_LEVEL"`   // Уровень логирования
+	EncryptKey string `env:"ENCRYPT_KEY"` // Ключ для шифрования данных
 }
 
 func New() (*Config, error) {

@@ -1,11 +1,13 @@
 package repositories
 
 import (
+	"context"
 	"database/sql"
 
 	"go.uber.org/zap"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/spider4216/GophKeeper/internal/client/models"
 )
 
 // PgxStorage хранилище где данные складываются в БД PostgreSQL.
@@ -26,4 +28,16 @@ func NewRepository(dsn string, logger *zap.SugaredLogger) (*ClientRepository, er
 
 func (repo *ClientRepository) Source() any {
 	return repo.con
+}
+
+func (repo *ClientRepository) CreateItem(ctx context.Context, item models.ItemRepo) (int64, error) {
+	sql := "INSERT INTO items (type,ciphertext,user_id) VALUES ($1,$2,$3) RETURNING id"
+
+	var id int64
+
+	if err := repo.con.QueryRowContext(ctx, sql, item.Type, item.Ciphertext, item.UserID).Scan(&id); err != nil {
+		return 0, err
+	}
+
+	return id, nil
 }

@@ -45,9 +45,9 @@ func main() {
 	}
 
 	// todo host to config
-	service := services.New(client, "http://127.0.0.1:8080", app.repo)
+	service := services.New(client, "http://127.0.0.1:8080", app.repo, app.logger)
 
-	cmd := commands.New(service)
+	cmd := commands.New(service, app.cfg)
 
 	args := os.Args[2:]
 
@@ -57,6 +57,8 @@ func main() {
 		cmd.Register(args)
 	case "login":
 		cmd.Login(args)
+	case "insert-loginpass":
+		cmd.CreateItem(args)
 	default:
 		fmt.Println("command not found")
 		os.Exit(1)
