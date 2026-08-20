@@ -139,3 +139,7 @@ func (h Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
+func (h Handler) SyncIn(w http.ResponseWriter, r *http.Request) {
+
+}

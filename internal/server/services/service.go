@@ -23,11 +23,37 @@ type claims struct {
 	UserID int64
 }
 
+// todo move to other file
+type (
+	userIdKey string
+)
+
+// todo move to other file
+const (
+	userKey userIdKey = "user_id"
+)
+
 func New(repo repositories.Repository, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:   repo,
 		logger: logger,
 	}
+}
+
+// todo move to other file
+func (s *Service) SetUserIdToCtx(ctx context.Context, userId int64) context.Context {
+	return context.WithValue(ctx, userKey, userId)
+}
+
+// todo move to other file
+func (s *Service) GetUserIdFromCtx(ctx context.Context) int64 {
+	userId, ok := ctx.Value(userKey).(int64)
+
+	if !ok {
+		return 0
+	}
+
+	return userId
 }
 
 // todo раскидать методы по файлам
