@@ -74,3 +74,7 @@ func (s *Service) SignData(data []byte, key string) (string, error) {
 func (s *Service) CreateMeta(ctx context.Context, itemID int64, k string, v string) (int64, error) {
 	return s.repo.CreateMeta(ctx, itemID, k, v)
 }
+
+func (s *Service) CreatePendingChange(ctx context.Context, itemID int64, op string) error {
+	return s.repo.CreatePendingChange(ctx, itemID, op)
+}

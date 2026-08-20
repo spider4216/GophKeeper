@@ -62,7 +62,20 @@ func (c *Command) CreateItem(args []string) {
 		os.Exit(1)
 	}
 
-	c.Service.CreateMeta(ctx, itemID, "Title", req.Title)
+	_, err = c.Service.CreateMeta(ctx, itemID, "Title", req.Title)
+
+	if err != nil {
+		fmt.Printf("cannot create meta for item: %s", err)
+		os.Exit(1)
+	}
+
+	// op to const and custom type
+	err = c.Service.CreatePendingChange(ctx, itemID, "CREATE")
+
+	if err != nil {
+		fmt.Printf("cannot create pending for item: %s", err)
+		os.Exit(1)
+	}
 
 	fmt.Println("Item successfully created")
 }

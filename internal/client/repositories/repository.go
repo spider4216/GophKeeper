@@ -53,3 +53,15 @@ func (repo *ClientRepository) CreateMeta(ctx context.Context, itemID int64, k st
 
 	return id, nil
 }
+
+func (repo *ClientRepository) CreatePendingChange(ctx context.Context, itemID int64, op string) error {
+	sql := "INSERT INTO pending_changes (item_id,operation) VALUES ($1,$2)"
+
+	_, err := repo.con.ExecContext(ctx, sql, itemID, op)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
