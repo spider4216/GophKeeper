@@ -50,6 +50,52 @@ POST /auth/login
 }
 ```
 
+#### Отправка данных (синхронизация)
+
+##### Запрос
+
+```
+POST /sync
+
+Header
+Authorization: jwt
+
+Body
+{
+  "changes": [
+    {
+      "operation": "CREATE",
+      "item": {
+        "id": 42,
+        "type": "login_password",
+        "ciphertext": "1e33a00da21ebcbdfb49f65daa48a7a792570f0d857fe195972456c271120941"
+      },
+			"metadata": {
+        "website": "github.com"
+       }
+    },
+		{
+      "operation": "CREATE",
+      "item": {
+        "id": 43,
+        "type": "login_password",
+        "ciphertext": "6b2913ad5ed912a3bcc50980028f153020f6d024bbf1e9878bf1274ad83625bf"
+      },
+			"metadata": {
+        "website": "google.com",
+				"note": "need change after 1 month"
+       }
+    }
+  ]
+}
+```
+
+##### Ответ
+
+```
+200 OK
+```
+
 ## Client
 
 ### Команды
