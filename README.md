@@ -12,7 +12,7 @@
 POST /auth/register
 
 {
-	"email": "abc2@dd.dd",
+	"email": "email@example.com",
 	"password": "qwerty"
 }
 ```
@@ -21,6 +21,35 @@ POST /auth/register
 
 ```
 201 OK
+```
+
+
+
+#### Авторизация
+
+##### Запрос
+
+```
+POST /auth/login
+
+{
+	"email": "email@example.com",
+	"password": "qwerty"
+}
+```
+
+##### Ответ
+
+```
+200 OK
+
+{
+	"status": "success",
+	"message": "Login successfully",
+	"token": "jwt here",
+	"expired_at": 1787211264,
+	"created_at": 1787207664
+}
 ```
 
 ## Client
