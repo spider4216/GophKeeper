@@ -4,6 +4,7 @@ go 1.26.3
 
 require (
 	github.com/caarlos0/env/v11 v11.4.1
+	github.com/go-chi/chi v1.5.5
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/jackc/pgx/v5 v5.5.4
 	go.uber.org/zap v1.28.0

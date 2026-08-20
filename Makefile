@@ -4,7 +4,7 @@ DSN?=postgres://postgres:postgres@localhost:5432/gophkeeper
 LOG_LEVEL?=debug
 
 run-srv:
-	DB_DSN=$(DSN) LOG_LEVEL=${LOG_LEVEL} go run ./cmd/server
+	SERVER_ADDRESS=:8080 DB_DSN=$(DSN) LOG_LEVEL=${LOG_LEVEL} go run ./cmd/server
 
 migration-gen:
 	migrate create -ext sql -dir ./migrations/${path} -seq $(name)
