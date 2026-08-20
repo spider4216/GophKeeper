@@ -2,9 +2,13 @@ package main
 
 import (
 	"fmt"
+	"net"
+	"net/http"
 	"os"
+	"time"
 
 	"github.com/spider4216/GophKeeper/internal/client/commands"
+	"github.com/spider4216/GophKeeper/internal/client/services"
 )
 
 func main() {
@@ -13,7 +17,27 @@ func main() {
 		os.Exit(1)
 	}
 
-	cmd := commands.New()
+	// todo move to app
+	// todo use config
+	dialer := &net.Dialer{
+		Timeout: 5 * time.Second,
+	}
+
+	trans := &http.Transport{
+		DialContext:           dialer.DialContext,
+		TLSHandshakeTimeout:   5 * time.Second,
+		ResponseHeaderTimeout: 5 * time.Second,
+	}
+
+	client := &http.Client{
+		Transport: trans,
+		Timeout:   10 * time.Second,
+	}
+
+	// todo host to config
+	service := services.New(client, "http://127.0.0.1:8080")
+
+	cmd := commands.New(service)
 
 	args := os.Args[2:]
 
