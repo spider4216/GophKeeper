@@ -10,6 +10,9 @@ run-srv:
 client-reg:
 	go run ./cmd/client register --email=${email} --password=${pass}
 
+client-login:
+	go run ./cmd/client login --email=${email} --password=${pass}
+
 migration-gen:
 	migrate create -ext sql -dir ./migrations/${path} -seq $(name)
 

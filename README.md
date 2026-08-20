@@ -23,8 +23,6 @@ POST /auth/register
 201 OK
 ```
 
-
-
 #### Авторизация
 
 ##### Запрос
@@ -66,4 +64,16 @@ make client-reg email=t1@dd.kz pass=qwerty
 Ожидаемый результат
 ```
 Register is OK
+```
+
+#### Авторизация пользователя
+
+```
+go run ./cmd/client login --email=${email} --password=${pass}
+make client-login email= pass=
+```
+
+Ожидаемый результат
+```
+JWT token
 ```
