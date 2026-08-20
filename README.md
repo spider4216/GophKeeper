@@ -33,3 +33,8 @@ POST /auth/register
 go run ./cmd/client register --email= --password=
 make client-reg email=t1@dd.kz pass=qwerty
 ```
+
+Ожидаемый результат
+```
+Register is OK
+```

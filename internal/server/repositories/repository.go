@@ -42,3 +42,17 @@ func (repo *SrvRepository) CreateUser(ctx context.Context, user models.UserRepo)
 
 	return lastInsertId, nil
 }
+
+func (repo *SrvRepository) GetUserByEmail(ctx context.Context, email string) (*models.UserRepo, error) {
+	sql := "SELECT id,email,password, created_at FROM users WHERE email=$1"
+
+	user := models.UserRepo{}
+
+	err := repo.con.QueryRow(sql, email).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.CreatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}

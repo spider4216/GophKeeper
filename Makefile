@@ -2,9 +2,10 @@ APP_NAME=gophkeeper
 
 DSN?=postgres://postgres:postgres@localhost:5432/gophkeeper
 LOG_LEVEL?=debug
+JWT_KEY?=qwerty
 
 run-srv:
-	SERVER_ADDRESS=:8080 DB_DSN=$(DSN) LOG_LEVEL=${LOG_LEVEL} go run ./cmd/server
+	JWT_KEY=${JWT_KEY} SERVER_ADDRESS=:8080 DB_DSN=$(DSN) LOG_LEVEL=${LOG_LEVEL} go run ./cmd/server
 
 client-reg:
 	go run ./cmd/client register --email=${email} --password=${pass}

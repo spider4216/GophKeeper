@@ -22,6 +22,7 @@ func main() {
 	r := chi.NewRouter()
 
 	r.Post("/auth/register", http.HandlerFunc(handler.CreateUser))
+	r.Post("/auth/login", http.HandlerFunc(handler.Login))
 
 	srv := &http.Server{
 		Addr:         app.cfg.ServerAddress,

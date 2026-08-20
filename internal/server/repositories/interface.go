@@ -11,4 +11,5 @@ type Repository interface {
 	Source() any
 
 	CreateUser(ctx context.Context, user models.UserRepo) (int64, error)
+	GetUserByEmail(ctx context.Context, email string) (*models.UserRepo, error)
 }

@@ -14,6 +14,8 @@ type Config struct {
 	ReadTimeout   time.Duration `env:"READ_TIMEOUT" envDefault:"5s"`
 	WriteTimeout  time.Duration `env:"WRITE_TIMEOUT" envDefault:"10s"`
 	IdleTimeout   time.Duration `env:"IDLE_TIMEOUT" envDefault:"30s"`
+	JWTKey        string        `env:"JWT_KEY"`
+	ExpToken      time.Duration `env:"TOKEN_EXPIRE" envDefault:"1h"`
 }
 
 func New() (*Config, error) {
