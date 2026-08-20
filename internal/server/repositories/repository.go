@@ -56,3 +56,51 @@ func (repo *SrvRepository) GetUserByEmail(ctx context.Context, email string) (*m
 
 	return &user, nil
 }
+
+func (repo *SrvRepository) CreateItem(ctx context.Context, item models.ItemRepo) (int64, error) {
+	sql := "INSERT INTO items (id, type ,user_id) VALUES ($1,$2,$3) RETURNING id"
+
+	var id int64
+
+	if err := repo.con.QueryRowContext(ctx, sql, item.ID, item.Type, item.UserID).Scan(&id); err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
+
+func (repo *SrvRepository) CreateItemPayload(ctx context.Context, item models.ItemPayloadRepo) error {
+	sql := "INSERT INTO item_payloads (item_id,ciphertext) VALUES ($1,$2)"
+
+	_, err := repo.con.ExecContext(ctx, sql, item.ItemID, item.Ciphertext)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repo *SrvRepository) CreateMeta(ctx context.Context, itemID int64, k string, v string) (int64, error) {
+	sql := "INSERT INTO metadata (item_id,key,value) VALUES ($1,$2,$3) RETURNING id"
+
+	var id int64
+
+	if err := repo.con.QueryRowContext(ctx, sql, itemID, k, v).Scan(&id); err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
+
+func (repo *SrvRepository) CreateSyncChanges(ctx context.Context, itemID int64, op string) (int64, error) {
+	sql := "INSERT INTO sync_changes (item_id,operation) VALUES ($1,$2) RETURNING id"
+
+	var id int64
+
+	if err := repo.con.QueryRowContext(ctx, sql, itemID, op).Scan(&id); err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}

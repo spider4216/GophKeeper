@@ -103,3 +103,43 @@ func (s *Service) BuildJWTString(userId int64, secret string, exp time.Duration)
 	// возвращаем строку токена
 	return tokenString, nil
 }
+
+func (s *Service) CreateItems(ctx context.Context, in []models.SyncInChange, userID int64) error {
+	// todo сделать гоурутины
+	for _, item := range in {
+
+		line := models.ItemRepo{
+			ID:     int64(item.Item.ID),
+			UserID: userID,
+			Type:   item.Item.Type,
+		}
+
+		// todo transaction
+		itemID, err := s.repo.CreateItem(ctx, line)
+
+		if err != nil {
+			return err
+		}
+
+		pl := models.ItemPayloadRepo{
+			ItemID:     itemID,
+			Ciphertext: item.Item.Ciphertext,
+		}
+
+		if err := s.repo.CreateItemPayload(ctx, pl); err != nil {
+			return err
+		}
+
+		for k, v := range item.Metadata {
+			if _, err := s.repo.CreateMeta(ctx, itemID, k, v); err != nil {
+				return err
+			}
+		}
+
+		if _, err := s.repo.CreateSyncChanges(ctx, itemID, item.Operation); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

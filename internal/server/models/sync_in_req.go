@@ -1,6 +1,10 @@
 package models
 
 type SyncInReq struct {
+	Changes []SyncInChange `json:"changes"`
+}
+
+type SyncInChange struct {
 	Operation string            `json:"operation"`
 	Item      ItemSyncIn        `json:"item"`
 	Metadata  map[string]string `json:"metadata"`

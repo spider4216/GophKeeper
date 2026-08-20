@@ -141,5 +141,41 @@ func (h Handler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handler) SyncIn(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	// Получаем тело запроса
+	r.Body = http.MaxBytesReader(w, r.Body, h.cfg.MaxBodySize)
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		h.logger.Errorf("failed read body: %s", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	var req models.SyncInReq
+
+	if err := json.Unmarshal(body, &req); err != nil {
+		h.logger.Errorf("failed read unmarshal: %s", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	userID := h.service.GetUserIdFromCtx(ctx)
+
+	if err := h.service.CreateItems(ctx, req.Changes, userID); err != nil {
+		h.logger.Errorf("failed sync: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+
+	// todo А нужно ли такое? Если тело пустое, может достаточно только WriteHeader?
+	if _, err := w.Write(nil); err != nil {
+		h.logger.Errorf("failed to write response: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 }

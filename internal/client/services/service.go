@@ -29,6 +29,7 @@ func New(client *http.Client, host string, repo repositories.Repository, logger 
 	}
 }
 
+// todo переименовать метода на CreateLoginPassItem
 func (s *Service) CreateItem(ctx context.Context, t string, data models.LoginPassReq, key string, userID int64) (int64, error) {
 	// todo t - as custom type
 
