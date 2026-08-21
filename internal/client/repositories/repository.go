@@ -65,3 +65,150 @@ func (repo *ClientRepository) CreatePendingChange(ctx context.Context, itemID in
 
 	return nil
 }
+
+func (repo *ClientRepository) GetPendingUserChanges(ctx context.Context, userID int) ([]models.PendChangesRepo, error) {
+	sql := "SELECT item_id,operation FROM pending_changes pc INNER JOIN items i ON i.id = pc.item_id WHERE i.user_id=$1"
+
+	rows, err := repo.con.QueryContext(ctx, sql, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err := rows.Close(); err != nil {
+			repo.logger.Warnf("Cannot close rows: %s", err)
+		}
+	}()
+
+	var items []models.PendChangesRepo
+
+	for rows.Next() {
+		var item models.PendChangesRepo
+
+		if err := rows.Scan(
+			&item.ItemID,
+			&item.Operation,
+		); err != nil {
+			return nil, err
+		}
+
+		items = append(items, item)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
+
+func (repo *ClientRepository) GetItemsByIDs(ctx context.Context, itemIDs []int64) ([]models.ItemRepo, error) {
+	sql := "SELECT id, type, ciphertext, created_at FROM items WHERE id = ANY($1);"
+
+	rows, err := repo.con.QueryContext(ctx, sql, itemIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err := rows.Close(); err != nil {
+			repo.logger.Warnf("Cannot close rows: %s", err)
+		}
+	}()
+
+	var items []models.ItemRepo
+
+	for rows.Next() {
+		var item models.ItemRepo
+
+		if err := rows.Scan(
+			&item.ID,
+			&item.Type,
+			&item.Ciphertext,
+			&item.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+
+		items = append(items, item)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
+
+func (repo *ClientRepository) GetMetadataByItemIDs(ctx context.Context, itemIDs []int64) ([]models.MetadataRepo, error) {
+	sql := "SELECT id, item_id, key, value FROM metadata WHERE item_id = ANY($1);"
+	rows, err := repo.con.QueryContext(ctx, sql, itemIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err := rows.Close(); err != nil {
+			repo.logger.Warnf("Cannot close rows: %s", err)
+		}
+	}()
+
+	var items []models.MetadataRepo
+
+	for rows.Next() {
+		var item models.MetadataRepo
+
+		if err := rows.Scan(
+			&item.ID,
+			&item.ItemID,
+			&item.Key,
+			&item.Value,
+		); err != nil {
+			return nil, err
+		}
+
+		items = append(items, item)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
+
+func (repo *ClientRepository) DeletePendingByItemIDs(ctx context.Context, itemIDs []int64) error {
+	sql := "DELETE FROM pending_changes WHERE item_id = ANY($1)"
+
+	_, err := repo.con.ExecContext(ctx, sql, itemIDs)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repo *ClientRepository) UpdateLastUserRev(ctx context.Context, userID int64, rev int64) error {
+	sql := "UPDATE sync_state SET last_server_revision=$1 WHERE user_id=$2"
+
+	_, err := repo.con.ExecContext(ctx, sql, rev, userID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repo *ClientRepository) CreateLastUserRev(ctx context.Context, userID int64, rev int64) error {
+	sql := "INSERT INTO sync_state (user_id, last_server_revision) VALUES ($1,$2)"
+
+	_, err := repo.con.ExecContext(ctx, sql, userID, rev)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

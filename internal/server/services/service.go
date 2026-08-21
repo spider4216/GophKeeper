@@ -143,3 +143,7 @@ func (s *Service) CreateItems(ctx context.Context, in []models.SyncInChange, use
 
 	return nil
 }
+
+func (s *Service) GetLatestUserRev(ctx context.Context, userID int64) (int64, error) {
+	return s.repo.GetLatestUserRev(ctx, userID)
+}

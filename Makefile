@@ -19,6 +19,9 @@ client-login:
 client-insert-loginpass:
 	LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client  insert-loginpass --login=${login} --password=${pass} --title=${title} --token=${jwt}
 
+client-sync-send:
+	LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client  sync-send --token=${jwt}
+
 migration-gen:
 	migrate create -ext sql -dir ./migrations/${path} -seq $(name)
 

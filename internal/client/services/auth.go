@@ -11,18 +11,18 @@ import (
 	"github.com/spider4216/GophKeeper/internal/client/models"
 )
 
-func (s *Service) Register(req models.RegisterReq) error {
+func (s *Service) Register(req models.RegisterReq) (*models.RegisterResp, error) {
 	data, err := json.Marshal(req)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// todo endpoint to const
 	url, err := url.JoinPath(s.host, "/auth/register")
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	r, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
@@ -30,14 +30,25 @@ func (s *Service) Register(req models.RegisterReq) error {
 
 	resp, err := s.client.Do(r)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusCreated {
-		return fmt.Errorf("response status is %d", resp.StatusCode)
+		return nil, fmt.Errorf("response status is %d", resp.StatusCode)
 	}
 
-	return nil
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var res models.RegisterResp
+
+	if err := json.Unmarshal(body, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 func (s *Service) Login(req models.LoginReq) (*models.LoginResp, error) {

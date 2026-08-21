@@ -79,3 +79,11 @@ func (s *Service) CreateMeta(ctx context.Context, itemID int64, k string, v stri
 func (s *Service) CreatePendingChange(ctx context.Context, itemID int64, op string) error {
 	return s.repo.CreatePendingChange(ctx, itemID, op)
 }
+
+func (s *Service) UpdateLastUserRev(ctx context.Context, userID int64, rev int64) error {
+	return s.repo.UpdateLastUserRev(ctx, userID, rev)
+}
+
+func (s *Service) CreateLastUserRev(ctx context.Context, userID int64, rev int64) error {
+	return s.repo.CreateLastUserRev(ctx, userID, rev)
+}

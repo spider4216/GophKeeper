@@ -17,4 +17,6 @@ type Repository interface {
 	CreateMeta(ctx context.Context, itemID int64, k string, v string) (int64, error)
 	// todo op custom type
 	CreateSyncChanges(ctx context.Context, itemID int64, op string) (int64, error)
+	GetSyncChangesByID(ctx context.Context, ID int64) (*models.SyncChangesRepo, error)
+	GetLatestUserRev(ctx context.Context, userID int64) (int64, error)
 }

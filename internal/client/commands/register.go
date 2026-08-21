@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -11,6 +12,7 @@ import (
 // todo return err
 func (c *Command) Register(args []string) {
 	// todo  command name to constant
+	// todo transaction
 	fs := flag.NewFlagSet("register", flag.ExitOnError)
 
 	email := fs.String("email", "", "user email")
@@ -24,13 +26,26 @@ func (c *Command) Register(args []string) {
 		os.Exit(1)
 	}
 
+	// todo подумать что то с контекстом
+	ctx := context.Background()
+
 	req := models.RegisterReq{
 		Email: *email,
 		Pass:  *pass,
 	}
 
-	if err := c.Service.Register(req); err != nil {
+	// todo condext for register user
+	resp, err := c.Service.Register(req)
+
+	if err != nil {
 		fmt.Printf("cannot create user: %s", err)
+		os.Exit(1)
+	}
+
+	// todo command logger
+
+	if err := c.Service.CreateLastUserRev(ctx, resp.UserID, 0); err != nil {
+		fmt.Printf("cannot create latest revision for user: %s", err)
 		os.Exit(1)
 	}
 

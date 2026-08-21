@@ -59,6 +59,8 @@ func main() {
 		cmd.Login(args)
 	case "insert-loginpass":
 		cmd.CreateItem(args)
+	case "sync-send":
+		cmd.SyncSend(args)
 	default:
 		fmt.Println("command not found")
 		os.Exit(1)

@@ -50,15 +50,29 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	// todo валидация почты и пароля
 	// todo валидация отсутствия почты в БД (уникальность)
 
-	if _, err := h.service.CreateUser(ctx, req.Email, req.Pass); err != nil {
+	userID, err := h.service.CreateUser(ctx, req.Email, req.Pass)
+
+	if err != nil {
 		h.logger.Errorf("cannot create user: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	res := models.RegisterResp{
+		UserID: userID,
+	}
+
+	b, err := json.Marshal(res)
+
+	if err != nil {
+		h.logger.Errorf("marshall error: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
 
-	if _, err := w.Write(nil); err != nil {
+	if _, err := w.Write(b); err != nil {
 		h.logger.Errorf("failed to write response: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -169,10 +183,29 @@ func (h Handler) SyncIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	rev, err := h.service.GetLatestUserRev(ctx, userID)
+
+	if err != nil {
+		h.logger.Errorf("cannot get latest user revision: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	resp := models.SyncInResp{
+		LastRev: rev,
+	}
+
+	b, err := json.Marshal(resp)
+
+	if err != nil {
+		h.logger.Errorf("failed marshal: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 
-	// todo А нужно ли такое? Если тело пустое, может достаточно только WriteHeader?
-	if _, err := w.Write(nil); err != nil {
+	if _, err := w.Write(b); err != nil {
 		h.logger.Errorf("failed to write response: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return

@@ -135,3 +135,10 @@ make client-insert-loginpass login= pass= title= jwt=
 ```
 JWT token
 ```
+
+#### Отправка данных на сервер (синхронизация)
+
+```
+go run ./cmd/client  sync-send --token=
+make client-sync-send jwt=
+```

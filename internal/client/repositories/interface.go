@@ -13,4 +13,11 @@ type Repository interface {
 	CreateMeta(ctx context.Context, itemID int64, k string, v string) (int64, error)
 	// todo op as custom type
 	CreatePendingChange(ctx context.Context, itemID int64, op string) error
+
+	GetPendingUserChanges(ctx context.Context, userID int) ([]models.PendChangesRepo, error)
+	GetItemsByIDs(ctx context.Context, itemIDs []int64) ([]models.ItemRepo, error)
+	GetMetadataByItemIDs(ctx context.Context, itemIDs []int64) ([]models.MetadataRepo, error)
+	DeletePendingByItemIDs(ctx context.Context, itemIDs []int64) error
+	UpdateLastUserRev(ctx context.Context, userID int64, rev int64) error
+	CreateLastUserRev(ctx context.Context, userID int64, rev int64) error
 }

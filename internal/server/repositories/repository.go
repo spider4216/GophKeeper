@@ -104,3 +104,31 @@ func (repo *SrvRepository) CreateSyncChanges(ctx context.Context, itemID int64, 
 
 	return id, nil
 }
+
+func (repo *SrvRepository) GetSyncChangesByID(ctx context.Context, ID int64) (*models.SyncChangesRepo, error) {
+	sql := "SELECT id,item_id,revision,operation,created_at FROM sync_changes WHERE id=$1"
+
+	var change models.SyncChangesRepo
+
+	err := repo.con.QueryRowContext(ctx, sql, ID).Scan(&change.ID, &change.ID, &change.ItemID, &change.Revision, &change.Operation, &change.CreatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &change, nil
+}
+
+func (repo *SrvRepository) GetLatestUserRev(ctx context.Context, userID int64) (int64, error) {
+	sql := "SELECT MAX(sc.revision) FROM sync_changes sc INNER JOIN items i ON sc.item_id=i.id WHERE i.user_id=$1 GROUP BY i.user_id"
+
+	var rev int64
+
+	err := repo.con.QueryRow(sql, userID).Scan(&rev)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return rev, nil
+}
