@@ -21,4 +21,5 @@ type Repository interface {
 	UpdateLastUserRev(ctx context.Context, userID int64, rev int64) error
 	CreateLastUserRev(ctx context.Context, userID int64, rev int64) error
 	GetLatestUserRev(ctx context.Context, userID int64) (int64, error)
+	GetUserItems(ctx context.Context, userID int64) ([]models.ItemRepo, error)
 }

@@ -2,6 +2,48 @@ package services
 
 import "github.com/spider4216/GophKeeper/internal/client/models"
 
+func (s *Service) buildItemsWithMeta(items []models.ItemRepo, metadata []models.MetadataRepo) []models.ItemWitjMeta {
+	// todo move to func because dry in buildSyncRequest
+
+	metadataByItemID := make(map[int64]map[string]string)
+
+	for _, m := range metadata {
+		if metadataByItemID[m.ItemID] == nil {
+			metadataByItemID[m.ItemID] = make(map[string]string)
+		}
+
+		metadataByItemID[m.ItemID][m.Key] = m.Value
+	}
+
+	// todo rename model - misatke
+	var res []models.ItemWitjMeta
+
+	for _, item := range items {
+		meta := metadataByItemID[item.ID]
+
+		one := models.ItemWitjMeta{
+			ItemRepo: models.ItemRepo{
+				ID:         item.ID,
+				Type:       item.Type,
+				Ciphertext: item.Ciphertext,
+				UserID:     item.UserID,
+				CreatedAt:  item.CreatedAt,
+			},
+		}
+
+		for k, v := range meta {
+			one.Metadata = append(one.Metadata, models.MetadataRepo{
+				Key:   k,
+				Value: v,
+			})
+		}
+
+		res = append(res, one)
+	}
+
+	return res
+}
+
 func (s *Service) buildSyncRequest(pendingChanges []models.PendChangesRepo, items []models.ItemRepo, metadata []models.MetadataRepo) models.SyncInReq {
 	itemByID := make(map[int64]models.ItemRepo, len(items))
 

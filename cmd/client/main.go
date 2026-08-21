@@ -61,6 +61,8 @@ func main() {
 		cmd.CreateItem(args)
 	case "sync-send":
 		cmd.SyncSend(args)
+	case "list":
+		cmd.UserList(args)
 	default:
 		fmt.Println("command not found")
 		os.Exit(1)

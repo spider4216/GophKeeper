@@ -226,3 +226,42 @@ func (repo *ClientRepository) GetLatestUserRev(ctx context.Context, userID int64
 
 	return rev, nil
 }
+
+func (repo *ClientRepository) GetUserItems(ctx context.Context, userID int64) ([]models.ItemRepo, error) {
+	sql := "SELECT id, type, ciphertext, user_id, created_at FROM items WHERE user_id=$1;"
+
+	rows, err := repo.con.QueryContext(ctx, sql, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err := rows.Close(); err != nil {
+			repo.logger.Warnf("Cannot close rows: %s", err)
+		}
+	}()
+
+	var items []models.ItemRepo
+
+	for rows.Next() {
+		var item models.ItemRepo
+
+		if err := rows.Scan(
+			&item.ID,
+			&item.Type,
+			&item.Ciphertext,
+			&item.UserID,
+			&item.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+
+		items = append(items, item)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}

@@ -91,3 +91,30 @@ func (s *Service) CreateLastUserRev(ctx context.Context, userID int64, rev int64
 func (s *Service) GetLatestUserRev(ctx context.Context, userID int64) (int64, error) {
 	return s.repo.GetLatestUserRev(ctx, userID)
 }
+
+func (s *Service) GetUserItems(ctx context.Context, userID int64) ([]models.ItemRepo, error) {
+	return s.repo.GetUserItems(ctx, userID)
+}
+
+func (s *Service) GetUserItemsWithMeta(ctx context.Context, userID int64) ([]models.ItemWitjMeta, error) {
+	items, err := s.GetUserItems(ctx, userID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var itemIDs []int64
+
+	for _, item := range items {
+		itemIDs = append(itemIDs, item.ID)
+	}
+
+	meta, err := s.repo.GetMetadataByItemIDs(ctx, itemIDs)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return s.buildItemsWithMeta(items, meta), nil
+
+}

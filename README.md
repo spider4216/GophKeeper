@@ -142,3 +142,10 @@ JWT token
 go run ./cmd/client  sync-send --token=
 make client-sync-send jwt=
 ```
+
+#### Список всех секретов пользователя
+
+```
+go run ./cmd/client list --token=
+make client-list jwt=
+```
