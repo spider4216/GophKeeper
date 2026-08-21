@@ -147,3 +147,53 @@ func (s *Service) CreateItems(ctx context.Context, in []models.SyncInChange, use
 func (s *Service) GetLatestUserRev(ctx context.Context, userID int64) (int64, error) {
 	return s.repo.GetLatestUserRev(ctx, userID)
 }
+
+func (s *Service) SyncGet(ctx context.Context, userID int64, since int64) (*models.SyncOutReq, error) {
+	s.logger.Debug("Get changes...")
+	changes, err := s.repo.GetUserSyncChanges(ctx, userID, since)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var itemIDs []int64
+
+	for _, item := range changes {
+		itemIDs = append(itemIDs, item.ItemID)
+	}
+
+	s.logger.Debug("Get Items...")
+
+	items, err := s.repo.GetItemsByIDs(ctx, itemIDs)
+
+	if err != nil {
+		return nil, err
+	}
+
+	s.logger.Debug("Get payloads...")
+
+	payloads, err := s.repo.GetPayloadByItemIDs(ctx, itemIDs)
+
+	if err != nil {
+		return nil, err
+	}
+
+	s.logger.Debug("Get metadata...")
+
+	meta, err := s.repo.GetMetadataByItemIDs(ctx, itemIDs)
+
+	if err != nil {
+		return nil, err
+	}
+
+	s.logger.Debug("Get latest rev...")
+
+	rev, err := s.repo.GetLatestUserRev(ctx, userID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return s.mapSyncResponse(changes, items, payloads, meta, rev), nil
+
+}

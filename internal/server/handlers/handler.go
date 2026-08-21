@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/spider4216/GophKeeper/internal/server/config"
@@ -212,4 +213,50 @@ func (h Handler) SyncIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+}
+
+func (h Handler) SyncOut(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	since := r.URL.Query().Get("since")
+
+	if since == "" {
+		h.logger.Error("no since found")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	sintInt, err := strconv.Atoi(since)
+
+	if err != nil {
+		h.logger.Errorf("cannot covert since to int: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	userID := h.service.GetUserIdFromCtx(ctx)
+
+	resp, err := h.service.SyncGet(ctx, userID, int64(sintInt))
+
+	if err != nil {
+		h.logger.Errorf("cannot sync: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	b, err := json.Marshal(resp)
+
+	if err != nil {
+		h.logger.Errorf("cannot marshal response: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+
+	if _, err := w.Write(b); err != nil {
+		h.logger.Errorf("failed to write response: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }

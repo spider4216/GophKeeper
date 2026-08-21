@@ -132,3 +132,152 @@ func (repo *SrvRepository) GetLatestUserRev(ctx context.Context, userID int64) (
 
 	return rev, nil
 }
+
+func (repo *SrvRepository) GetUserSyncChanges(ctx context.Context, userID int64, since int64) ([]models.SyncChangesRepo, error) {
+	sql := "SELECT sc.id, sc.item_id, sc.revision, sc.operation, sc.created_at FROM sync_changes sc INNER JOIN items i ON i.id=sc.item_id WHERE i.user_id=$1 and sc.revision > $2;"
+
+	rows, err := repo.con.QueryContext(ctx, sql, userID, since)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err := rows.Close(); err != nil {
+			repo.logger.Warnf("Cannot close rows: %s", err)
+		}
+	}()
+
+	var items []models.SyncChangesRepo
+
+	for rows.Next() {
+		var item models.SyncChangesRepo
+
+		if err := rows.Scan(
+			&item.ID,
+			&item.ItemID,
+			&item.Revision,
+			&item.Operation,
+			&item.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+
+		items = append(items, item)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
+
+func (repo *SrvRepository) GetMetadataByItemIDs(ctx context.Context, itemIDs []int64) ([]models.MetadataRepo, error) {
+	sql := "SELECT id, item_id, key, value FROM metadata WHERE item_id = ANY($1);"
+	rows, err := repo.con.QueryContext(ctx, sql, itemIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err := rows.Close(); err != nil {
+			repo.logger.Warnf("Cannot close rows: %s", err)
+		}
+	}()
+
+	var items []models.MetadataRepo
+
+	for rows.Next() {
+		var item models.MetadataRepo
+
+		if err := rows.Scan(
+			&item.ID,
+			&item.ItemID,
+			&item.Key,
+			&item.Value,
+		); err != nil {
+			return nil, err
+		}
+
+		items = append(items, item)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
+
+func (repo *SrvRepository) GetItemsByIDs(ctx context.Context, itemIDs []int64) ([]models.ItemRepo, error) {
+	sql := "SELECT id, type, created_at FROM items WHERE id = ANY($1);"
+
+	rows, err := repo.con.QueryContext(ctx, sql, itemIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err := rows.Close(); err != nil {
+			repo.logger.Warnf("Cannot close rows: %s", err)
+		}
+	}()
+
+	var items []models.ItemRepo
+
+	for rows.Next() {
+		var item models.ItemRepo
+
+		if err := rows.Scan(
+			&item.ID,
+			&item.Type,
+			&item.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+
+		items = append(items, item)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
+
+func (repo *SrvRepository) GetPayloadByItemIDs(ctx context.Context, itemIDs []int64) ([]models.ItemPayloadRepo, error) {
+	sql := "SELECT item_id, ciphertext FROM item_payloads WHERE item_id = ANY($1);"
+
+	rows, err := repo.con.QueryContext(ctx, sql, itemIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err := rows.Close(); err != nil {
+			repo.logger.Warnf("Cannot close rows: %s", err)
+		}
+	}()
+
+	var items []models.ItemPayloadRepo
+
+	for rows.Next() {
+		var item models.ItemPayloadRepo
+
+		if err := rows.Scan(
+			&item.ItemID,
+			&item.Ciphertext,
+		); err != nil {
+			return nil, err
+		}
+
+		items = append(items, item)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}

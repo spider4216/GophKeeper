@@ -19,4 +19,8 @@ type Repository interface {
 	CreateSyncChanges(ctx context.Context, itemID int64, op string) (int64, error)
 	GetSyncChangesByID(ctx context.Context, ID int64) (*models.SyncChangesRepo, error)
 	GetLatestUserRev(ctx context.Context, userID int64) (int64, error)
+	GetUserSyncChanges(ctx context.Context, userID int64, since int64) ([]models.SyncChangesRepo, error)
+	GetMetadataByItemIDs(ctx context.Context, itemIDs []int64) ([]models.MetadataRepo, error)
+	GetItemsByIDs(ctx context.Context, itemIDs []int64) ([]models.ItemRepo, error)
+	GetPayloadByItemIDs(ctx context.Context, itemIDs []int64) ([]models.ItemPayloadRepo, error)
 }
