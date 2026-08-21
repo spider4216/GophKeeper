@@ -87,3 +87,7 @@ func (s *Service) UpdateLastUserRev(ctx context.Context, userID int64, rev int64
 func (s *Service) CreateLastUserRev(ctx context.Context, userID int64, rev int64) error {
 	return s.repo.CreateLastUserRev(ctx, userID, rev)
 }
+
+func (s *Service) GetLatestUserRev(ctx context.Context, userID int64) (int64, error) {
+	return s.repo.GetLatestUserRev(ctx, userID)
+}

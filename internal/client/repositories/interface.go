@@ -20,4 +20,5 @@ type Repository interface {
 	DeletePendingByItemIDs(ctx context.Context, itemIDs []int64) error
 	UpdateLastUserRev(ctx context.Context, userID int64, rev int64) error
 	CreateLastUserRev(ctx context.Context, userID int64, rev int64) error
+	GetLatestUserRev(ctx context.Context, userID int64) (int64, error)
 }

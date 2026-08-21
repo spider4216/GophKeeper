@@ -1,10 +1,13 @@
 package commands
 
 import (
+	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/spider4216/GophKeeper/internal/client/models"
 )
 
@@ -29,11 +32,28 @@ func (c *Command) Login(args []string) {
 		Pass:  *pass,
 	}
 
+	// todo thenk aboun ctx in commands
+	ctx := context.Background()
+
 	resp, err := c.Service.Login(req)
 
 	if err != nil {
-		fmt.Printf("cannot create user: %s", err)
+		fmt.Printf("cannot login: %s", err)
 		os.Exit(1)
+	}
+
+	// todo логин можен осуществлять с другого клиента у которого пустая БД
+	// Если это первый вход клиента с нового устройства, то нужно
+	// Внести ему последнюю ревизию как 0
+	if _, err := c.Service.GetLatestUserRev(ctx, resp.UserID); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			// todo create latest rev as 0
+			// todo logger
+			c.Service.CreateLastUserRev(ctx, resp.UserID, 0)
+		} else {
+			fmt.Printf("cannot get latest revision: %s", err)
+			os.Exit(1)
+		}
 	}
 
 	fmt.Printf("JWT token\n\n%s\n", resp.Token)

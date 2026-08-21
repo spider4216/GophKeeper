@@ -134,6 +134,7 @@ func (h Handler) Login(w http.ResponseWriter, r *http.Request) {
 		Message:   "Login successfully",
 		ExpiredAt: now.Add(h.cfg.ExpToken).Unix(),
 		CreatedAt: now.Unix(),
+		UserID:    user.ID,
 	}
 
 	b, err := json.Marshal(res)

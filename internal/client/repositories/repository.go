@@ -212,3 +212,17 @@ func (repo *ClientRepository) CreateLastUserRev(ctx context.Context, userID int6
 
 	return nil
 }
+
+func (repo *ClientRepository) GetLatestUserRev(ctx context.Context, userID int64) (int64, error) {
+	sql := "SELECT last_server_revision FROM sync_state WHERE user_id = $1;"
+
+	var rev int64
+
+	err := repo.con.QueryRowContext(ctx, sql, userID).Scan(&rev)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return rev, nil
+}
