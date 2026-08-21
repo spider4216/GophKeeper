@@ -149,3 +149,10 @@ make client-sync-send jwt=
 go run ./cmd/client list --token=
 make client-list jwt=
 ```
+
+#### Расшифровка секрета
+
+```
+go run ./cmd/client view --item_id= --token=
+make client-view: id= jwt=
+```

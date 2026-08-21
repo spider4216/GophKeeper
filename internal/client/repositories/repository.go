@@ -265,3 +265,17 @@ func (repo *ClientRepository) GetUserItems(ctx context.Context, userID int64) ([
 
 	return items, nil
 }
+
+func (repo *ClientRepository) GetUserItemByID(ctx context.Context, itemID int64, userID int64) (*models.ItemRepo, error) {
+	sql := "SELECT id, type, ciphertext, user_id, created_at FROM items WHERE id=$1 and user_id=$2;"
+
+	var item models.ItemRepo
+
+	err := repo.con.QueryRowContext(ctx, sql, itemID, userID).Scan(&item.ID, &item.Type, &item.Ciphertext, &item.UserID, &item.CreatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &item, nil
+}

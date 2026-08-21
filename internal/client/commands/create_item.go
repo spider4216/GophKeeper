@@ -41,7 +41,7 @@ func (c *Command) CreateItem(args []string) {
 	claims := &claims{}
 	_, err := jwt.ParseWithClaims(req.JWT, claims,
 		func(t *jwt.Token) (interface{}, error) {
-			return []byte(c.Cfg.EncryptKey), nil
+			return []byte(c.Cfg.JWTKey), nil
 		})
 
 	if err != nil {

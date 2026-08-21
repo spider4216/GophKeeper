@@ -27,7 +27,7 @@ func (c *Command) SyncSend(args []string) {
 	claims := &claims{}
 	_, err := jwt.ParseWithClaims(*token, claims,
 		func(t *jwt.Token) (interface{}, error) {
-			return []byte(c.Cfg.EncryptKey), nil
+			return []byte(c.Cfg.JWTKey), nil
 		})
 
 	if err != nil {

@@ -2,10 +2,13 @@ package services
 
 import (
 	"context"
-	"crypto/hmac"
-	"crypto/sha256"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
+	"io"
 	"net/http"
 
 	"github.com/spider4216/GophKeeper/internal/client/models"
@@ -45,7 +48,7 @@ func (s *Service) CreateItem(ctx context.Context, t string, data models.LoginPas
 		return 0, err
 	}
 
-	encrypted, err := s.SignData(b, key)
+	encrypted, err := s.EncryptData(b, []byte(key))
 
 	if err != nil {
 		return 0, err
@@ -60,16 +63,60 @@ func (s *Service) CreateItem(ctx context.Context, t string, data models.LoginPas
 	return s.repo.CreateItem(ctx, item)
 }
 
-func (s *Service) SignData(data []byte, key string) (string, error) {
-	h := hmac.New(sha256.New, []byte(key))
-
-	if _, err := h.Write(data); err != nil {
+func (s *Service) EncryptData(data []byte, key []byte) (string, error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
 		return "", err
 	}
 
-	sign := h.Sum(nil)
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return "", err
+	}
 
-	return hex.EncodeToString(sign), nil
+	// Создаем случайный одноразовый вектор (nonce)
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		return "", err
+	}
+
+	// Шифруем данные и добавляем nonce в начало итогового байтового среза
+	ciphertext := gcm.Seal(nonce, nonce, data, nil)
+
+	return hex.EncodeToString(ciphertext), nil
+}
+
+func (s *Service) DecryptData(encryptedHex string, key []byte) ([]byte, error) {
+	ciphertext, err := hex.DecodeString(encryptedHex)
+	if err != nil {
+		return nil, err
+	}
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+
+	nonceSize := gcm.NonceSize()
+	if len(ciphertext) < nonceSize {
+		return nil, errors.New("incorrect length")
+	}
+
+	// Извлекаем nonce и сами зашифрованные данные
+	nonce, cipherTextData := ciphertext[:nonceSize], ciphertext[nonceSize:]
+
+	// Расшифровываем
+	plainText, err := gcm.Open(nil, nonce, cipherTextData, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return plainText, nil
 }
 
 func (s *Service) CreateMeta(ctx context.Context, itemID int64, k string, v string) (int64, error) {
@@ -117,4 +164,8 @@ func (s *Service) GetUserItemsWithMeta(ctx context.Context, userID int64) ([]mod
 
 	return s.buildItemsWithMeta(items, meta), nil
 
+}
+
+func (s *Service) GetUserItemByID(ctx context.Context, itemID int64, userID int64) (*models.ItemRepo, error) {
+	return s.repo.GetUserItemByID(ctx, itemID, userID)
 }
