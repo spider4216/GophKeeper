@@ -60,7 +60,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := models.RegisterResp{
+	res := shrModel.RegisterResp{
 		UserID: userID,
 	}
 

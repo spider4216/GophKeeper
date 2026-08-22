@@ -12,7 +12,7 @@ import (
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
-func (s *Service) Register(req models.RegisterReq) (*models.RegisterResp, error) {
+func (s *Service) Register(req models.RegisterReq) (*shrModel.RegisterResp, error) {
 	data, err := json.Marshal(req)
 
 	if err != nil {
@@ -43,7 +43,7 @@ func (s *Service) Register(req models.RegisterReq) (*models.RegisterResp, error)
 		return nil, err
 	}
 
-	var res models.RegisterResp
+	var res shrModel.RegisterResp
 
 	if err := json.Unmarshal(body, &res); err != nil {
 		return nil, err
