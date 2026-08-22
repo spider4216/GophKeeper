@@ -52,7 +52,7 @@ func (s *Service) Register(req models.RegisterReq) (*models.RegisterResp, error)
 	return &res, nil
 }
 
-func (s *Service) Login(req shrModel.LoginReq) (*models.LoginResp, error) {
+func (s *Service) Login(req shrModel.LoginReq) (*shrModel.LoginResp, error) {
 	data, err := json.Marshal(req)
 
 	if err != nil {
@@ -84,7 +84,7 @@ func (s *Service) Login(req shrModel.LoginReq) (*models.LoginResp, error) {
 		return nil, err
 	}
 
-	var res models.LoginResp
+	var res shrModel.LoginResp
 
 	if err := json.Unmarshal(body, &res); err != nil {
 		return nil, err

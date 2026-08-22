@@ -129,7 +129,7 @@ func (h Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	now := time.Now()
 
-	res := models.LoginResp{
+	res := shrModel.LoginResp{
 		// todo status to const
 		Status:    "success",
 		Token:     token,

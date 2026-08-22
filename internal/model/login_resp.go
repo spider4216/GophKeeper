@@ -1,4 +1,4 @@
-package models
+package model
 
 // todo можно сделать кастомный тип токена и статуса
 type LoginResp struct {
