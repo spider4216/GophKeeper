@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	shrModel "github.com/spider4216/GophKeeper/internal/model"
 	"github.com/spider4216/GophKeeper/internal/server/models"
 	"github.com/spider4216/GophKeeper/internal/server/repositories"
 	"go.uber.org/zap"
@@ -192,7 +193,7 @@ func (s *Service) GetLatestUserRev(ctx context.Context, userID int64) (int64, er
 	return s.repo.GetLatestUserRev(ctx, userID)
 }
 
-func (s *Service) SyncGet(ctx context.Context, userID int64, since int64) (*models.SyncOutReq, error) {
+func (s *Service) SyncGet(ctx context.Context, userID int64, since int64) (*shrModel.SyncGet, error) {
 	s.logger.Debug("Get changes...")
 	changes, err := s.repo.GetUserSyncChanges(ctx, userID, since)
 

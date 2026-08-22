@@ -11,6 +11,7 @@ import (
 	"strconv"
 
 	"github.com/spider4216/GophKeeper/internal/client/models"
+	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
 func (s *Service) SyncSend(ctx context.Context, userID int64, token string) error {
@@ -163,7 +164,7 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, token string) error
 		return err
 	}
 
-	var res models.SyncReceiveReq
+	var res shrModel.SyncGet
 
 	if err := json.Unmarshal(body, &res); err != nil {
 		return err
