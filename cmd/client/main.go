@@ -65,6 +65,8 @@ func main() {
 		cmd.UserList(args)
 	case "view":
 		cmd.View(args)
+	case "sync-get":
+		cmd.SyncGet(args)
 	default:
 		fmt.Println("command not found")
 		os.Exit(1)

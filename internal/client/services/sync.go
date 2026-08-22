@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/spider4216/GophKeeper/internal/client/models"
 )
@@ -108,6 +109,90 @@ func (s *Service) SyncSend(ctx context.Context, userID int64, token string) erro
 	}
 
 	s.logger.Debug("Sync done")
+
+	return nil
+}
+
+func (s *Service) SyncGet(ctx context.Context, userID int64, token string) error {
+	// Получаем последнюю версию синхронизации
+	rev, err := s.GetLatestUserRev(ctx, userID)
+
+	if err != nil {
+		return err
+	}
+
+	// todo endpoint to const
+	url, err := url.JoinPath(s.host, "/sync")
+
+	if err != nil {
+		return err
+	}
+
+	revStr := strconv.FormatInt(rev, 10)
+
+	url = url + "?since=" + revStr
+
+	r, err := http.NewRequest(http.MethodGet, url, nil)
+	r.Header.Add("Authorization", token)
+
+	s.logger.Debug("Get sync...")
+	resp, err := s.client.Do(r)
+
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("Status sync is not OK: %d", resp.StatusCode)
+	}
+
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			s.logger.Warnf("Error closing body: %s", err)
+		}
+	}()
+
+	body, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		return err
+	}
+
+	var res models.SyncReceiveReq
+
+	if err := json.Unmarshal(body, &res); err != nil {
+		return err
+	}
+
+	s.logger.Debugf("Changes: %d", len(res.Changes))
+
+	// todo transaction
+	for _, change := range res.Changes {
+		// todo в зависимости от операции метод будет разный, пока просто create
+		// todo mybe gorutine
+
+		item := models.ItemRepo{
+			Type:       change.Item.Type,
+			Ciphertext: change.Item.Ciphertext,
+			UserID:     userID,
+		}
+
+		itemID, err := s.repo.CreateItem(ctx, item)
+
+		if err != nil {
+			return err
+		}
+
+		for k, v := range change.Metadata {
+			if _, err := s.repo.CreateMeta(ctx, itemID, k, v); err != nil {
+				return err
+			}
+		}
+	}
+
+	if err := s.UpdateLastUserRev(ctx, userID, res.NextRev); err != nil {
+		return err
+	}
 
 	return nil
 }

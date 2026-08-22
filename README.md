@@ -156,3 +156,10 @@ make client-list jwt=
 go run ./cmd/client view --item_id= --token=
 make client-view: id= jwt=
 ```
+
+### Получение данных с сервера (синхронизация)
+
+```
+go run ./cmd/client sync-get --token=
+make client-sync-get jwt=
+```

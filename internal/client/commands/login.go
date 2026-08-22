@@ -2,12 +2,12 @@ package commands
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"flag"
 	"fmt"
 	"os"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/spider4216/GophKeeper/internal/client/models"
 )
 
@@ -46,7 +46,7 @@ func (c *Command) Login(args []string) {
 	// Если это первый вход клиента с нового устройства, то нужно
 	// Внести ему последнюю ревизию как 0
 	if _, err := c.Service.GetLatestUserRev(ctx, resp.UserID); err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
+		if errors.Is(err, sql.ErrNoRows) {
 			// todo create latest rev as 0
 			// todo logger
 			c.Service.CreateLastUserRev(ctx, resp.UserID, 0)

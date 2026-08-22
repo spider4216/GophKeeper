@@ -22,6 +22,9 @@ client-insert-loginpass:
 client-sync-send:
 	JWT_KEY=${JWT_KEY} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client sync-send --token=${jwt}
 
+client-sync-get:
+	JWT_KEY=${JWT_KEY} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client sync-get --token=${jwt}
+
 client-list:
 	JWT_KEY=${JWT_KEY} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client list --token=${jwt}
 
