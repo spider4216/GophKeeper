@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/spider4216/GophKeeper/internal/client/models"
+	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
 // todo return err
@@ -29,7 +29,7 @@ func (c *Command) Register(args []string) {
 	// todo подумать что то с контекстом
 	ctx := context.Background()
 
-	req := models.RegisterReq{
+	req := shrModel.RegisterReq{
 		Email: *email,
 		Pass:  *pass,
 	}

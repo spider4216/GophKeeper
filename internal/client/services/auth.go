@@ -8,11 +8,10 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/spider4216/GophKeeper/internal/client/models"
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
-func (s *Service) Register(req models.RegisterReq) (*shrModel.RegisterResp, error) {
+func (s *Service) Register(req shrModel.RegisterReq) (*shrModel.RegisterResp, error) {
 	data, err := json.Marshal(req)
 
 	if err != nil {

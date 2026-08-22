@@ -41,7 +41,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req models.UserReq
+	var req shrModel.RegisterReq
 
 	if err := json.Unmarshal(body, &req); err != nil {
 		h.logger.Errorf("unmarshall error: %s", err)
