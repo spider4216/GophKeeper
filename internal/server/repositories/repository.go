@@ -317,3 +317,15 @@ func (repo *SrvRepository) DeletePayloadByItemID(ctx context.Context, itemID int
 
 	return nil
 }
+
+func (repo *SrvRepository) UpdateUserItemPayload(ctx context.Context, itemID int64, userID int64, val string) error {
+	sql := "UPDATE item_payloads p SET ciphertext=$1 FROM items i WHERE p.item_id=$2 AND i.user_id=$3"
+
+	_, err := repo.con.ExecContext(ctx, sql, val, itemID, userID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

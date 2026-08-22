@@ -163,8 +163,20 @@ func (s *Service) CreateItems(ctx context.Context, in []models.SyncInChange, use
 				return err
 			}
 
-			// todo op to cinst
+			// todo op to const
 			if _, err := s.repo.CreateSyncChanges(ctx, int64(item.Item.ID), "DELETE", userID); err != nil {
+				return err
+			}
+		}
+
+		if item.Operation == "UPDATE" {
+			// todo transaction
+			s.logger.Debug("Update strategy")
+			if err := s.repo.UpdateUserItemPayload(ctx, int64(item.Item.ID), userID, item.Item.Ciphertext); err != nil {
+				return err
+			}
+
+			if _, err := s.repo.CreateSyncChanges(ctx, int64(item.Item.ID), "UPDATE", userID); err != nil {
 				return err
 			}
 		}

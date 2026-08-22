@@ -26,4 +26,5 @@ type Repository interface {
 	DeleteUserItemByID(ctx context.Context, itemID int64, userID int64) error
 	DeleteUserMetaByItemID(ctx context.Context, itemID int64, userID int64) error
 	DeletePayloadByItemID(ctx context.Context, itemID int64) error
+	UpdateUserItemPayload(ctx context.Context, itemID int64, userID int64, val string) error
 }
