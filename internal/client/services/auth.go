@@ -9,6 +9,7 @@ import (
 	"net/url"
 
 	"github.com/spider4216/GophKeeper/internal/client/models"
+	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
 func (s *Service) Register(req models.RegisterReq) (*models.RegisterResp, error) {
@@ -51,7 +52,7 @@ func (s *Service) Register(req models.RegisterReq) (*models.RegisterResp, error)
 	return &res, nil
 }
 
-func (s *Service) Login(req models.LoginReq) (*models.LoginResp, error) {
+func (s *Service) Login(req shrModel.LoginReq) (*models.LoginResp, error) {
 	data, err := json.Marshal(req)
 
 	if err != nil {

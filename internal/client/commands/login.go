@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/spider4216/GophKeeper/internal/client/models"
+	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
 // todo return err
@@ -27,7 +27,7 @@ func (c *Command) Login(args []string) {
 		os.Exit(1)
 	}
 
-	req := models.LoginReq{
+	req := shrModel.LoginReq{
 		Email: *email,
 		Pass:  *pass,
 	}

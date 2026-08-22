@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	shrModel "github.com/spider4216/GophKeeper/internal/model"
 	"github.com/spider4216/GophKeeper/internal/server/config"
 	"github.com/spider4216/GophKeeper/internal/server/models"
 	"github.com/spider4216/GophKeeper/internal/server/services"
@@ -95,7 +96,7 @@ func (h Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req := models.LoginReq{}
+	req := shrModel.LoginReq{}
 
 	if err := json.Unmarshal(body, &req); err != nil {
 		h.logger.Errorf("failed read unmarshal: %s", err)
