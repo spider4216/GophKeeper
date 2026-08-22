@@ -67,6 +67,8 @@ func main() {
 		cmd.View(args)
 	case "sync-get":
 		cmd.SyncGet(args)
+	case "delete-item":
+		cmd.DeleteItem(args)
 	default:
 		fmt.Println("command not found")
 		os.Exit(1)

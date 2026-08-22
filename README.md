@@ -163,3 +163,10 @@ make client-view: id= jwt=
 go run ./cmd/client sync-get --token=
 make client-sync-get jwt=
 ```
+
+### Удаление данных
+
+```
+go run ./cmd/client delete-item --id= --token=
+make client-delete-item id= jwt=
+```

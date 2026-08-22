@@ -14,7 +14,7 @@ import (
 // todo return err
 func (c *Command) CreateItem(args []string) {
 	// todo  command name to constant
-	fs := flag.NewFlagSet("register", flag.ExitOnError)
+	fs := flag.NewFlagSet("create-item", flag.ExitOnError)
 
 	login := fs.String("login", "", "Login")
 	pass := fs.String("password", "", "Password")

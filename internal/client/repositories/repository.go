@@ -279,3 +279,27 @@ func (repo *ClientRepository) GetUserItemByID(ctx context.Context, itemID int64,
 
 	return &item, nil
 }
+
+func (repo *ClientRepository) DeleteUserItemByID(ctx context.Context, itemID int64, userID int64) error {
+	sql := "DELETE FROM items WHERE user_id=$1 and id=$2"
+
+	_, err := repo.con.ExecContext(ctx, sql, userID, itemID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repo *ClientRepository) DeleteUserMetaByItemID(ctx context.Context, itemID int64, userID int64) error {
+	sql := "DELETE FROM metadata md USING items i WHERE i.id = md.item_id AND md.item_id=$1 AND i.user_id=$2"
+
+	_, err := repo.con.ExecContext(ctx, sql, itemID, userID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

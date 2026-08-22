@@ -169,3 +169,21 @@ func (s *Service) GetUserItemsWithMeta(ctx context.Context, userID int64) ([]mod
 func (s *Service) GetUserItemByID(ctx context.Context, itemID int64, userID int64) (*models.ItemRepo, error) {
 	return s.repo.GetUserItemByID(ctx, itemID, userID)
 }
+
+func (s *Service) DeleteUserItem(ctx context.Context, itemID int64, userID int64) error {
+	// todo transaction
+	if err := s.repo.DeleteUserMetaByItemID(ctx, itemID, userID); err != nil {
+		return err
+	}
+
+	if err := s.repo.DeleteUserItemByID(ctx, itemID, userID); err != nil {
+		return err
+	}
+
+	// todo op to const
+	if err := s.repo.CreatePendingChange(ctx, itemID, "DELETE"); err != nil {
+		return err
+	}
+
+	return nil
+}
