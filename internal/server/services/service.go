@@ -108,6 +108,8 @@ func (s *Service) CreateItems(ctx context.Context, in []models.SyncInChange, use
 	// todo сделать гоурутины
 	for _, item := range in {
 
+		s.logger.Debugf("Sync Operation: %s", item.Operation)
+
 		line := models.ItemRepo{
 			ID:     int64(item.Item.ID),
 			UserID: userID,
@@ -115,30 +117,58 @@ func (s *Service) CreateItems(ctx context.Context, in []models.SyncInChange, use
 		}
 
 		// todo transaction
-		itemID, err := s.repo.CreateItem(ctx, line)
+		// todo в зависимости от типа операции разные действия
+		// todo разделить на методы
+		// todo op co conts
+		if item.Operation == "CREATE" {
+			s.logger.Debug("create strategy")
+			itemID, err := s.repo.CreateItem(ctx, line)
 
-		if err != nil {
-			return err
-		}
+			if err != nil {
+				return err
+			}
 
-		pl := models.ItemPayloadRepo{
-			ItemID:     itemID,
-			Ciphertext: item.Item.Ciphertext,
-		}
+			pl := models.ItemPayloadRepo{
+				ItemID:     itemID,
+				Ciphertext: item.Item.Ciphertext,
+			}
 
-		if err := s.repo.CreateItemPayload(ctx, pl); err != nil {
-			return err
-		}
+			if err := s.repo.CreateItemPayload(ctx, pl); err != nil {
+				return err
+			}
 
-		for k, v := range item.Metadata {
-			if _, err := s.repo.CreateMeta(ctx, itemID, k, v); err != nil {
+			for k, v := range item.Metadata {
+				if _, err := s.repo.CreateMeta(ctx, itemID, k, v); err != nil {
+					return err
+				}
+			}
+
+			if _, err := s.repo.CreateSyncChanges(ctx, itemID, item.Operation, userID); err != nil {
 				return err
 			}
 		}
 
-		if _, err := s.repo.CreateSyncChanges(ctx, itemID, item.Operation); err != nil {
-			return err
+		if item.Operation == "DELETE" {
+			s.logger.Debug("Delete strategy")
+			// todo transaction
+			if err := s.repo.DeleteUserMetaByItemID(ctx, int64(item.Item.ID), userID); err != nil {
+				return err
+			}
+
+			if err := s.repo.DeletePayloadByItemID(ctx, int64(item.Item.ID)); err != nil {
+				return err
+			}
+
+			if err := s.repo.DeleteUserItemByID(ctx, int64(item.Item.ID), userID); err != nil {
+				return err
+			}
+
+			// todo op to cinst
+			if _, err := s.repo.CreateSyncChanges(ctx, int64(item.Item.ID), "DELETE", userID); err != nil {
+				return err
+			}
 		}
+
 	}
 
 	return nil

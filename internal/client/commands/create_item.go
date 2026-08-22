@@ -70,7 +70,7 @@ func (c *Command) CreateItem(args []string) {
 	}
 
 	// op to const and custom type
-	err = c.Service.CreatePendingChange(ctx, itemID, "CREATE")
+	err = c.Service.CreatePendingChange(ctx, itemID, "CREATE", claims.UserID)
 
 	if err != nil {
 		fmt.Printf("cannot create pending for item: %s", err)

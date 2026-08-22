@@ -54,10 +54,10 @@ func (repo *ClientRepository) CreateMeta(ctx context.Context, itemID int64, k st
 	return id, nil
 }
 
-func (repo *ClientRepository) CreatePendingChange(ctx context.Context, itemID int64, op string) error {
-	sql := "INSERT INTO pending_changes (item_id,operation) VALUES ($1,$2)"
+func (repo *ClientRepository) CreatePendingChange(ctx context.Context, itemID int64, op string, userID int64) error {
+	sql := "INSERT INTO pending_changes (item_id,operation,user_id) VALUES ($1,$2,$3)"
 
-	_, err := repo.con.ExecContext(ctx, sql, itemID, op)
+	_, err := repo.con.ExecContext(ctx, sql, itemID, op, userID)
 
 	if err != nil {
 		return err
@@ -67,7 +67,7 @@ func (repo *ClientRepository) CreatePendingChange(ctx context.Context, itemID in
 }
 
 func (repo *ClientRepository) GetPendingUserChanges(ctx context.Context, userID int) ([]models.PendChangesRepo, error) {
-	sql := "SELECT item_id,operation FROM pending_changes pc INNER JOIN items i ON i.id = pc.item_id WHERE i.user_id=$1"
+	sql := "SELECT item_id,operation,user_id FROM pending_changes WHERE user_id=$1"
 
 	rows, err := repo.con.QueryContext(ctx, sql, userID)
 	if err != nil {
@@ -88,6 +88,7 @@ func (repo *ClientRepository) GetPendingUserChanges(ctx context.Context, userID 
 		if err := rows.Scan(
 			&item.ItemID,
 			&item.Operation,
+			&item.UserID,
 		); err != nil {
 			return nil, err
 		}

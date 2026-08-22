@@ -12,7 +12,7 @@ type Repository interface {
 	CreateItem(ctx context.Context, item models.ItemRepo) (int64, error)
 	CreateMeta(ctx context.Context, itemID int64, k string, v string) (int64, error)
 	// todo op as custom type
-	CreatePendingChange(ctx context.Context, itemID int64, op string) error
+	CreatePendingChange(ctx context.Context, itemID int64, op string, userID int64) error
 
 	GetPendingUserChanges(ctx context.Context, userID int) ([]models.PendChangesRepo, error)
 	GetItemsByIDs(ctx context.Context, itemIDs []int64) ([]models.ItemRepo, error)

@@ -93,12 +93,12 @@ func (repo *SrvRepository) CreateMeta(ctx context.Context, itemID int64, k strin
 	return id, nil
 }
 
-func (repo *SrvRepository) CreateSyncChanges(ctx context.Context, itemID int64, op string) (int64, error) {
-	sql := "INSERT INTO sync_changes (item_id,operation) VALUES ($1,$2) RETURNING id"
+func (repo *SrvRepository) CreateSyncChanges(ctx context.Context, itemID int64, op string, userID int64) (int64, error) {
+	sql := "INSERT INTO sync_changes (item_id,operation,user_id) VALUES ($1,$2,$3) RETURNING id"
 
 	var id int64
 
-	if err := repo.con.QueryRowContext(ctx, sql, itemID, op).Scan(&id); err != nil {
+	if err := repo.con.QueryRowContext(ctx, sql, itemID, op, userID).Scan(&id); err != nil {
 		return 0, err
 	}
 
@@ -120,7 +120,7 @@ func (repo *SrvRepository) GetSyncChangesByID(ctx context.Context, ID int64) (*m
 }
 
 func (repo *SrvRepository) GetLatestUserRev(ctx context.Context, userID int64) (int64, error) {
-	sql := "SELECT MAX(sc.revision) FROM sync_changes sc INNER JOIN items i ON sc.item_id=i.id WHERE i.user_id=$1 GROUP BY i.user_id"
+	sql := "SELECT MAX(revision) FROM sync_changes WHERE user_id=$1 GROUP BY user_id"
 
 	var rev int64
 
@@ -134,7 +134,7 @@ func (repo *SrvRepository) GetLatestUserRev(ctx context.Context, userID int64) (
 }
 
 func (repo *SrvRepository) GetUserSyncChanges(ctx context.Context, userID int64, since int64) ([]models.SyncChangesRepo, error) {
-	sql := "SELECT sc.id, sc.item_id, sc.revision, sc.operation, sc.created_at FROM sync_changes sc INNER JOIN items i ON i.id=sc.item_id WHERE i.user_id=$1 and sc.revision > $2;"
+	sql := "SELECT id, item_id, revision, operation, created_at FROM sync_changes WHERE user_id=$1 and revision > $2;"
 
 	rows, err := repo.con.QueryContext(ctx, sql, userID, since)
 	if err != nil {
@@ -280,4 +280,40 @@ func (repo *SrvRepository) GetPayloadByItemIDs(ctx context.Context, itemIDs []in
 	}
 
 	return items, nil
+}
+
+func (repo *SrvRepository) DeleteUserItemByID(ctx context.Context, itemID int64, userID int64) error {
+	sql := "DELETE FROM items WHERE user_id=$1 and id=$2"
+
+	_, err := repo.con.ExecContext(ctx, sql, userID, itemID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repo *SrvRepository) DeleteUserMetaByItemID(ctx context.Context, itemID int64, userID int64) error {
+	sql := "DELETE FROM metadata md USING items i WHERE i.id = md.item_id AND md.item_id=$1 AND i.user_id=$2"
+
+	_, err := repo.con.ExecContext(ctx, sql, itemID, userID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repo *SrvRepository) DeletePayloadByItemID(ctx context.Context, itemID int64) error {
+	sql := "DELETE FROM item_payloads WHERE item_id=$1"
+
+	_, err := repo.con.ExecContext(ctx, sql, itemID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

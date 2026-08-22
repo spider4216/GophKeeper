@@ -123,8 +123,8 @@ func (s *Service) CreateMeta(ctx context.Context, itemID int64, k string, v stri
 	return s.repo.CreateMeta(ctx, itemID, k, v)
 }
 
-func (s *Service) CreatePendingChange(ctx context.Context, itemID int64, op string) error {
-	return s.repo.CreatePendingChange(ctx, itemID, op)
+func (s *Service) CreatePendingChange(ctx context.Context, itemID int64, op string, userID int64) error {
+	return s.repo.CreatePendingChange(ctx, itemID, op, userID)
 }
 
 func (s *Service) UpdateLastUserRev(ctx context.Context, userID int64, rev int64) error {
@@ -181,7 +181,7 @@ func (s *Service) DeleteUserItem(ctx context.Context, itemID int64, userID int64
 	}
 
 	// todo op to const
-	if err := s.repo.CreatePendingChange(ctx, itemID, "DELETE"); err != nil {
+	if err := s.repo.CreatePendingChange(ctx, itemID, "DELETE", userID); err != nil {
 		return err
 	}
 

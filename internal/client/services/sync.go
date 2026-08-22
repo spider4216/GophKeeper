@@ -47,6 +47,10 @@ func (s *Service) SyncSend(ctx context.Context, userID int64, token string) erro
 		return err
 	}
 
+	s.logger.Debug(pends)
+	s.logger.Debug(items)
+	s.logger.Debug(meta)
+
 	req := s.buildSyncRequest(pends, items, meta)
 
 	data, err := json.Marshal(req)
@@ -67,6 +71,7 @@ func (s *Service) SyncSend(ctx context.Context, userID int64, token string) erro
 	r.Header.Add("Authorization", token)
 
 	s.logger.Debug("Send sync...")
+	s.logger.Debug(string(data))
 	resp, err := s.client.Do(r)
 
 	if err != nil {
@@ -171,23 +176,37 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, token string) error
 		// todo в зависимости от операции метод будет разный, пока просто create
 		// todo mybe gorutine
 
-		item := models.ItemRepo{
-			Type:       change.Item.Type,
-			Ciphertext: change.Item.Ciphertext,
-			UserID:     userID,
+		if change.Operation == "CREATE" {
+			item := models.ItemRepo{
+				Type:       change.Item.Type,
+				Ciphertext: change.Item.Ciphertext,
+				UserID:     userID,
+			}
+
+			itemID, err := s.repo.CreateItem(ctx, item)
+
+			if err != nil {
+				return err
+			}
+
+			for k, v := range change.Metadata {
+				if _, err := s.repo.CreateMeta(ctx, itemID, k, v); err != nil {
+					return err
+				}
+			}
 		}
 
-		itemID, err := s.repo.CreateItem(ctx, item)
+		if change.Operation == "DELETE" {
+			// todo transaction
+			if err := s.repo.DeleteUserMetaByItemID(ctx, change.Item.ID, userID); err != nil {
+				return err
+			}
 
-		if err != nil {
-			return err
-		}
-
-		for k, v := range change.Metadata {
-			if _, err := s.repo.CreateMeta(ctx, itemID, k, v); err != nil {
+			if err := s.repo.DeleteUserItemByID(ctx, change.Item.ID, userID); err != nil {
 				return err
 			}
 		}
+
 	}
 
 	if err := s.UpdateLastUserRev(ctx, userID, res.NextRev); err != nil {
