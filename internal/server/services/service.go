@@ -176,6 +176,8 @@ func (s *Service) CreateItems(ctx context.Context, in []models.SyncInChange, use
 				return err
 			}
 
+			// todo update metadata
+
 			if _, err := s.repo.CreateSyncChanges(ctx, int64(item.Item.ID), "UPDATE", userID); err != nil {
 				return err
 			}

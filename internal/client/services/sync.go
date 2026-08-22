@@ -207,6 +207,13 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, token string) error
 			}
 		}
 
+		if change.Operation == "UPDATE" {
+			// todo update
+			if err := s.repo.UpdateUserItem(ctx, change.Item.ID, userID, change.Item.Ciphertext); err != nil {
+				return err
+			}
+		}
+
 	}
 
 	if err := s.UpdateLastUserRev(ctx, userID, res.NextRev); err != nil {
