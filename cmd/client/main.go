@@ -69,6 +69,8 @@ func main() {
 		cmd.SyncGet(args)
 	case "delete-item":
 		cmd.DeleteItem(args)
+	case "update-loginpass":
+		cmd.UpdateLoginPass(args)
 	default:
 		fmt.Println("command not found")
 		os.Exit(1)

@@ -170,3 +170,10 @@ make client-sync-get jwt=
 go run ./cmd/client delete-item --id= --token=
 make client-delete-item id= jwt=
 ```
+
+### Обновление логина и пароля
+
+```
+go run ./cmd/client update-loginpass --login= --password= --id= --token=
+make client-update-loginpass login= pass= id= jwt=
+```

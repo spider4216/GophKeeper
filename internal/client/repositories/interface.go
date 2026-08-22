@@ -25,4 +25,5 @@ type Repository interface {
 	GetUserItems(ctx context.Context, userID int64) ([]models.ItemRepo, error)
 	DeleteUserItemByID(ctx context.Context, itemID int64, userID int64) error
 	DeleteUserMetaByItemID(ctx context.Context, itemID int64, userID int64) error
+	UpdateUserItem(ctx context.Context, itemID int64, userID int64, val string) error
 }

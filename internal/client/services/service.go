@@ -187,3 +187,34 @@ func (s *Service) DeleteUserItem(ctx context.Context, itemID int64, userID int64
 
 	return nil
 }
+
+func (s *Service) UpdateLoginPass(ctx context.Context, itemID int64, userID int64, login string, pass string, key string) error {
+	data := models.LoginPassFmt{
+		Login: login,
+		Pass:  pass,
+	}
+
+	b, err := json.Marshal(data)
+
+	if err != nil {
+		return err
+	}
+
+	encrypted, err := s.EncryptData(b, []byte(key))
+
+	if err != nil {
+		return err
+	}
+
+	// todo transaction
+	if err := s.repo.UpdateUserItem(ctx, itemID, userID, encrypted); err != nil {
+		return err
+	}
+
+	// todo op to const
+	if err := s.repo.CreatePendingChange(ctx, itemID, "UPDATE", userID); err != nil {
+		return err
+	}
+
+	return nil
+}
