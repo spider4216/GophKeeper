@@ -15,7 +15,6 @@ type Repository interface {
 	GetUserByEmail(ctx context.Context, email string) (*models.UserRepo, error)
 	CreateItem(ctx context.Context, item models.ItemRepo) (int64, error)
 	CreateItemPayload(ctx context.Context, item models.ItemPayloadRepo) error
-	CreateMeta(ctx context.Context, itemID int64, k string, v string) (int64, error)
 	// todo op custom type
 	CreateSyncChanges(ctx context.Context, itemID int64, op string, userID int64) (int64, error)
 	GetSyncChangesByID(ctx context.Context, ID int64) (*models.SyncChangesRepo, error)

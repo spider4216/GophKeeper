@@ -139,7 +139,7 @@ func (s *Service) CreateItems(ctx context.Context, in []shrModel.SyncPutChange, 
 			}
 
 			for k, v := range item.Metadata {
-				if _, err := s.repo.CreateMeta(ctx, itemID, k, v); err != nil {
+				if _, err := s.repo.GetCommonRepo().CreateMeta(ctx, itemID, k, v); err != nil {
 					return err
 				}
 			}

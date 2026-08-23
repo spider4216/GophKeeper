@@ -10,4 +10,5 @@ type CommonRepositoryInterface interface {
 	GetMetadataByItemIDs(ctx context.Context, itemIDs []int64) ([]shrModel.MetadataRepo, error)
 	DeleteUserItemByID(ctx context.Context, itemID int64, userID int64) error
 	DeleteUserMetaByItemID(ctx context.Context, itemID int64, userID int64) error
+	CreateMeta(ctx context.Context, itemID int64, k string, v string) (int64, error)
 }

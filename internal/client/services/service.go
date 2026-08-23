@@ -120,7 +120,7 @@ func (s *Service) DecryptData(encryptedHex string, key []byte) ([]byte, error) {
 }
 
 func (s *Service) CreateMeta(ctx context.Context, itemID int64, k string, v string) (int64, error) {
-	return s.repo.CreateMeta(ctx, itemID, k, v)
+	return s.repo.GetCommonRepo().CreateMeta(ctx, itemID, k, v)
 }
 
 func (s *Service) CreatePendingChange(ctx context.Context, itemID int64, op string, userID int64) error {

@@ -87,18 +87,6 @@ func (repo *SrvRepository) CreateItemPayload(ctx context.Context, item models.It
 	return nil
 }
 
-func (repo *SrvRepository) CreateMeta(ctx context.Context, itemID int64, k string, v string) (int64, error) {
-	sql := "INSERT INTO metadata (item_id,key,value) VALUES ($1,$2,$3) RETURNING id"
-
-	var id int64
-
-	if err := repo.con.QueryRowContext(ctx, sql, itemID, k, v).Scan(&id); err != nil {
-		return 0, err
-	}
-
-	return id, nil
-}
-
 func (repo *SrvRepository) CreateSyncChanges(ctx context.Context, itemID int64, op string, userID int64) (int64, error) {
 	sql := "INSERT INTO sync_changes (item_id,operation,user_id) VALUES ($1,$2,$3) RETURNING id"
 

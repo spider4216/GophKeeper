@@ -191,7 +191,7 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, token string) error
 			}
 
 			for k, v := range change.Metadata {
-				if _, err := s.repo.CreateMeta(ctx, itemID, k, v); err != nil {
+				if _, err := s.repo.GetCommonRepo().CreateMeta(ctx, itemID, k, v); err != nil {
 					return err
 				}
 			}
