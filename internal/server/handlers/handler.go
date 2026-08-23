@@ -9,7 +9,6 @@ import (
 
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 	"github.com/spider4216/GophKeeper/internal/server/config"
-	"github.com/spider4216/GophKeeper/internal/server/models"
 	"github.com/spider4216/GophKeeper/internal/server/services"
 	"go.uber.org/zap"
 )
@@ -194,7 +193,7 @@ func (h Handler) SyncIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := models.SyncInResp{
+	resp := shrModel.SyncPutResp{
 		LastRev: rev,
 	}
 

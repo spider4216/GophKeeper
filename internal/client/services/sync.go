@@ -95,7 +95,7 @@ func (s *Service) SyncSend(ctx context.Context, userID int64, token string) erro
 		return err
 	}
 
-	var res models.SyncSendResp
+	var res shrModel.SyncPutResp
 
 	if err := json.Unmarshal(body, &res); err != nil {
 		return err
