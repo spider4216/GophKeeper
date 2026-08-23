@@ -1,6 +1,9 @@
 package services
 
-import "github.com/spider4216/GophKeeper/internal/client/models"
+import (
+	"github.com/spider4216/GophKeeper/internal/client/models"
+	shrModel "github.com/spider4216/GophKeeper/internal/model"
+)
 
 func (s *Service) buildItemsWithMeta(items []models.ItemRepo, metadata []models.MetadataRepo) []models.ItemWitjMeta {
 	// todo move to func because dry in buildSyncRequest
@@ -44,7 +47,7 @@ func (s *Service) buildItemsWithMeta(items []models.ItemRepo, metadata []models.
 	return res
 }
 
-func (s *Service) buildSyncRequest(pendingChanges []models.PendChangesRepo, items []models.ItemRepo, metadata []models.MetadataRepo) models.SyncInReq {
+func (s *Service) buildSyncRequest(pendingChanges []models.PendChangesRepo, items []models.ItemRepo, metadata []models.MetadataRepo) shrModel.SyncPutReq {
 	itemByID := make(map[int64]models.ItemRepo, len(items))
 
 	for _, item := range items {
@@ -61,17 +64,17 @@ func (s *Service) buildSyncRequest(pendingChanges []models.PendChangesRepo, item
 		metadataByItemID[m.ItemID][m.Key] = m.Value
 	}
 
-	req := models.SyncInReq{
-		Changes: make([]models.SyncInChange, 0, len(pendingChanges)),
+	req := shrModel.SyncPutReq{
+		Changes: make([]shrModel.SyncPutChange, 0, len(pendingChanges)),
 	}
 
 	for _, pending := range pendingChanges {
 		item, ok := itemByID[pending.ItemID]
 		if !ok {
 			// Для DELETE item может уже отсутствовать.
-			req.Changes = append(req.Changes, models.SyncInChange{
+			req.Changes = append(req.Changes, shrModel.SyncPutChange{
 				Operation: pending.Operation,
-				Item: models.ItemSyncIn{
+				Item: shrModel.ItemSyncPut{
 					ID: int(pending.ItemID),
 				},
 			})
@@ -79,9 +82,9 @@ func (s *Service) buildSyncRequest(pendingChanges []models.PendChangesRepo, item
 			continue
 		}
 
-		req.Changes = append(req.Changes, models.SyncInChange{
+		req.Changes = append(req.Changes, shrModel.SyncPutChange{
 			Operation: pending.Operation,
-			Item: models.ItemSyncIn{
+			Item: shrModel.ItemSyncPut{
 				ID:         int(item.ID),
 				Type:       item.Type,
 				Ciphertext: item.Ciphertext,

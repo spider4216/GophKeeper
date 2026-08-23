@@ -1,16 +1,16 @@
-package models
+package model
 
-type SyncInReq struct {
-	Changes []SyncInChange `json:"changes"`
+type SyncPutReq struct {
+	Changes []SyncPutChange `json:"changes"`
 }
 
-type SyncInChange struct {
+type SyncPutChange struct {
 	Operation string            `json:"operation"`
-	Item      ItemSyncIn        `json:"item"`
+	Item      ItemSyncPut       `json:"item"`
 	Metadata  map[string]string `json:"metadata"`
 }
 
-type ItemSyncIn struct {
+type ItemSyncPut struct {
 	ID         int    `json:"id"`
 	Type       string `json:"type"`
 	Ciphertext string `json:"ciphertext"`

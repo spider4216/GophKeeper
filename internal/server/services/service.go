@@ -105,7 +105,7 @@ func (s *Service) BuildJWTString(userId int64, secret string, exp time.Duration)
 	return tokenString, nil
 }
 
-func (s *Service) CreateItems(ctx context.Context, in []models.SyncInChange, userID int64) error {
+func (s *Service) CreateItems(ctx context.Context, in []shrModel.SyncPutChange, userID int64) error {
 	// todo сделать гоурутины
 	for _, item := range in {
 

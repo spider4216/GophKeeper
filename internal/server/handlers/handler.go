@@ -170,7 +170,7 @@ func (h Handler) SyncIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req models.SyncInReq
+	var req shrModel.SyncPutReq
 
 	if err := json.Unmarshal(body, &req); err != nil {
 		h.logger.Errorf("failed read unmarshal: %s", err)
