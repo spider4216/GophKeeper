@@ -7,6 +7,7 @@ import (
 	"go.uber.org/zap"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+	shrModel "github.com/spider4216/GophKeeper/internal/model"
 	"github.com/spider4216/GophKeeper/internal/server/models"
 )
 
@@ -172,7 +173,7 @@ func (repo *SrvRepository) GetUserSyncChanges(ctx context.Context, userID int64,
 	return items, nil
 }
 
-func (repo *SrvRepository) GetMetadataByItemIDs(ctx context.Context, itemIDs []int64) ([]models.MetadataRepo, error) {
+func (repo *SrvRepository) GetMetadataByItemIDs(ctx context.Context, itemIDs []int64) ([]shrModel.MetadataRepo, error) {
 	sql := "SELECT id, item_id, key, value FROM metadata WHERE item_id = ANY($1);"
 	rows, err := repo.con.QueryContext(ctx, sql, itemIDs)
 	if err != nil {
@@ -185,10 +186,10 @@ func (repo *SrvRepository) GetMetadataByItemIDs(ctx context.Context, itemIDs []i
 		}
 	}()
 
-	var items []models.MetadataRepo
+	var items []shrModel.MetadataRepo
 
 	for rows.Next() {
-		var item models.MetadataRepo
+		var item shrModel.MetadataRepo
 
 		if err := rows.Scan(
 			&item.ID,

@@ -5,7 +5,7 @@ import (
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
-func (s *Service) buildItemsWithMeta(items []models.ItemRepo, metadata []models.MetadataRepo) []models.ItemWitjMeta {
+func (s *Service) buildItemsWithMeta(items []models.ItemRepo, metadata []shrModel.MetadataRepo) []models.ItemWithMeta {
 	// todo move to func because dry in buildSyncRequest
 
 	metadataByItemID := make(map[int64]map[string]string)
@@ -19,12 +19,12 @@ func (s *Service) buildItemsWithMeta(items []models.ItemRepo, metadata []models.
 	}
 
 	// todo rename model - misatke
-	var res []models.ItemWitjMeta
+	var res []models.ItemWithMeta
 
 	for _, item := range items {
 		meta := metadataByItemID[item.ID]
 
-		one := models.ItemWitjMeta{
+		one := models.ItemWithMeta{
 			ItemRepo: models.ItemRepo{
 				ID:         item.ID,
 				Type:       item.Type,
@@ -35,7 +35,7 @@ func (s *Service) buildItemsWithMeta(items []models.ItemRepo, metadata []models.
 		}
 
 		for k, v := range meta {
-			one.Metadata = append(one.Metadata, models.MetadataRepo{
+			one.Metadata = append(one.Metadata, shrModel.MetadataRepo{
 				Key:   k,
 				Value: v,
 			})
@@ -47,7 +47,7 @@ func (s *Service) buildItemsWithMeta(items []models.ItemRepo, metadata []models.
 	return res
 }
 
-func (s *Service) buildSyncRequest(pendingChanges []models.PendChangesRepo, items []models.ItemRepo, metadata []models.MetadataRepo) shrModel.SyncPutReq {
+func (s *Service) buildSyncRequest(pendingChanges []models.PendChangesRepo, items []models.ItemRepo, metadata []shrModel.MetadataRepo) shrModel.SyncPutReq {
 	itemByID := make(map[int64]models.ItemRepo, len(items))
 
 	for _, item := range items {

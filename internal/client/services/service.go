@@ -143,7 +143,7 @@ func (s *Service) GetUserItems(ctx context.Context, userID int64) ([]models.Item
 	return s.repo.GetUserItems(ctx, userID)
 }
 
-func (s *Service) GetUserItemsWithMeta(ctx context.Context, userID int64) ([]models.ItemWitjMeta, error) {
+func (s *Service) GetUserItemsWithMeta(ctx context.Context, userID int64) ([]models.ItemWithMeta, error) {
 	items, err := s.GetUserItems(ctx, userID)
 
 	if err != nil {

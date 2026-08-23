@@ -8,6 +8,7 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/spider4216/GophKeeper/internal/client/models"
+	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
 // PgxStorage хранилище где данные складываются в БД PostgreSQL.
@@ -141,7 +142,7 @@ func (repo *ClientRepository) GetItemsByIDs(ctx context.Context, itemIDs []int64
 	return items, nil
 }
 
-func (repo *ClientRepository) GetMetadataByItemIDs(ctx context.Context, itemIDs []int64) ([]models.MetadataRepo, error) {
+func (repo *ClientRepository) GetMetadataByItemIDs(ctx context.Context, itemIDs []int64) ([]shrModel.MetadataRepo, error) {
 	sql := "SELECT id, item_id, key, value FROM metadata WHERE item_id = ANY($1);"
 	rows, err := repo.con.QueryContext(ctx, sql, itemIDs)
 	if err != nil {
@@ -154,10 +155,10 @@ func (repo *ClientRepository) GetMetadataByItemIDs(ctx context.Context, itemIDs 
 		}
 	}()
 
-	var items []models.MetadataRepo
+	var items []shrModel.MetadataRepo
 
 	for rows.Next() {
-		var item models.MetadataRepo
+		var item shrModel.MetadataRepo
 
 		if err := rows.Scan(
 			&item.ID,

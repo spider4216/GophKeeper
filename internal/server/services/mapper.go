@@ -9,7 +9,7 @@ func (s *Service) mapSyncResponse(
 	changes []models.SyncChangesRepo,
 	items []models.ItemRepo,
 	payloads []models.ItemPayloadRepo,
-	metadata []models.MetadataRepo,
+	metadata []shrModel.MetadataRepo,
 	since int64,
 ) *shrModel.SyncGet {
 	itemByID := make(map[int64]models.ItemRepo, len(items))

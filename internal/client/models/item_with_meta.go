@@ -1,6 +1,8 @@
 package models
 
-type ItemWitjMeta struct {
+import shrMocdel "github.com/spider4216/GophKeeper/internal/model"
+
+type ItemWithMeta struct {
 	ItemRepo
-	Metadata []MetadataRepo
+	Metadata []shrMocdel.MetadataRepo
 }

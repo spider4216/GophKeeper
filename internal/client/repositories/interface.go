@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/spider4216/GophKeeper/internal/client/models"
+	shrMocdel "github.com/spider4216/GophKeeper/internal/model"
 )
 
 type Repository interface {
@@ -17,7 +18,7 @@ type Repository interface {
 	GetPendingUserChanges(ctx context.Context, userID int) ([]models.PendChangesRepo, error)
 	GetItemsByIDs(ctx context.Context, itemIDs []int64) ([]models.ItemRepo, error)
 	GetUserItemByID(ctx context.Context, itemID int64, userID int64) (*models.ItemRepo, error)
-	GetMetadataByItemIDs(ctx context.Context, itemIDs []int64) ([]models.MetadataRepo, error)
+	GetMetadataByItemIDs(ctx context.Context, itemIDs []int64) ([]shrMocdel.MetadataRepo, error)
 	DeletePendingByItemIDs(ctx context.Context, itemIDs []int64) error
 	UpdateLastUserRev(ctx context.Context, userID int64, rev int64) error
 	CreateLastUserRev(ctx context.Context, userID int64, rev int64) error
