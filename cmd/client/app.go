@@ -8,6 +8,7 @@ import (
 	"github.com/spider4216/GophKeeper/internal/client/config"
 	"github.com/spider4216/GophKeeper/internal/client/repositories"
 	"github.com/spider4216/GophKeeper/internal/logger"
+	commonRep "github.com/spider4216/GophKeeper/internal/repository"
 	migCli "github.com/spider4216/GophKeeper/migrations/client"
 	"go.uber.org/zap"
 )
@@ -60,7 +61,13 @@ func (app *app) initConfig() error {
 }
 
 func (app *app) initRepo() error {
-	repo, err := repositories.NewRepository(app.cfg.DbDsn, app.logger)
+	common, err := commonRep.NewRepository(app.cfg.DbDsn, app.logger)
+
+	if err != nil {
+		return err
+	}
+
+	repo, err := repositories.NewRepository(app.cfg.DbDsn, app.logger, common)
 	if err != nil {
 		return err
 	}

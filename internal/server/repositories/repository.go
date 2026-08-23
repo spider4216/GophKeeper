@@ -7,24 +7,29 @@ import (
 	"go.uber.org/zap"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
-	shrModel "github.com/spider4216/GophKeeper/internal/model"
+	commonRep "github.com/spider4216/GophKeeper/internal/repository"
 	"github.com/spider4216/GophKeeper/internal/server/models"
 )
 
 // хранилище где данные складываются в БД PostgreSQL.
 type SrvRepository struct {
-	con    *sql.DB
-	logger *zap.SugaredLogger
+	con        *sql.DB
+	logger     *zap.SugaredLogger
+	commonRepo commonRep.CommonRepositoryInterface
 }
 
 // NewPgxStorage создание хранилища с БД PostgreSQL.
-func NewRepository(dsn string, logger *zap.SugaredLogger) (*SrvRepository, error) {
+func NewRepository(dsn string, logger *zap.SugaredLogger, common commonRep.CommonRepositoryInterface) (*SrvRepository, error) {
 	db, err := sql.Open("pgx", dsn)
 	if err != nil {
 		return nil, err
 	}
 
-	return &SrvRepository{con: db, logger: logger}, nil
+	return &SrvRepository{con: db, logger: logger, commonRepo: common}, nil
+}
+
+func (repo *SrvRepository) GetCommonRepo() commonRep.CommonRepositoryInterface {
+	return repo.commonRepo
 }
 
 func (repo *SrvRepository) Source() any {
@@ -159,43 +164,6 @@ func (repo *SrvRepository) GetUserSyncChanges(ctx context.Context, userID int64,
 			&item.Revision,
 			&item.Operation,
 			&item.CreatedAt,
-		); err != nil {
-			return nil, err
-		}
-
-		items = append(items, item)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return items, nil
-}
-
-func (repo *SrvRepository) GetMetadataByItemIDs(ctx context.Context, itemIDs []int64) ([]shrModel.MetadataRepo, error) {
-	sql := "SELECT id, item_id, key, value FROM metadata WHERE item_id = ANY($1);"
-	rows, err := repo.con.QueryContext(ctx, sql, itemIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	defer func() {
-		if err := rows.Close(); err != nil {
-			repo.logger.Warnf("Cannot close rows: %s", err)
-		}
-	}()
-
-	var items []shrModel.MetadataRepo
-
-	for rows.Next() {
-		var item shrModel.MetadataRepo
-
-		if err := rows.Scan(
-			&item.ID,
-			&item.ItemID,
-			&item.Key,
-			&item.Value,
 		); err != nil {
 			return nil, err
 		}

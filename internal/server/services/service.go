@@ -225,7 +225,7 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, since int64) (*shrM
 
 	s.logger.Debug("Get metadata...")
 
-	meta, err := s.repo.GetMetadataByItemIDs(ctx, itemIDs)
+	meta, err := s.repo.GetCommonRepo().GetMetadataByItemIDs(ctx, itemIDs)
 
 	if err != nil {
 		return nil, err

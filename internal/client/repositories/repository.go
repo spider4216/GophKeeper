@@ -9,22 +9,28 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/spider4216/GophKeeper/internal/client/models"
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
+	commonRep "github.com/spider4216/GophKeeper/internal/repository"
 )
 
 // PgxStorage хранилище где данные складываются в БД PostgreSQL.
 type ClientRepository struct {
-	con    *sql.DB
-	logger *zap.SugaredLogger
+	con       *sql.DB
+	logger    *zap.SugaredLogger
+	commonRep commonRep.CommonRepositoryInterface
 }
 
 // NewPgxStorage создание хранилища с БД PostgreSQL.
-func NewRepository(dsn string, logger *zap.SugaredLogger) (*ClientRepository, error) {
+func NewRepository(dsn string, logger *zap.SugaredLogger, common commonRep.CommonRepositoryInterface) (*ClientRepository, error) {
 	db, err := sql.Open("pgx", dsn)
 	if err != nil {
 		return nil, err
 	}
 
-	return &ClientRepository{con: db, logger: logger}, nil
+	return &ClientRepository{con: db, logger: logger, commonRep: common}, nil
+}
+
+func (repo *ClientRepository) GetCommonRepo() commonRep.CommonRepositoryInterface {
+	return repo.commonRep
 }
 
 func (repo *ClientRepository) Source() any {

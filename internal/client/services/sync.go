@@ -42,7 +42,7 @@ func (s *Service) SyncSend(ctx context.Context, userID int64, token string) erro
 	}
 
 	// todo моэно в горутину отправитьт вместе с предыдущим получением
-	meta, err := s.repo.GetMetadataByItemIDs(ctx, itemIDs)
+	meta, err := s.repo.GetCommonRepo().GetMetadataByItemIDs(ctx, itemIDs)
 
 	if err != nil {
 		return err

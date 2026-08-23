@@ -156,7 +156,7 @@ func (s *Service) GetUserItemsWithMeta(ctx context.Context, userID int64) ([]mod
 		itemIDs = append(itemIDs, item.ID)
 	}
 
-	meta, err := s.repo.GetMetadataByItemIDs(ctx, itemIDs)
+	meta, err := s.repo.GetCommonRepo().GetMetadataByItemIDs(ctx, itemIDs)
 
 	if err != nil {
 		return nil, err
