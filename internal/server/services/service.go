@@ -160,7 +160,7 @@ func (s *Service) CreateItems(ctx context.Context, in []shrModel.SyncPutChange, 
 				return err
 			}
 
-			if err := s.repo.DeleteUserItemByID(ctx, int64(item.Item.ID), userID); err != nil {
+			if err := s.repo.GetCommonRepo().DeleteUserItemByID(ctx, int64(item.Item.ID), userID); err != nil {
 				return err
 			}
 

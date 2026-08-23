@@ -251,18 +251,6 @@ func (repo *SrvRepository) GetPayloadByItemIDs(ctx context.Context, itemIDs []in
 	return items, nil
 }
 
-func (repo *SrvRepository) DeleteUserItemByID(ctx context.Context, itemID int64, userID int64) error {
-	sql := "DELETE FROM items WHERE user_id=$1 and id=$2"
-
-	_, err := repo.con.ExecContext(ctx, sql, userID, itemID)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (repo *SrvRepository) DeleteUserMetaByItemID(ctx context.Context, itemID int64, userID int64) error {
 	sql := "DELETE FROM metadata md USING items i WHERE i.id = md.item_id AND md.item_id=$1 AND i.user_id=$2"
 

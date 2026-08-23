@@ -65,3 +65,15 @@ func (repo *CommonRepository) GetMetadataByItemIDs(ctx context.Context, itemIDs 
 
 	return items, nil
 }
+
+func (repo *CommonRepository) DeleteUserItemByID(ctx context.Context, itemID int64, userID int64) error {
+	sql := "DELETE FROM items WHERE user_id=$1 and id=$2"
+
+	_, err := repo.con.ExecContext(ctx, sql, userID, itemID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

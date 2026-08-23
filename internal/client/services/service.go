@@ -176,7 +176,7 @@ func (s *Service) DeleteUserItem(ctx context.Context, itemID int64, userID int64
 		return err
 	}
 
-	if err := s.repo.DeleteUserItemByID(ctx, itemID, userID); err != nil {
+	if err := s.repo.GetCommonRepo().DeleteUserItemByID(ctx, itemID, userID); err != nil {
 		return err
 	}
 

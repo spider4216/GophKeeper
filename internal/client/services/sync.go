@@ -203,7 +203,7 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, token string) error
 				return err
 			}
 
-			if err := s.repo.DeleteUserItemByID(ctx, change.Item.ID, userID); err != nil {
+			if err := s.repo.GetCommonRepo().DeleteUserItemByID(ctx, change.Item.ID, userID); err != nil {
 				return err
 			}
 		}
