@@ -152,7 +152,7 @@ func (s *Service) CreateItems(ctx context.Context, in []shrModel.SyncPutChange, 
 		if item.Operation == "DELETE" {
 			s.logger.Debug("Delete strategy")
 			// todo transaction
-			if err := s.repo.DeleteUserMetaByItemID(ctx, int64(item.Item.ID), userID); err != nil {
+			if err := s.repo.GetCommonRepo().DeleteUserMetaByItemID(ctx, int64(item.Item.ID), userID); err != nil {
 				return err
 			}
 

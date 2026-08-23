@@ -199,7 +199,7 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, token string) error
 
 		if change.Operation == "DELETE" {
 			// todo transaction
-			if err := s.repo.DeleteUserMetaByItemID(ctx, change.Item.ID, userID); err != nil {
+			if err := s.repo.GetCommonRepo().DeleteUserMetaByItemID(ctx, change.Item.ID, userID); err != nil {
 				return err
 			}
 
