@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -50,6 +51,9 @@ func main() {
 
 	cmd := commands.New(service, app.cfg)
 
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
 	args := os.Args[2:]
 
 	var err error
@@ -58,23 +62,23 @@ func main() {
 	switch commands.CmdName(os.Args[1]) {
 	// todo команду в константу
 	case commands.Register:
-		msg, err = cmd.Register(args)
+		msg, err = cmd.Register(ctx, args)
 	case commands.Login:
-		msg, err = cmd.Login(args)
+		msg, err = cmd.Login(ctx, args)
 	case commands.InsertLoginPass:
-		msg, err = cmd.CreateLoginpass(args)
+		msg, err = cmd.CreateLoginpass(ctx, args)
 	case commands.SyncSend:
-		msg, err = cmd.SyncSend(args)
+		msg, err = cmd.SyncSend(ctx, args)
 	case commands.List:
-		msg, err = cmd.UserList(args)
+		msg, err = cmd.UserList(ctx, args)
 	case commands.View:
-		msg, err = cmd.View(args)
+		msg, err = cmd.View(ctx, args)
 	case commands.SyncGet:
-		msg, err = cmd.SyncGet(args)
+		msg, err = cmd.SyncGet(ctx, args)
 	case commands.Delete:
-		msg, err = cmd.DeleteItem(args)
+		msg, err = cmd.DeleteItem(ctx, args)
 	case commands.UpdateLoginPass:
-		msg, err = cmd.UpdateLoginPass(args)
+		msg, err = cmd.UpdateLoginPass(ctx, args)
 	default:
 		err = errors.New("command not found")
 		fmt.Println("command not found")

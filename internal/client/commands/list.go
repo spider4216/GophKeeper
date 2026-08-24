@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func (c *Command) UserList(args []string) (string, error) {
+func (c *Command) UserList(ctx context.Context, args []string) (string, error) {
 	fs := flag.NewFlagSet(List.String(), flag.ExitOnError)
 
 	token := fs.String("token", "", "JWT from server")
@@ -24,9 +24,6 @@ func (c *Command) UserList(args []string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("cannot parse jwt: %s", err)
 	}
-
-	// todo подумать как сдесь релизовать middleware
-	ctx := context.WithValue(context.Background(), "userID", claims.UserID)
 
 	items, err := c.Service.GetUserItemsWithMeta(ctx, claims.UserID)
 

@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"context"
+
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/spider4216/GophKeeper/internal/client/config"
 	"github.com/spider4216/GophKeeper/internal/client/services"
@@ -26,15 +28,15 @@ const (
 )
 
 type CommandInterface interface {
-	Register(args []string) (string, error)
-	Login(args []string) (string, error)
-	CreateLoginpass(args []string) (string, error)
-	SyncSend(args []string) (string, error)
-	UserList(args []string) (string, error)
-	View(args []string) (string, error)
-	SyncGet(args []string) (string, error)
-	DeleteItem(args []string) (string, error)
-	UpdateLoginPass(args []string) (string, error)
+	Register(ctx context.Context, args []string) (string, error)
+	Login(ctx context.Context, args []string) (string, error)
+	CreateLoginpass(ctx context.Context, args []string) (string, error)
+	SyncSend(ctx context.Context, args []string) (string, error)
+	UserList(ctx context.Context, args []string) (string, error)
+	View(ctx context.Context, args []string) (string, error)
+	SyncGet(ctx context.Context, args []string) (string, error)
+	DeleteItem(ctx context.Context, args []string) (string, error)
+	UpdateLoginPass(ctx context.Context, args []string) (string, error)
 }
 
 type Command struct {

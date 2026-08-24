@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-func (c *Command) View(args []string) (string, error) {
+func (c *Command) View(ctx context.Context, args []string) (string, error) {
 	fs := flag.NewFlagSet(View.String(), flag.ExitOnError)
 
 	// validation
@@ -24,9 +24,6 @@ func (c *Command) View(args []string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("cannot parse jwt: %s", err)
 	}
-
-	// todo подумать как сдесь релизовать middleware
-	ctx := context.WithValue(context.Background(), "userID", claims.UserID)
 
 	if err != nil {
 		return "", fmt.Errorf("cannot convert item ID to int: %s", err)

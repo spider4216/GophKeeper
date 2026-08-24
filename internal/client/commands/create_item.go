@@ -11,7 +11,7 @@ import (
 	"github.com/spider4216/GophKeeper/internal/enum"
 )
 
-func (c *Command) CreateLoginpass(args []string) (string, error) {
+func (c *Command) CreateLoginpass(ctx context.Context, args []string) (string, error) {
 	fs := flag.NewFlagSet(InsertLoginPass.String(), flag.ExitOnError)
 
 	login := fs.String("login", "", "Login")
@@ -38,9 +38,6 @@ func (c *Command) CreateLoginpass(args []string) (string, error) {
 		fmt.Printf("cannot parse jwt: %s", err)
 		os.Exit(1)
 	}
-
-	// todo подумать как сдесь релизовать middleware
-	ctx := context.WithValue(context.Background(), "userID", claims.UserID)
 
 	// todo transaction
 	// todo подумать что сделать с контекстом

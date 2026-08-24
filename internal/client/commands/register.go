@@ -9,7 +9,7 @@ import (
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
-func (c *Command) Register(args []string) (string, error) {
+func (c *Command) Register(ctx context.Context, args []string) (string, error) {
 	// todo transaction
 	fs := flag.NewFlagSet(Register.String(), flag.ExitOnError)
 
@@ -21,9 +21,6 @@ func (c *Command) Register(args []string) (string, error) {
 	if *email == "" || *pass == "" {
 		return "", errors.New("email and password are required")
 	}
-
-	// todo подумать что то с контекстом
-	ctx := context.Background()
 
 	req := shrModel.RegisterReq{
 		Email: *email,

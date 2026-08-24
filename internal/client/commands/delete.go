@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-func (c *Command) DeleteItem(args []string) (string, error) {
+func (c *Command) DeleteItem(ctx context.Context, args []string) (string, error) {
 	fs := flag.NewFlagSet(Delete.String(), flag.ExitOnError)
 
 	itemID := fs.String("id", "", "Item id")
@@ -25,9 +25,6 @@ func (c *Command) DeleteItem(args []string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("cannot parse jwt: %s", err)
 	}
-
-	// todo подумать как сдесь релизовать middleware
-	ctx := context.WithValue(context.Background(), "userID", claims.UserID)
 
 	itemIDInt, err := strconv.ParseInt(*itemID, 10, 64)
 

@@ -10,7 +10,7 @@ import (
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
-func (c *Command) Login(args []string) (string, error) {
+func (c *Command) Login(ctx context.Context, args []string) (string, error) {
 	fs := flag.NewFlagSet(Login.String(), flag.ExitOnError)
 
 	email := fs.String("email", "", "user email")
@@ -26,9 +26,6 @@ func (c *Command) Login(args []string) (string, error) {
 		Email: *email,
 		Pass:  *pass,
 	}
-
-	// todo thenk aboun ctx in commands
-	ctx := context.Background()
 
 	resp, err := c.Service.Login(req)
 

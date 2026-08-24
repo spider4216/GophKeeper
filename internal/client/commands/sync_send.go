@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-func (c *Command) SyncSend(args []string) (string, error) {
+func (c *Command) SyncSend(ctx context.Context, args []string) (string, error) {
 	fs := flag.NewFlagSet(SyncSend.String(), flag.ExitOnError)
 
 	token := fs.String("token", "", "Token")
@@ -24,9 +24,6 @@ func (c *Command) SyncSend(args []string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("cannot parse jwt: %s", err)
 	}
-
-	// todo подумать как сдесь релизовать middleware
-	ctx := context.WithValue(context.Background(), "userID", claims.UserID)
 
 	if err := c.Service.SyncSend(ctx, claims.UserID, *token); err != nil {
 		return "", fmt.Errorf("cannot sync: %s", err)

@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-func (c *Command) UpdateLoginPass(args []string) (string, error) {
+func (c *Command) UpdateLoginPass(ctx context.Context, args []string) (string, error) {
 	fs := flag.NewFlagSet(UpdateLoginPass.String(), flag.ExitOnError)
 
 	itemID := fs.Int64("id", 0, "Item id")
@@ -27,9 +27,6 @@ func (c *Command) UpdateLoginPass(args []string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("cannot parse jwt: %s", err)
 	}
-
-	// todo подумать как сдесь релизовать middleware
-	ctx := context.WithValue(context.Background(), "userID", claims.UserID)
 
 	if err := c.Service.UpdateLoginPass(ctx, *itemID, claims.UserID, *login, *pass, c.Cfg.EncryptKey); err != nil {
 		return "", fmt.Errorf("cannot update: %s", err)
