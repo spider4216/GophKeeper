@@ -7,6 +7,20 @@ import (
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
+type CmdName string
+
+const (
+	Register        CmdName = "register"
+	Login           CmdName = "login"
+	InsertLoginPass CmdName = "insert-loginpass"
+	UpdateLoginPass CmdName = "update-loginpass"
+	List            CmdName = "list"
+	View            CmdName = "view"
+	Delete          CmdName = "delete-item"
+	SyncSend        CmdName = "sync-send"
+	SyncGet         CmdName = "sync-get"
+)
+
 type CommandInterface interface {
 	Register(args []string) (string, error)
 	Login(args []string) (string, error)

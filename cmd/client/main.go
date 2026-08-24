@@ -55,25 +55,25 @@ func main() {
 	var err error
 	var msg string
 
-	switch os.Args[1] {
+	switch commands.CmdName(os.Args[1]) {
 	// todo команду в константу
-	case "register":
+	case commands.Register:
 		msg, err = cmd.Register(args)
-	case "login":
+	case commands.Login:
 		msg, err = cmd.Login(args)
-	case "insert-loginpass":
+	case commands.InsertLoginPass:
 		msg, err = cmd.CreateLoginpass(args)
-	case "sync-send":
+	case commands.SyncSend:
 		msg, err = cmd.SyncSend(args)
-	case "list":
+	case commands.List:
 		msg, err = cmd.UserList(args)
-	case "view":
+	case commands.View:
 		msg, err = cmd.View(args)
-	case "sync-get":
+	case commands.SyncGet:
 		msg, err = cmd.SyncGet(args)
-	case "delete-item":
+	case commands.Delete:
 		msg, err = cmd.DeleteItem(args)
-	case "update-loginpass":
+	case commands.UpdateLoginPass:
 		msg, err = cmd.UpdateLoginPass(args)
 	default:
 		err = errors.New("command not found")
