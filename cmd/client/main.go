@@ -19,12 +19,6 @@ func main() {
 		log.Fatal("Cannot run app", err)
 	}
 
-	// todo перенести в init app
-	if len(os.Args) < 2 {
-		fmt.Println("command is required")
-		os.Exit(1)
-	}
-
 	// todo host to config
 	service := services.New(app.cli, "http://127.0.0.1:8080", app.repo, app.logger)
 
@@ -34,31 +28,29 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	args := os.Args[2:]
-
 	var err error
 	var msg string
 
-	switch commands.CmdName(os.Args[1]) {
+	switch app.cmdName {
 	// todo команду в константу
 	case commands.Register:
-		msg, err = cmd.Register(ctx, args)
+		msg, err = cmd.Register(ctx, app.args)
 	case commands.Login:
-		msg, err = cmd.Login(ctx, args)
+		msg, err = cmd.Login(ctx, app.args)
 	case commands.InsertLoginPass:
-		msg, err = cmd.CreateLoginpass(ctx, args)
+		msg, err = cmd.CreateLoginpass(ctx, app.args)
 	case commands.SyncSend:
-		msg, err = cmd.SyncSend(ctx, args)
+		msg, err = cmd.SyncSend(ctx, app.args)
 	case commands.List:
-		msg, err = cmd.UserList(ctx, args)
+		msg, err = cmd.UserList(ctx, app.args)
 	case commands.View:
-		msg, err = cmd.View(ctx, args)
+		msg, err = cmd.View(ctx, app.args)
 	case commands.SyncGet:
-		msg, err = cmd.SyncGet(ctx, args)
+		msg, err = cmd.SyncGet(ctx, app.args)
 	case commands.Delete:
-		msg, err = cmd.DeleteItem(ctx, args)
+		msg, err = cmd.DeleteItem(ctx, app.args)
 	case commands.UpdateLoginPass:
-		msg, err = cmd.UpdateLoginPass(ctx, args)
+		msg, err = cmd.UpdateLoginPass(ctx, app.args)
 	default:
 		err = errors.New("command not found")
 		fmt.Println("command not found")

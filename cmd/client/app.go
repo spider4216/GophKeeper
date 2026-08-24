@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"time"
 
+	"github.com/spider4216/GophKeeper/internal/client/commands"
 	"github.com/spider4216/GophKeeper/internal/client/config"
 	"github.com/spider4216/GophKeeper/internal/client/repositories"
 	"github.com/spider4216/GophKeeper/internal/logger"
@@ -17,10 +19,12 @@ import (
 )
 
 type app struct {
-	logger *zap.SugaredLogger
-	repo   repositories.Repository
-	cfg    *config.Config
-	cli    *http.Client
+	logger  *zap.SugaredLogger
+	repo    repositories.Repository
+	cfg     *config.Config
+	cli     *http.Client
+	cmdName commands.CmdName
+	args    []string
 }
 
 func newApp() *app {
@@ -45,6 +49,10 @@ func (app *app) Run() error {
 	}
 
 	if err := app.initCli(); err != nil {
+		return err
+	}
+
+	if err := app.InitArgs(); err != nil {
 		return err
 	}
 
@@ -137,6 +145,17 @@ func (app *app) initCli() error {
 	}
 
 	app.cli = client
+
+	return nil
+}
+
+func (app *app) InitArgs() error {
+	if len(os.Args) < 2 {
+		return errors.New("Too few arguments")
+	}
+
+	app.cmdName = commands.CmdName(os.Args[1])
+	app.args = os.Args[2:]
 
 	return nil
 }
