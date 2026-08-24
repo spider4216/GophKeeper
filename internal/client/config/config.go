@@ -7,6 +7,7 @@ type Config struct {
 	LogLvl     string `env:"LOG_LEVEL"`   // Уровень логирования
 	EncryptKey string `env:"ENCRYPT_KEY"` // Ключ для шифрования данных
 	JWTKey     string `env:"JWT_KEY"`
+	SrvHost    string `env:"SERVER_HOST"` // Хост сервера
 }
 
 func New() (*Config, error) {

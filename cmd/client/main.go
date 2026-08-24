@@ -20,7 +20,7 @@ func main() {
 	}
 
 	// todo host to config
-	service := services.New(app.cli, "http://127.0.0.1:8080", app.repo, app.logger)
+	service := services.New(app.cli, app.cfg.SrvHost, app.repo, app.logger)
 
 	cmd := commands.New(service, app.cfg)
 
