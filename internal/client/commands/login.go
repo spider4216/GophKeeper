@@ -10,7 +10,6 @@ import (
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
-// todo return err
 func (c *Command) Login(args []string) (string, error) {
 	fs := flag.NewFlagSet(Login.String(), flag.ExitOnError)
 

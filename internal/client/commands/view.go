@@ -7,7 +7,6 @@ import (
 	"fmt"
 )
 
-// todo return err
 func (c *Command) View(args []string) (string, error) {
 	fs := flag.NewFlagSet(View.String(), flag.ExitOnError)
 
