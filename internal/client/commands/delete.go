@@ -10,7 +10,7 @@ import (
 
 func (c *Command) DeleteItem(args []string) (string, error) {
 	// todo  command name to constant
-	fs := flag.NewFlagSet("delete-item", flag.ExitOnError)
+	fs := flag.NewFlagSet(Delete.String(), flag.ExitOnError)
 
 	itemID := fs.String("id", "", "Item id")
 	token := fs.String("token", "", "JWT from server")

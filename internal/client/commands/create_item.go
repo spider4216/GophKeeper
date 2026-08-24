@@ -12,7 +12,7 @@ import (
 
 func (c *Command) CreateLoginpass(args []string) (string, error) {
 	// todo  command name to constant
-	fs := flag.NewFlagSet("create-loginpass", flag.ExitOnError)
+	fs := flag.NewFlagSet(InsertLoginPass.String(), flag.ExitOnError)
 
 	login := fs.String("login", "", "Login")
 	pass := fs.String("password", "", "Password")

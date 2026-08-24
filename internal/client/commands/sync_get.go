@@ -9,7 +9,7 @@ import (
 
 func (c *Command) SyncGet(args []string) (string, error) {
 	// todo  command name to constant
-	fs := flag.NewFlagSet("sync-get", flag.ExitOnError)
+	fs := flag.NewFlagSet(SyncGet.String(), flag.ExitOnError)
 
 	token := fs.String("token", "", "Token")
 

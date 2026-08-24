@@ -12,7 +12,7 @@ import (
 func (c *Command) Register(args []string) (string, error) {
 	// todo  command name to constant
 	// todo transaction
-	fs := flag.NewFlagSet("register", flag.ExitOnError)
+	fs := flag.NewFlagSet(Register.String(), flag.ExitOnError)
 
 	email := fs.String("email", "", "user email")
 	pass := fs.String("password", "", "user password")

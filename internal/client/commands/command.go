@@ -9,6 +9,10 @@ import (
 
 type CmdName string
 
+func (cn CmdName) String() string {
+	return string(cn)
+}
+
 const (
 	Register        CmdName = "register"
 	Login           CmdName = "login"

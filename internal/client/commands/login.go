@@ -13,7 +13,7 @@ import (
 // todo return err
 func (c *Command) Login(args []string) (string, error) {
 	// todo  command name to constant
-	fs := flag.NewFlagSet("register", flag.ExitOnError)
+	fs := flag.NewFlagSet(Login.String(), flag.ExitOnError)
 
 	email := fs.String("email", "", "user email")
 	pass := fs.String("password", "", "user password")

@@ -9,7 +9,7 @@ import (
 
 func (c *Command) UpdateLoginPass(args []string) (string, error) {
 	// todo  command name to constant
-	fs := flag.NewFlagSet("update-loginpass", flag.ExitOnError)
+	fs := flag.NewFlagSet(UpdateLoginPass.String(), flag.ExitOnError)
 
 	itemID := fs.Int64("id", 0, "Item id")
 	login := fs.String("login", "", "Login")

@@ -10,7 +10,7 @@ import (
 // todo return err
 func (c *Command) View(args []string) (string, error) {
 	// todo  command name to constant
-	fs := flag.NewFlagSet("view", flag.ExitOnError)
+	fs := flag.NewFlagSet(View.String(), flag.ExitOnError)
 
 	// validation
 	itemID := fs.Int64("item_id", 0, "Item ID")
