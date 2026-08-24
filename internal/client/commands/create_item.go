@@ -10,9 +10,9 @@ import (
 )
 
 // todo return err
-func (c *Command) CreateItem(args []string) {
+func (c *Command) CreateLoginpass(args []string) {
 	// todo  command name to constant
-	fs := flag.NewFlagSet("create-item", flag.ExitOnError)
+	fs := flag.NewFlagSet("create-loginpass", flag.ExitOnError)
 
 	login := fs.String("login", "", "Login")
 	pass := fs.String("password", "", "Password")
@@ -34,8 +34,6 @@ func (c *Command) CreateItem(args []string) {
 		JWT:   *token,
 	}
 
-	// todo извлечь из токена user id
-
 	claims, err := c.GetClaims(*token)
 
 	if err != nil {
@@ -49,7 +47,7 @@ func (c *Command) CreateItem(args []string) {
 	// todo transaction
 	// todo подумать что сделать с контекстом
 	// todo тип в коснтанту
-	itemID, err := c.Service.CreateItem(ctx, "login_pass", req, c.Cfg.EncryptKey, claims.UserID)
+	itemID, err := c.Service.CreateLoginPassItem(ctx, "login_pass", req, c.Cfg.EncryptKey, claims.UserID)
 
 	if err != nil {
 		fmt.Printf("cannot create item: %s", err)

@@ -58,7 +58,7 @@ func main() {
 	case "login":
 		cmd.Login(args)
 	case "insert-loginpass":
-		cmd.CreateItem(args)
+		cmd.CreateLoginpass(args)
 	case "sync-send":
 		cmd.SyncSend(args)
 	case "list":
