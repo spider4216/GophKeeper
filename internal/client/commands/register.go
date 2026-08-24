@@ -2,15 +2,14 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
-	"os"
 
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
-// todo return err
-func (c *Command) Register(args []string) {
+func (c *Command) Register(args []string) (string, error) {
 	// todo  command name to constant
 	// todo transaction
 	fs := flag.NewFlagSet("register", flag.ExitOnError)
@@ -21,9 +20,7 @@ func (c *Command) Register(args []string) {
 	fs.Parse(args)
 
 	if *email == "" || *pass == "" {
-		// todo instead fmt use something with out source
-		fmt.Println("email and password are required")
-		os.Exit(1)
+		return "", errors.New("email and password are required")
 	}
 
 	// todo подумать что то с контекстом
@@ -38,16 +35,14 @@ func (c *Command) Register(args []string) {
 	resp, err := c.Service.Register(req)
 
 	if err != nil {
-		fmt.Printf("cannot create user: %s", err)
-		os.Exit(1)
+		return "", fmt.Errorf("cannot create user: %s", err)
 	}
 
 	// todo command logger
 
 	if err := c.Service.CreateLastUserRev(ctx, resp.UserID, 0); err != nil {
-		fmt.Printf("cannot create latest revision for user: %s", err)
-		os.Exit(1)
+		return "", fmt.Errorf("cannot create latest revision for user: %s", err)
 	}
 
-	fmt.Println("Register is OK")
+	return "Register is OK", nil
 }

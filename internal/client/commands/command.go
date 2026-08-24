@@ -7,6 +7,18 @@ import (
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
+type CommandInterface interface {
+	Register(args []string) (string, error)
+	Login(args []string) (string, error)
+	CreateLoginpass(args []string) (string, error)
+	SyncSend(args []string) (string, error)
+	UserList(args []string) (string, error)
+	View(args []string) (string, error)
+	SyncGet(args []string) (string, error)
+	DeleteItem(args []string) (string, error)
+	UpdateLoginPass(args []string) (string, error)
+}
+
 type Command struct {
 	Service *services.Service
 	Cfg     *config.Config
@@ -21,7 +33,7 @@ func New(service *services.Service, cfg *config.Config) *Command {
 	}
 }
 
-func (c *Command) GetClaims(token string) (*shrModel.Claims, error) {
+func (c *Command) getClaims(token string) (*shrModel.Claims, error) {
 	claims := &shrModel.Claims{}
 	_, err := jwt.ParseWithClaims(token, claims,
 		func(t *jwt.Token) (interface{}, error) {

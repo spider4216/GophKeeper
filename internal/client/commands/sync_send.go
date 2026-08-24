@@ -2,12 +2,12 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
-	"os"
 )
 
-func (c *Command) SyncSend(args []string) {
+func (c *Command) SyncSend(args []string) (string, error) {
 	// todo  command name to constant
 	fs := flag.NewFlagSet("sync-send", flag.ExitOnError)
 
@@ -16,26 +16,22 @@ func (c *Command) SyncSend(args []string) {
 	fs.Parse(args)
 
 	if *token == "" {
-		// todo instead fmt use something with out source
-		fmt.Println("Token is required")
-		os.Exit(1)
+		return "", errors.New("Token is required")
 	}
 
 	// move to middleware
-	claims, err := c.GetClaims(*token)
+	claims, err := c.getClaims(*token)
 
 	if err != nil {
-		fmt.Printf("cannot parse jwt: %s", err)
-		os.Exit(1)
+		return "", fmt.Errorf("cannot parse jwt: %s", err)
 	}
 
 	// todo подумать как сдесь релизовать middleware
 	ctx := context.WithValue(context.Background(), "userID", claims.UserID)
 
 	if err := c.Service.SyncSend(ctx, claims.UserID, *token); err != nil {
-		fmt.Printf("cannot sync: %s", err)
-		os.Exit(1)
+		return "", fmt.Errorf("cannot sync: %s", err)
 	}
 
-	fmt.Println("Sync was successfully done")
+	return "Sync was successfully done", nil
 }

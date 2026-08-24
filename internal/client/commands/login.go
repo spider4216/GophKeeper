@@ -6,13 +6,12 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"os"
 
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
 // todo return err
-func (c *Command) Login(args []string) {
+func (c *Command) Login(args []string) (string, error) {
 	// todo  command name to constant
 	fs := flag.NewFlagSet("register", flag.ExitOnError)
 
@@ -22,9 +21,7 @@ func (c *Command) Login(args []string) {
 	fs.Parse(args)
 
 	if *email == "" || *pass == "" {
-		// todo instead fmt use something with out source
-		fmt.Println("email and password are required")
-		os.Exit(1)
+		return "", errors.New("email and password are required")
 	}
 
 	req := shrModel.LoginReq{
@@ -38,8 +35,7 @@ func (c *Command) Login(args []string) {
 	resp, err := c.Service.Login(req)
 
 	if err != nil {
-		fmt.Printf("cannot login: %s", err)
-		os.Exit(1)
+		return "", fmt.Errorf("cannot login: %s", err)
 	}
 
 	// todo логин можен осуществлять с другого клиента у которого пустая БД
@@ -47,15 +43,13 @@ func (c *Command) Login(args []string) {
 	// Внести ему последнюю ревизию как 0
 	if _, err := c.Service.GetLatestUserRev(ctx, resp.UserID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			// todo create latest rev as 0
 			// todo logger
 			c.Service.CreateLastUserRev(ctx, resp.UserID, 0)
 		} else {
-			fmt.Printf("cannot get latest revision: %s", err)
-			os.Exit(1)
+			return "", fmt.Errorf("cannot get latest revision: %s", err)
 		}
 	}
 
-	fmt.Printf("JWT token\n\n%s\n", resp.Token)
+	return fmt.Sprintf("JWT token\n\n%s\n", resp.Token), nil
 	// todo вывести когда истекает в человекопонятном виде
 }

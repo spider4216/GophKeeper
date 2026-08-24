@@ -2,13 +2,13 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
-	"os"
 )
 
 // todo return err
-func (c *Command) View(args []string) {
+func (c *Command) View(args []string) (string, error) {
 	// todo  command name to constant
 	fs := flag.NewFlagSet("view", flag.ExitOnError)
 
@@ -19,37 +19,31 @@ func (c *Command) View(args []string) {
 	fs.Parse(args)
 
 	if *itemID == 0 && *token == "" {
-		// todo instead fmt use something with out source
-		fmt.Println("jwt and item_id are required")
-		os.Exit(1)
+		return "", errors.New("jwt and item_id are required")
 	}
 
-	claims, err := c.GetClaims(*token)
+	claims, err := c.getClaims(*token)
 	if err != nil {
-		fmt.Printf("cannot parse jwt: %s\n", err)
-		os.Exit(1)
+		return "", fmt.Errorf("cannot parse jwt: %s", err)
 	}
 
 	// todo подумать как сдесь релизовать middleware
 	ctx := context.WithValue(context.Background(), "userID", claims.UserID)
 
 	if err != nil {
-		fmt.Printf("cannot convert item ID to int: %s\n", err)
-		os.Exit(1)
+		return "", fmt.Errorf("cannot convert item ID to int: %s", err)
 	}
 
 	item, err := c.Service.GetUserItemByID(ctx, *itemID, claims.UserID)
 
 	if err != nil {
-		fmt.Printf("cannot get user item by id: %s\n", err)
-		os.Exit(1)
+		return "", fmt.Errorf("cannot get user item by id: %s", err)
 	}
 
 	decrypted, err := c.Service.DecryptData(item.Ciphertext, []byte(c.Cfg.EncryptKey))
 
 	if err != nil {
-		fmt.Printf("cannot decrypt data: %s\n", err)
-		os.Exit(1)
+		return "", fmt.Errorf("cannot decrypt data: %s", err)
 	}
 
 	// todo в зависимости от типа нужно делать unmarshall в конкретную структуру
@@ -61,5 +55,5 @@ func (c *Command) View(args []string) {
 	// 	os.Exit(1)
 	// }
 
-	fmt.Println(string(decrypted))
+	return string(decrypted), nil
 }

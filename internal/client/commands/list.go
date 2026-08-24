@@ -2,12 +2,13 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
-	"os"
+	"strings"
 )
 
-func (c *Command) UserList(args []string) {
+func (c *Command) UserList(args []string) (string, error) {
 	// todo  command name to constant
 	fs := flag.NewFlagSet("register", flag.ExitOnError)
 
@@ -16,16 +17,13 @@ func (c *Command) UserList(args []string) {
 	fs.Parse(args)
 
 	if *token == "" {
-		// todo instead fmt use something with out source
-		fmt.Println("jwt is required")
-		os.Exit(1)
+		return "", errors.New("jwt is required")
 	}
 
-	claims, err := c.GetClaims(*token)
+	claims, err := c.getClaims(*token)
 
 	if err != nil {
-		fmt.Printf("cannot parse jwt: %s", err)
-		os.Exit(1)
+		return "", fmt.Errorf("cannot parse jwt: %s", err)
 	}
 
 	// todo подумать как сдесь релизовать middleware
@@ -34,18 +32,22 @@ func (c *Command) UserList(args []string) {
 	items, err := c.Service.GetUserItemsWithMeta(ctx, claims.UserID)
 
 	if err != nil {
-		// todo everywhere \n
-		fmt.Printf("cannot get user items: %s\n", err)
-		os.Exit(1)
+		return "", fmt.Errorf("cannot get user items: %s", err)
 	}
 
+	var builder strings.Builder
+
 	for _, item := range items {
-		fmt.Printf("ID: %d\n", item.ID)
-		fmt.Printf("Type: %s\n", item.Type)
-		fmt.Println("Meta:")
+		builder.WriteString(fmt.Sprintf("ID: %d\n", item.ID))
+		builder.WriteString(fmt.Sprintf("Type: %s\n", item.Type))
+		builder.WriteString("Meta:")
+
 		for _, meta := range item.Metadata {
-			fmt.Printf("%s: %s\n", meta.Key, meta.Value)
+			builder.WriteString(fmt.Sprintf("%s: %s\n", meta.Key, meta.Value))
 		}
-		fmt.Println("---------------")
+
+		builder.WriteString("---------------\n")
 	}
+
+	return builder.String(), nil
 }

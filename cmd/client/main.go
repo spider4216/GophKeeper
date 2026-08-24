@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -51,28 +52,39 @@ func main() {
 
 	args := os.Args[2:]
 
+	var err error
+	var msg string
+
 	switch os.Args[1] {
 	// todo команду в константу
 	case "register":
-		cmd.Register(args)
+		msg, err = cmd.Register(args)
 	case "login":
-		cmd.Login(args)
+		msg, err = cmd.Login(args)
 	case "insert-loginpass":
-		cmd.CreateLoginpass(args)
+		msg, err = cmd.CreateLoginpass(args)
 	case "sync-send":
-		cmd.SyncSend(args)
+		msg, err = cmd.SyncSend(args)
 	case "list":
-		cmd.UserList(args)
+		msg, err = cmd.UserList(args)
 	case "view":
-		cmd.View(args)
+		msg, err = cmd.View(args)
 	case "sync-get":
-		cmd.SyncGet(args)
+		msg, err = cmd.SyncGet(args)
 	case "delete-item":
-		cmd.DeleteItem(args)
+		msg, err = cmd.DeleteItem(args)
 	case "update-loginpass":
-		cmd.UpdateLoginPass(args)
+		msg, err = cmd.UpdateLoginPass(args)
 	default:
+		err = errors.New("command not found")
 		fmt.Println("command not found")
 		os.Exit(1)
 	}
+
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	fmt.Println(msg)
 }

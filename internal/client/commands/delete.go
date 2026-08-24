@@ -2,14 +2,13 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
-	"os"
 	"strconv"
 )
 
-// todo return err
-func (c *Command) DeleteItem(args []string) {
+func (c *Command) DeleteItem(args []string) (string, error) {
 	// todo  command name to constant
 	fs := flag.NewFlagSet("delete-item", flag.ExitOnError)
 
@@ -19,16 +18,13 @@ func (c *Command) DeleteItem(args []string) {
 	fs.Parse(args)
 
 	if *token == "" || *itemID == "" {
-		// todo instead fmt use something with out source
-		fmt.Println("login, password, title and jwt are required")
-		os.Exit(1)
+		return "", errors.New("login, password, title and jwt are required")
 	}
 
-	claims, err := c.GetClaims(*token)
+	claims, err := c.getClaims(*token)
 
 	if err != nil {
-		fmt.Printf("cannot parse jwt: %s", err)
-		os.Exit(1)
+		return "", fmt.Errorf("cannot parse jwt: %s", err)
 	}
 
 	// todo подумать как сдесь релизовать middleware
@@ -37,14 +33,12 @@ func (c *Command) DeleteItem(args []string) {
 	itemIDInt, err := strconv.ParseInt(*itemID, 10, 64)
 
 	if err != nil {
-		fmt.Printf("cannot parse itemID: %s", err)
-		os.Exit(1)
+		return "", fmt.Errorf("cannot parse itemID: %s", err)
 	}
 
 	if err := c.Service.DeleteUserItem(ctx, itemIDInt, claims.UserID); err != nil {
-		fmt.Printf("cannot delete item: %s", err)
-		os.Exit(1)
+		return "", fmt.Errorf("cannot delete item: %s", err)
 	}
 
-	fmt.Println("Item successfully deleted")
+	return "Item successfully deleted", nil
 }

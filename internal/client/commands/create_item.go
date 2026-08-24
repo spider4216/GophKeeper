@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -9,8 +10,7 @@ import (
 	"github.com/spider4216/GophKeeper/internal/client/models"
 )
 
-// todo return err
-func (c *Command) CreateLoginpass(args []string) {
+func (c *Command) CreateLoginpass(args []string) (string, error) {
 	// todo  command name to constant
 	fs := flag.NewFlagSet("create-loginpass", flag.ExitOnError)
 
@@ -22,9 +22,7 @@ func (c *Command) CreateLoginpass(args []string) {
 	fs.Parse(args)
 
 	if *login == "" || *pass == "" || *token == "" || *title == "" {
-		// todo instead fmt use something with out source
-		fmt.Println("login, password, title and jwt are required")
-		os.Exit(1)
+		return "", errors.New("login, password, title and jwt are required")
 	}
 
 	req := models.LoginPassReq{
@@ -34,7 +32,7 @@ func (c *Command) CreateLoginpass(args []string) {
 		JWT:   *token,
 	}
 
-	claims, err := c.GetClaims(*token)
+	claims, err := c.getClaims(*token)
 
 	if err != nil {
 		fmt.Printf("cannot parse jwt: %s", err)
@@ -50,24 +48,21 @@ func (c *Command) CreateLoginpass(args []string) {
 	itemID, err := c.Service.CreateLoginPassItem(ctx, "login_pass", req, c.Cfg.EncryptKey, claims.UserID)
 
 	if err != nil {
-		fmt.Printf("cannot create item: %s", err)
-		os.Exit(1)
+		return "", fmt.Errorf("cannot create item: %s", err)
 	}
 
 	_, err = c.Service.CreateMeta(ctx, itemID, "Title", req.Title)
 
 	if err != nil {
-		fmt.Printf("cannot create meta for item: %s", err)
-		os.Exit(1)
+		return "", fmt.Errorf("cannot create meta for item: %s", err)
 	}
 
 	// op to const and custom type
 	err = c.Service.CreatePendingChange(ctx, itemID, "CREATE", claims.UserID)
 
 	if err != nil {
-		fmt.Printf("cannot create pending for item: %s", err)
-		os.Exit(1)
+		return "", fmt.Errorf("cannot create pending for item: %s", err)
 	}
 
-	fmt.Println("Item successfully created")
+	return "Item successfully created", nil
 }

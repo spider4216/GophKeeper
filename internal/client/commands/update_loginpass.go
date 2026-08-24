@@ -2,12 +2,12 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
-	"os"
 )
 
-func (c *Command) UpdateLoginPass(args []string) {
+func (c *Command) UpdateLoginPass(args []string) (string, error) {
 	// todo  command name to constant
 	fs := flag.NewFlagSet("update-loginpass", flag.ExitOnError)
 
@@ -20,25 +20,21 @@ func (c *Command) UpdateLoginPass(args []string) {
 	fs.Parse(args)
 
 	if *login == "" || *pass == "" || *token == "" {
-		// todo instead fmt use something with out source
-		fmt.Println("login, password, title and jwt are required")
-		os.Exit(1)
+		return "", errors.New("login, password, title and jwt are required")
 	}
 
-	claims, err := c.GetClaims(*token)
+	claims, err := c.getClaims(*token)
 
 	if err != nil {
-		fmt.Printf("cannot parse jwt: %s", err)
-		os.Exit(1)
+		return "", fmt.Errorf("cannot parse jwt: %s", err)
 	}
 
 	// todo подумать как сдесь релизовать middleware
 	ctx := context.WithValue(context.Background(), "userID", claims.UserID)
 
 	if err := c.Service.UpdateLoginPass(ctx, *itemID, claims.UserID, *login, *pass, c.Cfg.EncryptKey); err != nil {
-		fmt.Printf("cannot update: %s", err)
-		os.Exit(1)
+		return "", fmt.Errorf("cannot update: %s", err)
 	}
 
-	fmt.Println("Item successfully updates")
+	return "Item successfully updates", nil
 }
