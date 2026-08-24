@@ -4,6 +4,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net"
+	"net/http"
+	"time"
 
 	"github.com/spider4216/GophKeeper/internal/client/config"
 	"github.com/spider4216/GophKeeper/internal/client/repositories"
@@ -17,6 +20,7 @@ type app struct {
 	logger *zap.SugaredLogger
 	repo   repositories.Repository
 	cfg    *config.Config
+	cli    *http.Client
 }
 
 func newApp() *app {
@@ -37,6 +41,10 @@ func (app *app) Run() error {
 	}
 
 	if err := app.initMigrations(); err != nil {
+		return err
+	}
+
+	if err := app.initCli(); err != nil {
 		return err
 	}
 
@@ -105,6 +113,30 @@ func (app *app) initLogger() error {
 	}
 
 	app.logger = logger
+
+	return nil
+}
+
+func (app *app) initCli() error {
+	// todo use config
+	dialer := &net.Dialer{
+		Timeout: 5 * time.Second,
+	}
+
+	// todo move to app and use cfg
+	trans := &http.Transport{
+		DialContext:           dialer.DialContext,
+		TLSHandshakeTimeout:   5 * time.Second,
+		ResponseHeaderTimeout: 5 * time.Second,
+	}
+
+	// todo move to app and use cfg
+	client := &http.Client{
+		Transport: trans,
+		Timeout:   10 * time.Second,
+	}
+
+	app.cli = client
 
 	return nil
 }

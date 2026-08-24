@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net"
-	"net/http"
 	"os"
 	"time"
 
@@ -27,30 +25,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	// todo move to app
-	// todo use config
-	dialer := &net.Dialer{
-		Timeout: 5 * time.Second,
-	}
-
-	// todo move to app and use cfg
-	trans := &http.Transport{
-		DialContext:           dialer.DialContext,
-		TLSHandshakeTimeout:   5 * time.Second,
-		ResponseHeaderTimeout: 5 * time.Second,
-	}
-
-	// todo move to app and use cfg
-	client := &http.Client{
-		Transport: trans,
-		Timeout:   10 * time.Second,
-	}
-
 	// todo host to config
-	service := services.New(client, "http://127.0.0.1:8080", app.repo, app.logger)
+	service := services.New(app.cli, "http://127.0.0.1:8080", app.repo, app.logger)
 
 	cmd := commands.New(service, app.cfg)
 
+	// timeout to config
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
