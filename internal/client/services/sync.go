@@ -11,6 +11,7 @@ import (
 	"strconv"
 
 	"github.com/spider4216/GophKeeper/internal/client/models"
+	"github.com/spider4216/GophKeeper/internal/enum"
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
@@ -179,7 +180,7 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, token string) error
 
 		if change.Operation == "CREATE" {
 			item := models.ItemRepo{
-				Type:       change.Item.Type,
+				Type:       enum.SecretType(change.Item.Type),
 				Ciphertext: change.Item.Ciphertext,
 				UserID:     userID,
 			}

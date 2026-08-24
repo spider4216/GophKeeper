@@ -8,10 +8,10 @@ import (
 	"os"
 
 	"github.com/spider4216/GophKeeper/internal/client/models"
+	"github.com/spider4216/GophKeeper/internal/enum"
 )
 
 func (c *Command) CreateLoginpass(args []string) (string, error) {
-	// todo  command name to constant
 	fs := flag.NewFlagSet(InsertLoginPass.String(), flag.ExitOnError)
 
 	login := fs.String("login", "", "Login")
@@ -45,7 +45,7 @@ func (c *Command) CreateLoginpass(args []string) (string, error) {
 	// todo transaction
 	// todo подумать что сделать с контекстом
 	// todo тип в коснтанту
-	itemID, err := c.Service.CreateLoginPassItem(ctx, "login_pass", req, c.Cfg.EncryptKey, claims.UserID)
+	itemID, err := c.Service.CreateLoginPassItem(ctx, enum.LoginPass, req, c.Cfg.EncryptKey, claims.UserID)
 
 	if err != nil {
 		return "", fmt.Errorf("cannot create item: %s", err)

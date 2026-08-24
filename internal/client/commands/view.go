@@ -9,7 +9,6 @@ import (
 
 // todo return err
 func (c *Command) View(args []string) (string, error) {
-	// todo  command name to constant
 	fs := flag.NewFlagSet(View.String(), flag.ExitOnError)
 
 	// validation

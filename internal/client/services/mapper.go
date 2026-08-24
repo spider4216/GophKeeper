@@ -86,7 +86,7 @@ func (s *Service) buildSyncRequest(pendingChanges []models.PendChangesRepo, item
 			Operation: pending.Operation,
 			Item: shrModel.ItemSyncPut{
 				ID:         int(item.ID),
-				Type:       item.Type,
+				Type:       item.Type.String(),
 				Ciphertext: item.Ciphertext,
 			},
 			Metadata: metadataByItemID[item.ID],

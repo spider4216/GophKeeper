@@ -10,7 +10,6 @@ import (
 )
 
 func (c *Command) Register(args []string) (string, error) {
-	// todo  command name to constant
 	// todo transaction
 	fs := flag.NewFlagSet(Register.String(), flag.ExitOnError)
 

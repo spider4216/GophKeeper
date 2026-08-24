@@ -9,7 +9,6 @@ import (
 )
 
 func (c *Command) UserList(args []string) (string, error) {
-	// todo  command name to constant
 	fs := flag.NewFlagSet(List.String(), flag.ExitOnError)
 
 	token := fs.String("token", "", "JWT from server")

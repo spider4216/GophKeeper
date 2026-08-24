@@ -13,6 +13,7 @@ import (
 
 	"github.com/spider4216/GophKeeper/internal/client/models"
 	"github.com/spider4216/GophKeeper/internal/client/repositories"
+	"github.com/spider4216/GophKeeper/internal/enum"
 	"go.uber.org/zap"
 )
 
@@ -32,7 +33,7 @@ func New(client *http.Client, host string, repo repositories.Repository, logger 
 	}
 }
 
-func (s *Service) CreateLoginPassItem(ctx context.Context, t string, data models.LoginPassReq, key string, userID int64) (int64, error) {
+func (s *Service) CreateLoginPassItem(ctx context.Context, t enum.SecretType, data models.LoginPassReq, key string, userID int64) (int64, error) {
 	// todo t - as custom type
 
 	// Формат хранения для типа

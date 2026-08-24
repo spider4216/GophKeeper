@@ -1,11 +1,14 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/spider4216/GophKeeper/internal/enum"
+)
 
 type ItemRepo struct {
-	ID int64
-	// todo type as go type instead string
-	Type       string
+	ID         int64
+	Type       enum.SecretType
 	Ciphertext string
 	UserID     int64
 	CreatedAt  time.Time

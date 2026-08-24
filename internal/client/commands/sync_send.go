@@ -8,7 +8,6 @@ import (
 )
 
 func (c *Command) SyncSend(args []string) (string, error) {
-	// todo  command name to constant
 	fs := flag.NewFlagSet(SyncSend.String(), flag.ExitOnError)
 
 	token := fs.String("token", "", "Token")
