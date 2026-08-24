@@ -30,8 +30,7 @@ func (c *Command) Register(args []string) (string, error) {
 		Pass:  *pass,
 	}
 
-	// todo condext for register user
-	resp, err := c.Service.Register(req)
+	resp, err := c.Service.Register(ctx, req)
 
 	if err != nil {
 		return "", fmt.Errorf("cannot create user: %s", err)

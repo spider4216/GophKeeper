@@ -2,6 +2,7 @@ package services
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,7 +12,7 @@ import (
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
-func (s *Service) Register(req shrModel.RegisterReq) (*shrModel.RegisterResp, error) {
+func (s *Service) Register(ctx context.Context, req shrModel.RegisterReq) (*shrModel.RegisterResp, error) {
 	data, err := json.Marshal(req)
 
 	if err != nil {
@@ -25,7 +26,7 @@ func (s *Service) Register(req shrModel.RegisterReq) (*shrModel.RegisterResp, er
 		return nil, err
 	}
 
-	r, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
+	r, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(data))
 	r.Header.Add("Content-Type", "application/json")
 
 	resp, err := s.client.Do(r)

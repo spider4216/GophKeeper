@@ -44,7 +44,6 @@ func (c *Command) CreateLoginpass(args []string) (string, error) {
 
 	// todo transaction
 	// todo подумать что сделать с контекстом
-	// todo тип в коснтанту
 	itemID, err := c.Service.CreateLoginPassItem(ctx, enum.LoginPass, req, c.Cfg.EncryptKey, claims.UserID)
 
 	if err != nil {
