@@ -5,8 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-
-	"github.com/golang-jwt/jwt/v4"
 )
 
 func (c *Command) UpdateLoginPass(args []string) {
@@ -27,11 +25,7 @@ func (c *Command) UpdateLoginPass(args []string) {
 		os.Exit(1)
 	}
 
-	claims := &claims{}
-	_, err := jwt.ParseWithClaims(*token, claims,
-		func(t *jwt.Token) (interface{}, error) {
-			return []byte(c.Cfg.JWTKey), nil
-		})
+	claims, err := c.GetClaims(*token)
 
 	if err != nil {
 		fmt.Printf("cannot parse jwt: %s", err)

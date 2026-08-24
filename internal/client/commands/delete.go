@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-
-	"github.com/golang-jwt/jwt/v4"
 )
 
 // todo return err
@@ -26,11 +24,7 @@ func (c *Command) DeleteItem(args []string) {
 		os.Exit(1)
 	}
 
-	claims := &claims{}
-	_, err := jwt.ParseWithClaims(*token, claims,
-		func(t *jwt.Token) (interface{}, error) {
-			return []byte(c.Cfg.JWTKey), nil
-		})
+	claims, err := c.GetClaims(*token)
 
 	if err != nil {
 		fmt.Printf("cannot parse jwt: %s", err)

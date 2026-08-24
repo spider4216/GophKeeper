@@ -18,12 +18,6 @@ type Service struct {
 	logger *zap.SugaredLogger
 }
 
-// todo moce to another file
-type claims struct {
-	jwt.RegisteredClaims
-	UserID int64
-}
-
 // todo move to other file
 type (
 	userIdKey string
@@ -85,7 +79,7 @@ func (s *Service) CheckPass(user *models.UserRepo, plainPass string) bool {
 
 func (s *Service) BuildJWTString(userId int64, secret string, exp time.Duration) (string, error) {
 	// создаём новый токен с алгоритмом подписи HS256 и утверждениями
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims{
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, shrModel.Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			// когда создан токен
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(exp)),

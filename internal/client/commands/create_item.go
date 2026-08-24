@@ -7,8 +7,6 @@ import (
 	"os"
 
 	"github.com/spider4216/GophKeeper/internal/client/models"
-
-	"github.com/golang-jwt/jwt/v4"
 )
 
 // todo return err
@@ -38,11 +36,7 @@ func (c *Command) CreateItem(args []string) {
 
 	// todo извлечь из токена user id
 
-	claims := &claims{}
-	_, err := jwt.ParseWithClaims(req.JWT, claims,
-		func(t *jwt.Token) (interface{}, error) {
-			return []byte(c.Cfg.JWTKey), nil
-		})
+	claims, err := c.GetClaims(*token)
 
 	if err != nil {
 		fmt.Printf("cannot parse jwt: %s", err)
