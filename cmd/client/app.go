@@ -7,7 +7,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/spider4216/GophKeeper/internal/client/commands"
 	"github.com/spider4216/GophKeeper/internal/client/config"
@@ -135,10 +134,9 @@ func (app *app) initCli() error {
 		ResponseHeaderTimeout: app.cfg.RespHeaderTimeout,
 	}
 
-	// todo move to app and use cfg
 	client := &http.Client{
 		Transport: trans,
-		Timeout:   10 * time.Second,
+		Timeout:   app.cfg.CliTimeout,
 	}
 
 	app.cli = client

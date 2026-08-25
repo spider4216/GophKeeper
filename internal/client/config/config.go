@@ -15,6 +15,7 @@ type Config struct {
 	TLSHandshakeTimeout time.Duration `env:"TLS_HANDSHAKE_TIMEOUT" envDefault:"3s"`
 	RespHeaderTimeout   time.Duration `env:"RESPONSE_HEADER_TIMEOUT" envDefault:"3s"`
 	DialerTimeout       time.Duration `env:"DEALER_TIMEOUT" envDefault:"5s"`
+	CliTimeout          time.Duration `env:"CLIENT_TIMEOUT" envDefault:"10s"`
 }
 
 func New() (*Config, error) {
