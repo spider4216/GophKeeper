@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"github.com/spider4216/GophKeeper/internal/client/commands"
 	"github.com/spider4216/GophKeeper/internal/client/services"
@@ -19,20 +18,18 @@ func main() {
 		log.Fatal("Cannot run app", err)
 	}
 
-	// todo host to config
 	service := services.New(app.cli, app.cfg.SrvHost, app.repo, app.logger)
 
 	cmd := commands.New(service, app.cfg)
 
 	// timeout to config
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), app.cfg.CtxTimeout)
 	defer cancel()
 
 	var err error
 	var msg string
 
 	switch app.cmdName {
-	// todo команду в константу
 	case commands.Register:
 		msg, err = cmd.Register(ctx, app.args)
 	case commands.Login:

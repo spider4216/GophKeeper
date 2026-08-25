@@ -16,6 +16,7 @@ type Config struct {
 	RespHeaderTimeout   time.Duration `env:"RESPONSE_HEADER_TIMEOUT" envDefault:"3s"`
 	DialerTimeout       time.Duration `env:"DEALER_TIMEOUT" envDefault:"5s"`
 	CliTimeout          time.Duration `env:"CLIENT_TIMEOUT" envDefault:"10s"`
+	CtxTimeout          time.Duration `env:"CTX_TIMEOUT" envDefault:"3s"`
 }
 
 func New() (*Config, error) {
