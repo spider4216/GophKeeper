@@ -6,7 +6,7 @@ DSN_CLIENT?=postgres://postgres:postgres@localhost:5432/gophkeeper_client_2
 LOG_LEVEL?=debug
 JWT_KEY?=qwerty
 ENCRYPT_KEY?=12345678901234567890123456789012
-SERVER_HOST?=127.0.0.1:8080
+SERVER_HOST?=http://127.0.0.1:8080
 
 run-srv:
 	JWT_KEY=${JWT_KEY} SERVER_ADDRESS=:8080 DB_DSN=$(DSN) LOG_LEVEL=${LOG_LEVEL} go run ./cmd/server

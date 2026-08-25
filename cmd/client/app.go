@@ -114,8 +114,7 @@ func (app *app) initMigrations() error {
 }
 
 func (app *app) initLogger() error {
-	// todo move lvl to cfg
-	logger, err := logger.InitZap("debug")
+	logger, err := logger.InitZap(app.cfg.LogLvl)
 	if err != nil {
 		return err
 	}
@@ -126,16 +125,14 @@ func (app *app) initLogger() error {
 }
 
 func (app *app) initCli() error {
-	// todo use config
 	dialer := &net.Dialer{
-		Timeout: 5 * time.Second,
+		Timeout: app.cfg.DialerTimeout,
 	}
 
-	// todo move to app and use cfg
 	trans := &http.Transport{
 		DialContext:           dialer.DialContext,
-		TLSHandshakeTimeout:   5 * time.Second,
-		ResponseHeaderTimeout: 5 * time.Second,
+		TLSHandshakeTimeout:   app.cfg.TLSHandshakeTimeout,
+		ResponseHeaderTimeout: app.cfg.RespHeaderTimeout,
 	}
 
 	// todo move to app and use cfg
