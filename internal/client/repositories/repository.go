@@ -9,6 +9,7 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/spider4216/GophKeeper/internal/client/models"
+	"github.com/spider4216/GophKeeper/internal/enum"
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 	commonRep "github.com/spider4216/GophKeeper/internal/repository"
 )
@@ -222,6 +223,18 @@ func (repo *ClientRepository) UpdateLastUserRev(ctx context.Context, userID int6
 	return nil
 }
 
+func (repo *ClientRepository) UpdateLastUserRevTx(ctx context.Context, tx *sql.Tx, userID int64, rev int64) error {
+	sql := "UPDATE sync_state SET last_server_revision=$1 WHERE user_id=$2"
+
+	_, err := tx.ExecContext(ctx, sql, rev, userID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (repo *ClientRepository) CreateLastUserRev(ctx context.Context, userID int64, rev int64) error {
 	sql := "INSERT INTO sync_state (user_id, last_server_revision) VALUES ($1,$2)"
 
@@ -350,6 +363,18 @@ func (repo *ClientRepository) UpdateUserItem(ctx context.Context, itemID int64, 
 	return nil
 }
 
+func (repo *ClientRepository) UpdateUserItemTx(ctx context.Context, tx *sql.Tx, itemID int64, userID int64, val string) error {
+	sql := "UPDATE items SET ciphertext=$1 WHERE id=$2 AND user_id=$3"
+
+	_, err := tx.ExecContext(ctx, sql, val, itemID, userID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (repo *ClientRepository) CreateUserPassItem(ctx context.Context, item models.ItemRepo, userID int64, title string) error {
 	tx, err := repo.con.BeginTx(ctx, nil)
 
@@ -406,6 +431,70 @@ func (repo *ClientRepository) DeleteUserItem(ctx context.Context, itemID int64, 
 	// todo op to const
 	if err := repo.CreatePendingChangeTx(ctx, tx, itemID, "DELETE", userID); err != nil {
 		return fmt.Errorf("cannot create pending: %w", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("commit transaction: %w", err)
+	}
+
+	return nil
+}
+
+func (repo *ClientRepository) ApplySync(ctx context.Context, userID int64, res shrModel.SyncGet) error {
+	tx, err := repo.con.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("begin transaction: %w", err)
+	}
+
+	defer func() {
+		// todo error
+		_ = tx.Rollback()
+	}()
+
+	for _, change := range res.Changes {
+		switch change.Operation {
+		case "CREATE":
+			// todo to method
+			item := models.ItemRepo{
+				Type:       enum.SecretType(change.Item.Type),
+				Ciphertext: change.Item.Ciphertext,
+				UserID:     userID,
+			}
+
+			itemID, err := repo.CreateItemTx(ctx, tx, item)
+
+			if err != nil {
+				return err
+			}
+
+			for k, v := range change.Metadata {
+				if _, err := repo.GetCommonRepo().CreateMetaTx(ctx, tx, itemID, k, v); err != nil {
+					return err
+				}
+			}
+
+		case "DELETE":
+			// todo to method
+			if err := repo.GetCommonRepo().DeleteUserMetaByItemIDTx(ctx, tx, change.Item.ID, userID); err != nil {
+				return err
+			}
+
+			if err := repo.GetCommonRepo().DeleteUserItemByIDTx(ctx, tx, change.Item.ID, userID); err != nil {
+				return err
+			}
+
+		case "UPDATE":
+			if err := repo.UpdateUserItemTx(ctx, tx, change.Item.ID, userID, change.Item.Ciphertext); err != nil {
+				return err
+			}
+
+		default:
+			return fmt.Errorf("unknown operation: %s", change.Operation)
+		}
+	}
+
+	if err := repo.UpdateLastUserRevTx(ctx, tx, userID, res.NextRev); err != nil {
+		return fmt.Errorf("update last revision: %w", err)
 	}
 
 	if err := tx.Commit(); err != nil {

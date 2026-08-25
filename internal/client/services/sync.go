@@ -10,8 +10,6 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/spider4216/GophKeeper/internal/client/models"
-	"github.com/spider4216/GophKeeper/internal/enum"
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
@@ -139,7 +137,9 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, token string) error
 
 	url = url + "?since=" + revStr
 
+	// todo with ctx
 	r, err := http.NewRequest(http.MethodGet, url, nil)
+	// todo check err
 	r.Header.Add("Authorization", token)
 
 	s.logger.Debug("Get sync...")
@@ -173,52 +173,7 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, token string) error
 
 	s.logger.Debugf("Changes: %d", len(res.Changes))
 
-	// todo transaction
-	for _, change := range res.Changes {
-		// todo в зависимости от операции метод будет разный, пока просто create
-		// todo mybe gorutine
-
-		if change.Operation == "CREATE" {
-			item := models.ItemRepo{
-				Type:       enum.SecretType(change.Item.Type),
-				Ciphertext: change.Item.Ciphertext,
-				UserID:     userID,
-			}
-
-			itemID, err := s.repo.CreateItem(ctx, item)
-
-			if err != nil {
-				return err
-			}
-
-			for k, v := range change.Metadata {
-				if _, err := s.repo.GetCommonRepo().CreateMeta(ctx, itemID, k, v); err != nil {
-					return err
-				}
-			}
-		}
-
-		if change.Operation == "DELETE" {
-			// todo transaction
-			if err := s.repo.GetCommonRepo().DeleteUserMetaByItemID(ctx, change.Item.ID, userID); err != nil {
-				return err
-			}
-
-			if err := s.repo.GetCommonRepo().DeleteUserItemByID(ctx, change.Item.ID, userID); err != nil {
-				return err
-			}
-		}
-
-		if change.Operation == "UPDATE" {
-			// todo update
-			if err := s.repo.UpdateUserItem(ctx, change.Item.ID, userID, change.Item.Ciphertext); err != nil {
-				return err
-			}
-		}
-
-	}
-
-	if err := s.UpdateLastUserRev(ctx, userID, res.NextRev); err != nil {
+	if err := s.repo.ApplySync(ctx, userID, res); err != nil {
 		return err
 	}
 
