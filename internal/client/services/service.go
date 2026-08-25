@@ -172,21 +172,7 @@ func (s *Service) GetUserItemByID(ctx context.Context, itemID int64, userID int6
 }
 
 func (s *Service) DeleteUserItem(ctx context.Context, itemID int64, userID int64) error {
-	// todo transaction
-	if err := s.repo.GetCommonRepo().DeleteUserMetaByItemID(ctx, itemID, userID); err != nil {
-		return err
-	}
-
-	if err := s.repo.GetCommonRepo().DeleteUserItemByID(ctx, itemID, userID); err != nil {
-		return err
-	}
-
-	// todo op to const
-	if err := s.repo.CreatePendingChange(ctx, itemID, "DELETE", userID); err != nil {
-		return err
-	}
-
-	return nil
+	return s.repo.DeleteUserItem(ctx, itemID, userID)
 }
 
 func (s *Service) UpdateLoginPass(ctx context.Context, itemID int64, userID int64, login string, pass string, key string) error {

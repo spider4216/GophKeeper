@@ -382,3 +382,35 @@ func (repo *ClientRepository) CreateUserPassItem(ctx context.Context, item model
 
 	return nil
 }
+
+func (repo *ClientRepository) DeleteUserItem(ctx context.Context, itemID int64, userID int64) error {
+	tx, err := repo.con.BeginTx(ctx, nil)
+
+	if err != nil {
+		// todo in errorf everywhere as %w
+		return fmt.Errorf("begin transaction: %w", err)
+	}
+
+	defer func() {
+		_ = tx.Rollback()
+	}()
+
+	if err := repo.GetCommonRepo().DeleteUserMetaByItemIDTx(ctx, tx, itemID, userID); err != nil {
+		return fmt.Errorf("cannot delete meta: %w", err)
+	}
+
+	if err := repo.GetCommonRepo().DeleteUserItemByIDTx(ctx, tx, itemID, userID); err != nil {
+		return fmt.Errorf("cannot delete item: %w", err)
+	}
+
+	// todo op to const
+	if err := repo.CreatePendingChangeTx(ctx, tx, itemID, "DELETE", userID); err != nil {
+		return fmt.Errorf("cannot create pending: %w", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("commit transaction: %w", err)
+	}
+
+	return nil
+}
