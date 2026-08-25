@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -193,14 +194,8 @@ func (s *Service) UpdateLoginPass(ctx context.Context, itemID int64, userID int6
 		return err
 	}
 
-	// todo transaction
-	if err := s.repo.UpdateUserItem(ctx, itemID, userID, encrypted); err != nil {
-		return err
-	}
-
-	// todo op to const
-	if err := s.repo.CreatePendingChange(ctx, itemID, "UPDATE", userID); err != nil {
-		return err
+	if err := s.repo.UpdateLoginPass(ctx, itemID, userID, encrypted); err != nil {
+		return fmt.Errorf("cannot update login and password: %w", err)
 	}
 
 	return nil

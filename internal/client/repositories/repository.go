@@ -503,3 +503,31 @@ func (repo *ClientRepository) ApplySync(ctx context.Context, userID int64, res s
 
 	return nil
 }
+
+func (repo *ClientRepository) UpdateLoginPass(ctx context.Context, itemID int64, userID int64, encrypted string) error {
+	tx, err := repo.con.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("begin transaction: %w", err)
+	}
+
+	defer func() {
+		// todo error
+		_ = tx.Rollback()
+	}()
+
+	if err := repo.UpdateUserItemTx(ctx, tx, itemID, userID, encrypted); err != nil {
+		return fmt.Errorf("cannot update user item: %w", err)
+	}
+
+	if err := repo.CreatePendingChangeTx(ctx, tx, itemID, "UPDATE", userID); err != nil {
+		return fmt.Errorf("cannot create pending change: %w", err)
+	}
+
+	// todo update metadata
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("commit transaction: %w", err)
+	}
+
+	return nil
+}
