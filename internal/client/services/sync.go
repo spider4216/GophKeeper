@@ -47,10 +47,6 @@ func (s *Service) SyncSend(ctx context.Context, userID int64, token string) erro
 		return err
 	}
 
-	s.logger.Debug(pends)
-	s.logger.Debug(items)
-	s.logger.Debug(meta)
-
 	req := s.buildSyncRequest(pends, items, meta)
 
 	data, err := json.Marshal(req)
