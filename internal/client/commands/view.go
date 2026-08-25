@@ -55,15 +55,14 @@ func (c *Command) View(ctx context.Context, args []string) (string, error) {
 	}
 
 	var res string
+	var errCmd error
 
 	if item.Type == enum.LoginPass {
-		data, err := c.outLoginPass(decrypted, metas)
+		res, errCmd = c.outLoginPass(decrypted, metas)
+	}
 
-		if err != nil {
-			return "", err
-		}
-
-		res = data
+	if errCmd != nil {
+		return "", errCmd
 	}
 
 	return res, nil
