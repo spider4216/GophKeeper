@@ -6,10 +6,12 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/spider4216/GophKeeper/internal/client/models"
 	"github.com/spider4216/GophKeeper/internal/enum"
+	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
 func (c *Command) View(ctx context.Context, args []string) (string, error) {
@@ -46,28 +48,45 @@ func (c *Command) View(ctx context.Context, args []string) (string, error) {
 		return "", fmt.Errorf("cannot decrypt data: %s", err)
 	}
 
-	var builder strings.Builder
+	metas, err := c.Service.GetMetadataByItemID(ctx, item.ID)
+
+	if err != nil {
+		return "", fmt.Errorf("cannot get metadata: %s", err)
+	}
+
+	var res string
 
 	if item.Type == enum.LoginPass {
-		data, err := c.outLoginPass(decrypted)
+		data, err := c.outLoginPass(decrypted, metas)
 
 		if err != nil {
 			return "", err
 		}
 
-		builder.WriteString(fmt.Sprintf("Login: %s\n", data.Login))
-		builder.WriteString(fmt.Sprintf("Password: %s\n", data.Pass))
+		res = data
+	}
+
+	return res, nil
+}
+
+func (c *Command) outLoginPass(decrypted []byte, meta []shrModel.MetadataRepo) (string, error) {
+	var data models.LoginPassFmt
+
+	if err := json.Unmarshal(decrypted, &data); err != nil {
+		return "", fmt.Errorf("cannot unmaeshall loginpass: %s", err)
+	}
+
+	var builder strings.Builder
+
+	builder.WriteString(fmt.Sprintf("Login: %s\n", data.Login))
+	builder.WriteString(fmt.Sprintf("Password: %s\n", data.Pass))
+	builder.WriteString("Meta:\n")
+
+	log.Println(meta)
+
+	for _, v := range meta {
+		builder.WriteString(fmt.Sprintf("%s: %s\n", v.Key, v.Value))
 	}
 
 	return builder.String(), nil
-}
-
-func (c *Command) outLoginPass(decrypted []byte) (*models.LoginPassFmt, error) {
-	var loginPassData models.LoginPassFmt
-
-	if err := json.Unmarshal(decrypted, &loginPassData); err != nil {
-		return nil, fmt.Errorf("cannot unmaeshall loginpass: %s", err)
-	}
-
-	return &loginPassData, nil
 }

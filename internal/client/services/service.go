@@ -14,6 +14,7 @@ import (
 	"github.com/spider4216/GophKeeper/internal/client/models"
 	"github.com/spider4216/GophKeeper/internal/client/repositories"
 	"github.com/spider4216/GophKeeper/internal/enum"
+	shrModel "github.com/spider4216/GophKeeper/internal/model"
 	"go.uber.org/zap"
 )
 
@@ -217,4 +218,8 @@ func (s *Service) UpdateLoginPass(ctx context.Context, itemID int64, userID int6
 	}
 
 	return nil
+}
+
+func (s *Service) GetMetadataByItemID(ctx context.Context, itemID int64) ([]shrModel.MetadataRepo, error) {
+	return s.repo.GetMetadataByItemID(ctx, itemID)
 }

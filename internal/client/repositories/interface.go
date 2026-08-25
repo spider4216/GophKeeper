@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/spider4216/GophKeeper/internal/client/models"
+	shrModel "github.com/spider4216/GophKeeper/internal/model"
 	"github.com/spider4216/GophKeeper/internal/repository"
 )
 
@@ -23,5 +24,6 @@ type Repository interface {
 	GetLatestUserRev(ctx context.Context, userID int64) (int64, error)
 	GetUserItems(ctx context.Context, userID int64) ([]models.ItemRepo, error)
 	UpdateUserItem(ctx context.Context, itemID int64, userID int64, val string) error
+	GetMetadataByItemID(ctx context.Context, itemID int64) ([]shrModel.MetadataRepo, error)
 	GetCommonRepo() repository.CommonRepositoryInterface
 }

@@ -223,6 +223,43 @@ func (repo *ClientRepository) GetLatestUserRev(ctx context.Context, userID int64
 	return rev, nil
 }
 
+func (repo *ClientRepository) GetMetadataByItemID(ctx context.Context, itemID int64) ([]shrModel.MetadataRepo, error) {
+	sql := "SELECT id, item_id, key, value FROM metadata WHERE item_id = $1;"
+	rows, err := repo.con.QueryContext(ctx, sql, itemID)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err := rows.Close(); err != nil {
+			repo.logger.Warnf("Cannot close rows: %s", err)
+		}
+	}()
+
+	var items []shrModel.MetadataRepo
+
+	for rows.Next() {
+		var item shrModel.MetadataRepo
+
+		if err := rows.Scan(
+			&item.ID,
+			&item.ItemID,
+			&item.Key,
+			&item.Value,
+		); err != nil {
+			return nil, err
+		}
+
+		items = append(items, item)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
+
 func (repo *ClientRepository) GetUserItems(ctx context.Context, userID int64) ([]models.ItemRepo, error) {
 	sql := "SELECT id, type, ciphertext, user_id, created_at FROM items WHERE user_id=$1;"
 
