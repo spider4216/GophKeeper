@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"go.uber.org/zap"
 
@@ -49,10 +50,34 @@ func (repo *ClientRepository) CreateItem(ctx context.Context, item models.ItemRe
 	return id, nil
 }
 
+func (repo *ClientRepository) CreateItemTx(ctx context.Context, tx *sql.Tx, item models.ItemRepo) (int64, error) {
+	sql := "INSERT INTO items (type,ciphertext,user_id) VALUES ($1,$2,$3) RETURNING id"
+
+	var id int64
+
+	if err := tx.QueryRowContext(ctx, sql, item.Type, item.Ciphertext, item.UserID).Scan(&id); err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
+
 func (repo *ClientRepository) CreatePendingChange(ctx context.Context, itemID int64, op string, userID int64) error {
 	sql := "INSERT INTO pending_changes (item_id,operation,user_id) VALUES ($1,$2,$3)"
 
 	_, err := repo.con.ExecContext(ctx, sql, itemID, op, userID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repo *ClientRepository) CreatePendingChangeTx(ctx context.Context, tx *sql.Tx, itemID int64, op string, userID int64) error {
+	sql := "INSERT INTO pending_changes (item_id,operation,user_id) VALUES ($1,$2,$3)"
+
+	_, err := tx.ExecContext(ctx, sql, itemID, op, userID)
 
 	if err != nil {
 		return err
@@ -320,6 +345,39 @@ func (repo *ClientRepository) UpdateUserItem(ctx context.Context, itemID int64, 
 
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (repo *ClientRepository) CreateUserPassItem(ctx context.Context, item models.ItemRepo, userID int64, title string) error {
+	tx, err := repo.con.BeginTx(ctx, nil)
+
+	if err != nil {
+		// todo in errorf everywhere as %w
+		return fmt.Errorf("begin transaction: %w", err)
+	}
+
+	defer func() {
+		_ = tx.Rollback()
+	}()
+
+	itemID, err := repo.CreateItemTx(ctx, tx, item)
+
+	if err != nil {
+		return fmt.Errorf("cannot create item: %w", err)
+	}
+
+	if _, err := repo.commonRep.CreateMetaTx(ctx, tx, itemID, "Title", title); err != nil {
+		return fmt.Errorf("cannot create meta: %w", err)
+	}
+
+	if err := repo.CreatePendingChangeTx(ctx, tx, itemID, "CREATE", userID); err != nil {
+		return fmt.Errorf("cannot create penfing: %w", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("commit transaction: %w", err)
 	}
 
 	return nil

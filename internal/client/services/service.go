@@ -223,3 +223,31 @@ func (s *Service) UpdateLoginPass(ctx context.Context, itemID int64, userID int6
 func (s *Service) GetMetadataByItemID(ctx context.Context, itemID int64) ([]shrModel.MetadataRepo, error) {
 	return s.repo.GetMetadataByItemID(ctx, itemID)
 }
+
+func (s *Service) CreateUserPassItem(ctx context.Context, data models.LoginPassReq, key string, userID int64) error {
+	// Формат хранения для типа
+	d := models.LoginPassFmt{
+		Login: data.Login,
+		Pass:  data.Pass,
+	}
+
+	b, err := json.Marshal(d)
+
+	if err != nil {
+		return err
+	}
+
+	encrypted, err := s.EncryptData(b, []byte(key))
+
+	if err != nil {
+		return err
+	}
+
+	item := models.ItemRepo{
+		Type:       enum.LoginPass,
+		Ciphertext: encrypted,
+		UserID:     userID,
+	}
+
+	return s.repo.CreateUserPassItem(ctx, item, userID, data.Title)
+}

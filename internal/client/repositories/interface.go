@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/spider4216/GophKeeper/internal/client/models"
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
@@ -26,4 +27,7 @@ type Repository interface {
 	UpdateUserItem(ctx context.Context, itemID int64, userID int64, val string) error
 	GetMetadataByItemID(ctx context.Context, itemID int64) ([]shrModel.MetadataRepo, error)
 	GetCommonRepo() repository.CommonRepositoryInterface
+	CreateItemTx(ctx context.Context, tx *sql.Tx, item models.ItemRepo) (int64, error)
+	CreatePendingChangeTx(ctx context.Context, tx *sql.Tx, itemID int64, op string, userID int64) error
+	CreateUserPassItem(ctx context.Context, item models.ItemRepo, userID int64, title string) error
 }

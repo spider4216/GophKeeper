@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"github.com/spider4216/GophKeeper/internal/client/models"
-	"github.com/spider4216/GophKeeper/internal/enum"
 )
 
 func (c *Command) CreateLoginpass(ctx context.Context, args []string) (string, error) {
@@ -39,25 +38,8 @@ func (c *Command) CreateLoginpass(ctx context.Context, args []string) (string, e
 		os.Exit(1)
 	}
 
-	// todo transaction
-	// todo подумать что сделать с контекстом
-	itemID, err := c.Service.CreateLoginPassItem(ctx, enum.LoginPass, req, c.Cfg.EncryptKey, claims.UserID)
-
-	if err != nil {
-		return "", fmt.Errorf("cannot create item: %s", err)
-	}
-
-	_, err = c.Service.CreateMeta(ctx, itemID, "Title", req.Title)
-
-	if err != nil {
-		return "", fmt.Errorf("cannot create meta for item: %s", err)
-	}
-
-	// op to const and custom type
-	err = c.Service.CreatePendingChange(ctx, itemID, "CREATE", claims.UserID)
-
-	if err != nil {
-		return "", fmt.Errorf("cannot create pending for item: %s", err)
+	if err := c.Service.CreateUserPassItem(ctx, req, c.Cfg.EncryptKey, claims.UserID); err != nil {
+		return "", err
 	}
 
 	return "Item successfully created", nil

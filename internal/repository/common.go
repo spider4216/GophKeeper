@@ -101,3 +101,15 @@ func (repo *CommonRepository) CreateMeta(ctx context.Context, itemID int64, k st
 
 	return id, nil
 }
+
+func (repo *CommonRepository) CreateMetaTx(ctx context.Context, tx *sql.Tx, itemID int64, k string, v string) (int64, error) {
+	sql := "INSERT INTO metadata (item_id,key,value) VALUES ($1,$2,$3) RETURNING id"
+
+	var id int64
+
+	if err := tx.QueryRowContext(ctx, sql, itemID, k, v).Scan(&id); err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
