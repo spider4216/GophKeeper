@@ -22,7 +22,6 @@ func main() {
 
 	cmd := commands.New(service, app.cfg)
 
-	// timeout to config
 	ctx, cancel := context.WithTimeout(context.Background(), app.cfg.CtxTimeout)
 	defer cancel()
 
@@ -50,8 +49,6 @@ func main() {
 		msg, err = cmd.UpdateLoginPass(ctx, app.args)
 	default:
 		err = errors.New("command not found")
-		fmt.Println("command not found")
-		os.Exit(1)
 	}
 
 	if err != nil {

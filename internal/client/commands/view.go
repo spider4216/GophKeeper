@@ -2,9 +2,14 @@ package commands
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
+	"strings"
+
+	"github.com/spider4216/GophKeeper/internal/client/models"
+	"github.com/spider4216/GophKeeper/internal/enum"
 )
 
 func (c *Command) View(ctx context.Context, args []string) (string, error) {
@@ -41,14 +46,28 @@ func (c *Command) View(ctx context.Context, args []string) (string, error) {
 		return "", fmt.Errorf("cannot decrypt data: %s", err)
 	}
 
-	// todo в зависимости от типа нужно делать unmarshall в конкретную структуру
+	var builder strings.Builder
 
-	// var decData models.LoginPassFmt
+	if item.Type == enum.LoginPass {
+		data, err := c.outLoginPass(decrypted)
 
-	// if err := json.Unmarshal(decrypted, &decData); err != nil {
-	// 	fmt.Printf("cannot unmarshal decrypted data: %s\n", err)
-	// 	os.Exit(1)
-	// }
+		if err != nil {
+			return "", err
+		}
 
-	return string(decrypted), nil
+		builder.WriteString(fmt.Sprintf("Login: %s\n", data.Login))
+		builder.WriteString(fmt.Sprintf("Password: %s\n", data.Pass))
+	}
+
+	return builder.String(), nil
+}
+
+func (c *Command) outLoginPass(decrypted []byte) (*models.LoginPassFmt, error) {
+	var loginPassData models.LoginPassFmt
+
+	if err := json.Unmarshal(decrypted, &loginPassData); err != nil {
+		return nil, fmt.Errorf("cannot unmaeshall loginpass: %s", err)
+	}
+
+	return &loginPassData, nil
 }

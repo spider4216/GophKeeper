@@ -44,8 +44,6 @@ type Command struct {
 	Cfg     *config.Config
 }
 
-// todo подумать над middleware
-
 func New(service *services.Service, cfg *config.Config) CommandInterface {
 	return &Command{
 		Service: service,

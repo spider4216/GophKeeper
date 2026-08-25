@@ -36,7 +36,7 @@ func (c *Command) UserList(ctx context.Context, args []string) (string, error) {
 	for _, item := range items {
 		builder.WriteString(fmt.Sprintf("ID: %d\n", item.ID))
 		builder.WriteString(fmt.Sprintf("Type: %s\n", item.Type))
-		builder.WriteString("Meta:")
+		builder.WriteString("Meta:\n")
 
 		for _, meta := range item.Metadata {
 			builder.WriteString(fmt.Sprintf("%s: %s\n", meta.Key, meta.Value))

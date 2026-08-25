@@ -18,7 +18,6 @@ func (c *Command) SyncGet(ctx context.Context, args []string) (string, error) {
 		return "", errors.New("Token is required")
 	}
 
-	// move to middleware
 	claims, err := c.getClaims(*token)
 
 	if err != nil {
