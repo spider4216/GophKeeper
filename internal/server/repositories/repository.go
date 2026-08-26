@@ -89,18 +89,6 @@ func (repo *SrvRepository) CreateItemTx(ctx context.Context, tx *sql.Tx, item mo
 	return id, nil
 }
 
-func (repo *SrvRepository) CreateItemPayload(ctx context.Context, item models.ItemPayloadRepo) error {
-	sql := "INSERT INTO item_payloads (item_id,ciphertext) VALUES ($1,$2)"
-
-	_, err := repo.con.ExecContext(ctx, sql, item.ItemID, item.Ciphertext)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (repo *SrvRepository) CreateItemPayloadTx(ctx context.Context, tx *sql.Tx, item models.ItemPayloadRepo) error {
 	sql := "INSERT INTO item_payloads (item_id,ciphertext) VALUES ($1,$2)"
 
@@ -111,18 +99,6 @@ func (repo *SrvRepository) CreateItemPayloadTx(ctx context.Context, tx *sql.Tx, 
 	}
 
 	return nil
-}
-
-func (repo *SrvRepository) CreateSyncChanges(ctx context.Context, itemID int64, op string, userID int64) (int64, error) {
-	sql := "INSERT INTO sync_changes (item_id,operation,user_id) VALUES ($1,$2,$3) RETURNING id"
-
-	var id int64
-
-	if err := repo.con.QueryRowContext(ctx, sql, itemID, op, userID).Scan(&id); err != nil {
-		return 0, err
-	}
-
-	return id, nil
 }
 
 func (repo *SrvRepository) CreateSyncChangesTx(ctx context.Context, tx *sql.Tx, itemID int64, op string, userID int64) (int64, error) {
@@ -277,34 +253,10 @@ func (repo *SrvRepository) GetPayloadByItemIDs(ctx context.Context, itemIDs []in
 	return items, nil
 }
 
-func (repo *SrvRepository) DeletePayloadByItemID(ctx context.Context, itemID int64) error {
-	sql := "DELETE FROM item_payloads WHERE item_id=$1"
-
-	_, err := repo.con.ExecContext(ctx, sql, itemID)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (repo *SrvRepository) DeletePayloadByItemIDTx(ctx context.Context, tx *sql.Tx, itemID int64) error {
 	sql := "DELETE FROM item_payloads WHERE item_id=$1"
 
 	_, err := tx.ExecContext(ctx, sql, itemID)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (repo *SrvRepository) UpdateUserItemPayload(ctx context.Context, itemID int64, userID int64, val string) error {
-	sql := "UPDATE item_payloads p SET ciphertext=$1 FROM items i WHERE p.item_id=$2 AND i.user_id=$3"
-
-	_, err := repo.con.ExecContext(ctx, sql, val, itemID, userID)
 
 	if err != nil {
 		return err
