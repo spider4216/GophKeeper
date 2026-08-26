@@ -357,8 +357,6 @@ func (repo *SrvRepository) ApplySync(ctx context.Context, in []shrModel.SyncPutC
 			return fmt.Errorf("unknown operation: %s", item.Operation)
 		}
 
-		// todo op co conts
-
 	}
 
 	if err := tx.Commit(); err != nil {
