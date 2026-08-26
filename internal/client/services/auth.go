@@ -12,6 +12,11 @@ import (
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
+const (
+	authURL string = "/auth/login"
+	regURL  string = "/auth/register"
+)
+
 func (s *Service) Register(ctx context.Context, req shrModel.RegisterReq) (*shrModel.RegisterResp, error) {
 	data, err := json.Marshal(req)
 
@@ -19,8 +24,7 @@ func (s *Service) Register(ctx context.Context, req shrModel.RegisterReq) (*shrM
 		return nil, err
 	}
 
-	// todo endpoint to const
-	url, err := url.JoinPath(s.host, "/auth/register")
+	url, err := url.JoinPath(s.host, regURL)
 
 	if err != nil {
 		return nil, err
@@ -59,8 +63,7 @@ func (s *Service) Login(ctx context.Context, req shrModel.LoginReq) (*shrModel.L
 		return nil, err
 	}
 
-	// todo endpoint to const
-	url, err := url.JoinPath(s.host, "/auth/login")
+	url, err := url.JoinPath(s.host, authURL)
 
 	if err != nil {
 		return nil, err
