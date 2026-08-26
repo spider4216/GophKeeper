@@ -17,7 +17,7 @@ import (
 func (c *Command) View(ctx context.Context, args []string) (string, error) {
 	fs := flag.NewFlagSet(View.String(), flag.ExitOnError)
 
-	// validation
+	// todo validation
 	itemID := fs.Int64("item_id", 0, "Item ID")
 	token := fs.String("token", "", "JWT from server")
 

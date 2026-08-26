@@ -20,7 +20,7 @@ func main() {
 
 	service := services.New(app.cli, app.cfg.SrvHost, app.repo, app.logger)
 
-	cmd := commands.New(service, app.cfg)
+	cmd := commands.New(service, app.cfg, app.logger)
 
 	ctx, cancel := context.WithTimeout(context.Background(), app.cfg.CtxTimeout)
 	defer cancel()

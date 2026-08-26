@@ -5,7 +5,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"os"
 
 	"github.com/spider4216/GophKeeper/internal/client/models"
 )
@@ -34,12 +33,11 @@ func (c *Command) CreateLoginpass(ctx context.Context, args []string) (string, e
 	claims, err := c.getClaims(*token)
 
 	if err != nil {
-		fmt.Printf("cannot parse jwt: %w", err)
-		os.Exit(1)
+		return "", fmt.Errorf("cannot parse jwt: %w", err)
 	}
 
 	if err := c.Service.CreateUserPassItem(ctx, req, c.Cfg.EncryptKey, claims.UserID); err != nil {
-		return "", err
+		return "", fmt.Errorf("cannot create userpass: %w", err)
 	}
 
 	return "Item successfully created", nil

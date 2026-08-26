@@ -10,7 +10,6 @@ import (
 )
 
 func (c *Command) Register(ctx context.Context, args []string) (string, error) {
-	// todo transaction
 	fs := flag.NewFlagSet(Register.String(), flag.ExitOnError)
 
 	email := fs.String("email", "", "user email")
@@ -32,8 +31,6 @@ func (c *Command) Register(ctx context.Context, args []string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("cannot create user: %s", err)
 	}
-
-	// todo command logger
 
 	if err := c.Service.CreateLastUserRev(ctx, resp.UserID, 0); err != nil {
 		return "", fmt.Errorf("cannot create latest revision for user: %s", err)

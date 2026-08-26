@@ -7,6 +7,7 @@ import (
 	"github.com/spider4216/GophKeeper/internal/client/config"
 	"github.com/spider4216/GophKeeper/internal/client/services"
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
+	"go.uber.org/zap"
 )
 
 type CmdName string
@@ -42,12 +43,14 @@ type CommandInterface interface {
 type Command struct {
 	Service *services.Service
 	Cfg     *config.Config
+	logger  *zap.SugaredLogger
 }
 
-func New(service *services.Service, cfg *config.Config) CommandInterface {
+func New(service *services.Service, cfg *config.Config, logger *zap.SugaredLogger) CommandInterface {
 	return &Command{
 		Service: service,
 		Cfg:     cfg,
+		logger:  logger,
 	}
 }
 

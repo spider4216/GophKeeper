@@ -39,7 +39,7 @@ func (c *Command) Login(ctx context.Context, args []string) (string, error) {
 	// Внести ему последнюю ревизию как 0
 	if _, err := c.Service.GetLatestUserRev(ctx, resp.UserID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			// todo logger
+			c.logger.Debug("no last rev. Create zero one")
 			c.Service.CreateLastUserRev(ctx, resp.UserID, 0)
 		} else {
 			return "", fmt.Errorf("cannot get latest revision: %w", err)
@@ -50,5 +50,4 @@ func (c *Command) Login(ctx context.Context, args []string) (string, error) {
 	expStr := expObj.Format("2006-01-02 15:04:05")
 
 	return fmt.Sprintf("JWT token\n\n%s\n\nExpired: %s\n", resp.Token, expStr), nil
-	// todo вывести когда истекает в человекопонятном виде
 }
