@@ -339,7 +339,6 @@ func (repo *SrvRepository) ApplySync(ctx context.Context, in []shrModel.SyncPutC
 				return err
 			}
 
-			// todo op to const
 			if _, err := repo.CreateSyncChangesTx(ctx, tx, int64(item.Item.ID), enum.OpDelete, userID); err != nil {
 				return err
 			}

@@ -81,7 +81,6 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // Авторизация пользователя
-// todo move to another file
 func (h Handler) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

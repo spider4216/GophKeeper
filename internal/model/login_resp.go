@@ -1,6 +1,5 @@
 package model
 
-// todo можно сделать кастомный тип токена и статуса
 type LoginResp struct {
 	Status    string `json:"status"`
 	Message   string `json:"message"`
