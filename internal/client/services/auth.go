@@ -52,7 +52,7 @@ func (s *Service) Register(ctx context.Context, req shrModel.RegisterReq) (*shrM
 	return &res, nil
 }
 
-func (s *Service) Login(req shrModel.LoginReq) (*shrModel.LoginResp, error) {
+func (s *Service) Login(ctx context.Context, req shrModel.LoginReq) (*shrModel.LoginResp, error) {
 	data, err := json.Marshal(req)
 
 	if err != nil {
@@ -66,10 +66,9 @@ func (s *Service) Login(req shrModel.LoginReq) (*shrModel.LoginResp, error) {
 		return nil, err
 	}
 
-	r, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
+	r, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(data))
 	r.Header.Add("Content-Type", "application/json")
 
-	// todo Может здесь нужен контекст в клиенте ???
 	resp, err := s.client.Do(r)
 	if err != nil {
 		return nil, err

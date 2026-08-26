@@ -34,7 +34,7 @@ func (c *Command) CreateLoginpass(ctx context.Context, args []string) (string, e
 	claims, err := c.getClaims(*token)
 
 	if err != nil {
-		fmt.Printf("cannot parse jwt: %s", err)
+		fmt.Printf("cannot parse jwt: %w", err)
 		os.Exit(1)
 	}
 

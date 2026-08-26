@@ -26,11 +26,11 @@ func (c *Command) UpdateLoginPass(ctx context.Context, args []string) (string, e
 	claims, err := c.getClaims(*token)
 
 	if err != nil {
-		return "", fmt.Errorf("cannot parse jwt: %s", err)
+		return "", fmt.Errorf("cannot parse jwt: %w", err)
 	}
 
 	if err := c.Service.UpdateLoginPass(ctx, *itemID, claims.UserID, *login, *pass, c.Cfg.EncryptKey, *title, *metaID); err != nil {
-		return "", fmt.Errorf("cannot update: %s", err)
+		return "", fmt.Errorf("cannot update: %w", err)
 	}
 
 	return "Item successfully updates", nil

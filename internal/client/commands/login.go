@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"time"
 
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
@@ -27,13 +28,13 @@ func (c *Command) Login(ctx context.Context, args []string) (string, error) {
 		Pass:  *pass,
 	}
 
-	resp, err := c.Service.Login(req)
+	resp, err := c.Service.Login(ctx, req)
 
 	if err != nil {
-		return "", fmt.Errorf("cannot login: %s", err)
+		return "", fmt.Errorf("cannot login: %w", err)
 	}
 
-	// todo логин можен осуществлять с другого клиента у которого пустая БД
+	// логин можен осуществлять с другого клиента у которого пустая БД
 	// Если это первый вход клиента с нового устройства, то нужно
 	// Внести ему последнюю ревизию как 0
 	if _, err := c.Service.GetLatestUserRev(ctx, resp.UserID); err != nil {
@@ -41,10 +42,13 @@ func (c *Command) Login(ctx context.Context, args []string) (string, error) {
 			// todo logger
 			c.Service.CreateLastUserRev(ctx, resp.UserID, 0)
 		} else {
-			return "", fmt.Errorf("cannot get latest revision: %s", err)
+			return "", fmt.Errorf("cannot get latest revision: %w", err)
 		}
 	}
 
-	return fmt.Sprintf("JWT token\n\n%s\n", resp.Token), nil
+	expObj := time.Unix(resp.ExpiredAt, 0)
+	expStr := expObj.Format("2006-01-02 15:04:05")
+
+	return fmt.Sprintf("JWT token\n\n%s\n\nExpired: %s\n", resp.Token, expStr), nil
 	// todo вывести когда истекает в человекопонятном виде
 }

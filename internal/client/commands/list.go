@@ -22,13 +22,13 @@ func (c *Command) UserList(ctx context.Context, args []string) (string, error) {
 	claims, err := c.getClaims(*token)
 
 	if err != nil {
-		return "", fmt.Errorf("cannot parse jwt: %s", err)
+		return "", fmt.Errorf("cannot parse jwt: %w", err)
 	}
 
 	items, err := c.Service.GetUserItemsWithMeta(ctx, claims.UserID)
 
 	if err != nil {
-		return "", fmt.Errorf("cannot get user items: %s", err)
+		return "", fmt.Errorf("cannot get user items: %w", err)
 	}
 
 	var builder strings.Builder

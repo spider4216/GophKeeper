@@ -23,17 +23,17 @@ func (c *Command) DeleteItem(ctx context.Context, args []string) (string, error)
 	claims, err := c.getClaims(*token)
 
 	if err != nil {
-		return "", fmt.Errorf("cannot parse jwt: %s", err)
+		return "", fmt.Errorf("cannot parse jwt: %w", err)
 	}
 
 	itemIDInt, err := strconv.ParseInt(*itemID, 10, 64)
 
 	if err != nil {
-		return "", fmt.Errorf("cannot parse itemID: %s", err)
+		return "", fmt.Errorf("cannot parse itemID: %w", err)
 	}
 
 	if err := c.Service.DeleteUserItem(ctx, itemIDInt, claims.UserID); err != nil {
-		return "", fmt.Errorf("cannot delete item: %s", err)
+		return "", fmt.Errorf("cannot delete item: %w", err)
 	}
 
 	return "Item successfully deleted", nil
