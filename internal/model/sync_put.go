@@ -1,11 +1,13 @@
 package model
 
+import "github.com/spider4216/GophKeeper/internal/enum"
+
 type SyncPutReq struct {
 	Changes []SyncPutChange `json:"changes"`
 }
 
 type SyncPutChange struct {
-	Operation string            `json:"operation"`
+	Operation enum.OpType       `json:"operation"`
 	Item      ItemSyncPut       `json:"item"`
 	Metadata  map[string]string `json:"metadata"`
 }

@@ -63,19 +63,7 @@ func (repo *ClientRepository) CreateItemTx(ctx context.Context, tx *sql.Tx, item
 	return id, nil
 }
 
-func (repo *ClientRepository) CreatePendingChange(ctx context.Context, itemID int64, op string, userID int64) error {
-	sql := "INSERT INTO pending_changes (item_id,operation,user_id) VALUES ($1,$2,$3)"
-
-	_, err := repo.con.ExecContext(ctx, sql, itemID, op, userID)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (repo *ClientRepository) CreatePendingChangeTx(ctx context.Context, tx *sql.Tx, itemID int64, op string, userID int64) error {
+func (repo *ClientRepository) CreatePendingChangeTx(ctx context.Context, tx *sql.Tx, itemID int64, op enum.OpType, userID int64) error {
 	sql := "INSERT INTO pending_changes (item_id,operation,user_id) VALUES ($1,$2,$3)"
 
 	_, err := tx.ExecContext(ctx, sql, itemID, op, userID)
@@ -367,7 +355,6 @@ func (repo *ClientRepository) CreateUserPassItem(ctx context.Context, item model
 	tx, err := repo.con.BeginTx(ctx, nil)
 
 	if err != nil {
-		// todo in errorf everywhere as %w
 		return fmt.Errorf("begin transaction: %w", err)
 	}
 
@@ -385,7 +372,7 @@ func (repo *ClientRepository) CreateUserPassItem(ctx context.Context, item model
 		return fmt.Errorf("cannot create meta: %w", err)
 	}
 
-	if err := repo.CreatePendingChangeTx(ctx, tx, itemID, "CREATE", userID); err != nil {
+	if err := repo.CreatePendingChangeTx(ctx, tx, itemID, enum.OpCreate, userID); err != nil {
 		return fmt.Errorf("cannot create penfing: %w", err)
 	}
 
@@ -400,7 +387,6 @@ func (repo *ClientRepository) DeleteUserItem(ctx context.Context, itemID int64, 
 	tx, err := repo.con.BeginTx(ctx, nil)
 
 	if err != nil {
-		// todo in errorf everywhere as %w
 		return fmt.Errorf("begin transaction: %w", err)
 	}
 
@@ -417,7 +403,7 @@ func (repo *ClientRepository) DeleteUserItem(ctx context.Context, itemID int64, 
 	}
 
 	// todo op to const
-	if err := repo.CreatePendingChangeTx(ctx, tx, itemID, "DELETE", userID); err != nil {
+	if err := repo.CreatePendingChangeTx(ctx, tx, itemID, enum.OpDelete, userID); err != nil {
 		return fmt.Errorf("cannot create pending: %w", err)
 	}
 
@@ -441,7 +427,7 @@ func (repo *ClientRepository) ApplySync(ctx context.Context, userID int64, res s
 
 	for _, change := range res.Changes {
 		switch change.Operation {
-		case "CREATE":
+		case enum.OpCreate:
 			// todo to method
 			item := models.ItemRepo{
 				Type:       enum.SecretType(change.Item.Type),
@@ -461,7 +447,7 @@ func (repo *ClientRepository) ApplySync(ctx context.Context, userID int64, res s
 				}
 			}
 
-		case "DELETE":
+		case enum.OpDelete:
 			// todo to method
 			if err := repo.GetCommonRepo().DeleteUserMetaByItemIDTx(ctx, tx, change.Item.ID, userID); err != nil {
 				return err
@@ -471,7 +457,7 @@ func (repo *ClientRepository) ApplySync(ctx context.Context, userID int64, res s
 				return err
 			}
 
-		case "UPDATE":
+		case enum.OpUpdate:
 			if err := repo.UpdateUserItemTx(ctx, tx, change.Item.ID, userID, change.Item.Ciphertext); err != nil {
 				return err
 			}
@@ -507,7 +493,7 @@ func (repo *ClientRepository) UpdateLoginPass(ctx context.Context, itemID int64,
 		return fmt.Errorf("cannot update user item: %w", err)
 	}
 
-	if err := repo.CreatePendingChangeTx(ctx, tx, itemID, "UPDATE", userID); err != nil {
+	if err := repo.CreatePendingChangeTx(ctx, tx, itemID, enum.OpUpdate, userID); err != nil {
 		return fmt.Errorf("cannot create pending change: %w", err)
 	}
 

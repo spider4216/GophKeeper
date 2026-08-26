@@ -7,8 +7,8 @@ import (
 )
 
 type Config struct {
-	DbDsn         string        `env:"DB_DSN"`    // Connection string для БД
-	LogLvl        string        `env:"LOG_LEVEL"` // Уровень логирования
+	DbDsn         string        `env:"DB_DSN"`                       // Connection string для БД
+	LogLvl        string        `env:"LOG_LEVEL" envDefault:"debug"` // Уровень логирования
 	MaxBodySize   int64         `env:"MAX_BODY_SIZE" envDefault:"2048"`
 	ServerAddress string        `env:"SERVER_ADDRESS"` // Адрес запуска HTTP-сервера
 	ReadTimeout   time.Duration `env:"READ_TIMEOUT" envDefault:"5s"`

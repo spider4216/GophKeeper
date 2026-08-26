@@ -98,8 +98,7 @@ func (app *app) initMigrations() error {
 }
 
 func (app *app) initLogger() error {
-	// todo move lvl to cfg
-	logger, err := logger.InitZap("debug")
+	logger, err := logger.InitZap(app.cfg.LogLvl)
 	if err != nil {
 		return err
 	}

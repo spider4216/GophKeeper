@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/spider4216/GophKeeper/internal/client/models"
+	"github.com/spider4216/GophKeeper/internal/enum"
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 	"github.com/spider4216/GophKeeper/internal/repository"
 )
@@ -27,7 +28,7 @@ type Repository interface {
 	GetMetadataByItemID(ctx context.Context, itemID int64) ([]shrModel.MetadataRepo, error)
 	GetCommonRepo() repository.CommonRepositoryInterface
 	CreateItemTx(ctx context.Context, tx *sql.Tx, item models.ItemRepo) (int64, error)
-	CreatePendingChangeTx(ctx context.Context, tx *sql.Tx, itemID int64, op string, userID int64) error
+	CreatePendingChangeTx(ctx context.Context, tx *sql.Tx, itemID int64, op enum.OpType, userID int64) error
 	CreateUserPassItem(ctx context.Context, item models.ItemRepo, userID int64, title string) error
 	DeleteUserItem(ctx context.Context, itemID int64, userID int64) error
 	ApplySync(ctx context.Context, userID int64, res shrModel.SyncGet) error

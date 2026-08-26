@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/spider4216/GophKeeper/internal/enum"
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 	commonRep "github.com/spider4216/GophKeeper/internal/repository"
 	"github.com/spider4216/GophKeeper/internal/server/models"
@@ -101,7 +102,7 @@ func (repo *SrvRepository) CreateItemPayloadTx(ctx context.Context, tx *sql.Tx, 
 	return nil
 }
 
-func (repo *SrvRepository) CreateSyncChangesTx(ctx context.Context, tx *sql.Tx, itemID int64, op string, userID int64) (int64, error) {
+func (repo *SrvRepository) CreateSyncChangesTx(ctx context.Context, tx *sql.Tx, itemID int64, op enum.OpType, userID int64) (int64, error) {
 	sql := "INSERT INTO sync_changes (item_id,operation,user_id) VALUES ($1,$2,$3) RETURNING id"
 
 	var id int64
@@ -299,7 +300,7 @@ func (repo *SrvRepository) ApplySync(ctx context.Context, in []shrModel.SyncPutC
 		}
 
 		switch item.Operation {
-		case "CREATE":
+		case enum.OpCreate:
 			repo.logger.Debug("create strategy")
 			itemID, err := repo.CreateItemTx(ctx, tx, line)
 
@@ -325,7 +326,7 @@ func (repo *SrvRepository) ApplySync(ctx context.Context, in []shrModel.SyncPutC
 			if _, err := repo.CreateSyncChangesTx(ctx, tx, itemID, item.Operation, userID); err != nil {
 				return err
 			}
-		case "DELETE":
+		case enum.OpDelete:
 			repo.logger.Debug("Delete strategy")
 			if err := repo.GetCommonRepo().DeleteUserMetaByItemIDTx(ctx, tx, int64(item.Item.ID), userID); err != nil {
 				return err
@@ -340,10 +341,10 @@ func (repo *SrvRepository) ApplySync(ctx context.Context, in []shrModel.SyncPutC
 			}
 
 			// todo op to const
-			if _, err := repo.CreateSyncChangesTx(ctx, tx, int64(item.Item.ID), "DELETE", userID); err != nil {
+			if _, err := repo.CreateSyncChangesTx(ctx, tx, int64(item.Item.ID), enum.OpDelete, userID); err != nil {
 				return err
 			}
-		case "UPDATE":
+		case enum.OpUpdate:
 			repo.logger.Debug("Update strategy")
 			if err := repo.UpdateUserItemPayloadTx(ctx, tx, int64(item.Item.ID), userID, item.Item.Ciphertext); err != nil {
 				return err
@@ -351,7 +352,7 @@ func (repo *SrvRepository) ApplySync(ctx context.Context, in []shrModel.SyncPutC
 
 			// todo update metadata
 
-			if _, err := repo.CreateSyncChangesTx(ctx, tx, int64(item.Item.ID), "UPDATE", userID); err != nil {
+			if _, err := repo.CreateSyncChangesTx(ctx, tx, int64(item.Item.ID), enum.OpUpdate, userID); err != nil {
 				return err
 			}
 		default:
