@@ -13,8 +13,6 @@ type Repository interface {
 	// Source возвращает инкапсулированное хранилище (источник).
 	Source() any
 	CreateItem(ctx context.Context, item models.ItemRepo) (int64, error)
-	// todo op as custom type
-	CreatePendingChange(ctx context.Context, itemID int64, op string, userID int64) error
 
 	GetPendingUserChanges(ctx context.Context, userID int) ([]models.PendChangesRepo, error)
 	GetItemsByIDs(ctx context.Context, itemIDs []int64) ([]models.ItemRepo, error)
@@ -25,7 +23,6 @@ type Repository interface {
 	CreateLastUserRev(ctx context.Context, userID int64, rev int64) error
 	GetLatestUserRev(ctx context.Context, userID int64) (int64, error)
 	GetUserItems(ctx context.Context, userID int64) ([]models.ItemRepo, error)
-	UpdateUserItem(ctx context.Context, itemID int64, userID int64, val string) error
 	UpdateUserItemTx(ctx context.Context, tx *sql.Tx, itemID int64, userID int64, val string) error
 	GetMetadataByItemID(ctx context.Context, itemID int64) ([]shrModel.MetadataRepo, error)
 	GetCommonRepo() repository.CommonRepositoryInterface

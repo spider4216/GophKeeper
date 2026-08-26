@@ -125,10 +125,6 @@ func (s *Service) CreateMeta(ctx context.Context, itemID int64, k string, v stri
 	return s.repo.GetCommonRepo().CreateMeta(ctx, itemID, k, v)
 }
 
-func (s *Service) CreatePendingChange(ctx context.Context, itemID int64, op string, userID int64) error {
-	return s.repo.CreatePendingChange(ctx, itemID, op, userID)
-}
-
 func (s *Service) UpdateLastUserRev(ctx context.Context, userID int64, rev int64) error {
 	return s.repo.UpdateLastUserRev(ctx, userID, rev)
 }

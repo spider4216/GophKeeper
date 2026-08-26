@@ -351,18 +351,6 @@ func (repo *ClientRepository) GetUserItemByID(ctx context.Context, itemID int64,
 	return &item, nil
 }
 
-func (repo *ClientRepository) UpdateUserItem(ctx context.Context, itemID int64, userID int64, val string) error {
-	sql := "UPDATE items SET ciphertext=$1 WHERE id=$2 AND user_id=$3"
-
-	_, err := repo.con.ExecContext(ctx, sql, val, itemID, userID)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (repo *ClientRepository) UpdateUserItemTx(ctx context.Context, tx *sql.Tx, itemID int64, userID int64, val string) error {
 	sql := "UPDATE items SET ciphertext=$1 WHERE id=$2 AND user_id=$3"
 
