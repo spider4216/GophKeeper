@@ -6,8 +6,6 @@ import (
 )
 
 func (s *Service) buildItemsWithMeta(items []models.ItemRepo, metadata []shrModel.MetadataRepo) []models.ItemWithMeta {
-	// todo move to func because dry in buildSyncRequest
-
 	metadataByItemID := make(map[int64][]shrModel.MetadataRepo)
 
 	for _, m := range metadata {

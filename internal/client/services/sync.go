@@ -13,15 +13,17 @@ import (
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
-func (s *Service) SyncSend(ctx context.Context, userID int64, token string) error {
-	// todo transavtion
+const (
+	syncURL string = "/sync"
+)
 
+func (s *Service) SyncSend(ctx context.Context, userID int64, token string) error {
 	s.logger.Debug("Get pendings...")
 
 	pends, err := s.repo.GetPendingUserChanges(ctx, int(userID))
 
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot get pending changes: %w", err)
 	}
 
 	s.logger.Debugf("Pendings count: %d", len(pends))
@@ -37,10 +39,9 @@ func (s *Service) SyncSend(ctx context.Context, userID int64, token string) erro
 	s.logger.Debugf("User items sync: %d", len(items))
 
 	if err != nil {
-		return err
+		return fmt.Errorf("cannpt get items: %w", err)
 	}
 
-	// todo моэно в горутину отправитьт вместе с предыдущим получением
 	meta, err := s.repo.GetCommonRepo().GetMetadataByItemIDs(ctx, itemIDs)
 
 	if err != nil {
@@ -52,17 +53,21 @@ func (s *Service) SyncSend(ctx context.Context, userID int64, token string) erro
 	data, err := json.Marshal(req)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot build sync request: %w", err)
 	}
 
-	// todo endpoint to const
-	url, err := url.JoinPath(s.host, "/sync")
+	url, err := url.JoinPath(s.host, syncURL)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot joun sync url to host: %w", err)
 	}
 
 	r, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
+
+	if err != nil {
+		return fmt.Errorf("cannot create new request for post sync: %w", err)
+	}
+
 	r.Header.Add("Content-Type", "application/json")
 	r.Header.Add("Authorization", token)
 
@@ -87,7 +92,7 @@ func (s *Service) SyncSend(ctx context.Context, userID int64, token string) erro
 	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot read body: %w", err)
 	}
 
 	var res shrModel.SyncPutResp
@@ -100,13 +105,13 @@ func (s *Service) SyncSend(ctx context.Context, userID int64, token string) erro
 
 	s.logger.Debug("Delete pendings")
 	if err := s.repo.DeletePendingByItemIDs(ctx, itemIDs); err != nil {
-		return fmt.Errorf("Cannot delete pending changes: %s", err)
+		return fmt.Errorf("Cannot delete pending changes: %w", err)
 	}
 
 	s.logger.Debugf("Update latest user revision to %d", res.LastRev)
 
 	if err := s.repo.UpdateLastUserRev(ctx, userID, res.LastRev); err != nil {
-		return fmt.Errorf("cannot update to latest rev version: %s", err)
+		return fmt.Errorf("cannot update to latest rev version: %w", err)
 	}
 
 	s.logger.Debug("Sync done")
@@ -122,8 +127,7 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, token string) error
 		return err
 	}
 
-	// todo endpoint to const
-	url, err := url.JoinPath(s.host, "/sync")
+	url, err := url.JoinPath(s.host, syncURL)
 
 	if err != nil {
 		return err
@@ -133,9 +137,12 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, token string) error
 
 	url = url + "?since=" + revStr
 
-	// todo with ctx
-	r, err := http.NewRequest(http.MethodGet, url, nil)
-	// todo check err
+	r, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+
+	if err != nil {
+		return fmt.Errorf("cannot create request for sync operation: %w", err)
+	}
+
 	r.Header.Add("Authorization", token)
 
 	s.logger.Debug("Get sync...")
@@ -164,13 +171,13 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, token string) error
 	var res shrModel.SyncGet
 
 	if err := json.Unmarshal(body, &res); err != nil {
-		return err
+		return fmt.Errorf("cannot unmarshal: %w", err)
 	}
 
 	s.logger.Debugf("Changes: %d", len(res.Changes))
 
 	if err := s.repo.ApplySync(ctx, userID, res); err != nil {
-		return err
+		return fmt.Errorf("cannot apply sync: %w", err)
 	}
 
 	return nil

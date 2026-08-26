@@ -36,8 +36,6 @@ func New(client *http.Client, host string, repo repositories.Repository, logger 
 }
 
 func (s *Service) CreateLoginPassItem(ctx context.Context, t enum.SecretType, data models.LoginPassReq, key string, userID int64) (int64, error) {
-	// todo t - as custom type
-
 	// Формат хранения для типа
 	d := models.LoginPassFmt{
 		Login: data.Login,
@@ -157,7 +155,7 @@ func (s *Service) GetUserItemsWithMeta(ctx context.Context, userID int64) ([]mod
 	meta, err := s.repo.GetCommonRepo().GetMetadataByItemIDs(ctx, itemIDs)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cannot get meta by item ids: %w", err)
 	}
 
 	return s.buildItemsWithMeta(items, meta), nil
@@ -181,7 +179,7 @@ func (s *Service) UpdateLoginPass(ctx context.Context, itemID int64, userID int6
 	b, err := json.Marshal(data)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("loginpass marshal err: %w", err)
 	}
 
 	encrypted, err := s.EncryptData(b, []byte(key))
