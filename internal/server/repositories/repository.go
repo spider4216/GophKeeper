@@ -3,10 +3,12 @@ package repositories
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"go.uber.org/zap"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+	shrModel "github.com/spider4216/GophKeeper/internal/model"
 	commonRep "github.com/spider4216/GophKeeper/internal/repository"
 	"github.com/spider4216/GophKeeper/internal/server/models"
 )
@@ -75,10 +77,34 @@ func (repo *SrvRepository) CreateItem(ctx context.Context, item models.ItemRepo)
 	return id, nil
 }
 
+func (repo *SrvRepository) CreateItemTx(ctx context.Context, tx *sql.Tx, item models.ItemRepo) (int64, error) {
+	sql := "INSERT INTO items (id, type ,user_id) VALUES ($1,$2,$3) RETURNING id"
+
+	var id int64
+
+	if err := tx.QueryRowContext(ctx, sql, item.ID, item.Type, item.UserID).Scan(&id); err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
+
 func (repo *SrvRepository) CreateItemPayload(ctx context.Context, item models.ItemPayloadRepo) error {
 	sql := "INSERT INTO item_payloads (item_id,ciphertext) VALUES ($1,$2)"
 
 	_, err := repo.con.ExecContext(ctx, sql, item.ItemID, item.Ciphertext)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repo *SrvRepository) CreateItemPayloadTx(ctx context.Context, tx *sql.Tx, item models.ItemPayloadRepo) error {
+	sql := "INSERT INTO item_payloads (item_id,ciphertext) VALUES ($1,$2)"
+
+	_, err := tx.ExecContext(ctx, sql, item.ItemID, item.Ciphertext)
 
 	if err != nil {
 		return err
@@ -93,6 +119,18 @@ func (repo *SrvRepository) CreateSyncChanges(ctx context.Context, itemID int64, 
 	var id int64
 
 	if err := repo.con.QueryRowContext(ctx, sql, itemID, op, userID).Scan(&id); err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
+
+func (repo *SrvRepository) CreateSyncChangesTx(ctx context.Context, tx *sql.Tx, itemID int64, op string, userID int64) (int64, error) {
+	sql := "INSERT INTO sync_changes (item_id,operation,user_id) VALUES ($1,$2,$3) RETURNING id"
+
+	var id int64
+
+	if err := tx.QueryRowContext(ctx, sql, itemID, op, userID).Scan(&id); err != nil {
 		return 0, err
 	}
 
@@ -251,6 +289,18 @@ func (repo *SrvRepository) DeletePayloadByItemID(ctx context.Context, itemID int
 	return nil
 }
 
+func (repo *SrvRepository) DeletePayloadByItemIDTx(ctx context.Context, tx *sql.Tx, itemID int64) error {
+	sql := "DELETE FROM item_payloads WHERE item_id=$1"
+
+	_, err := tx.ExecContext(ctx, sql, itemID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (repo *SrvRepository) UpdateUserItemPayload(ctx context.Context, itemID int64, userID int64, val string) error {
 	sql := "UPDATE item_payloads p SET ciphertext=$1 FROM items i WHERE p.item_id=$2 AND i.user_id=$3"
 
@@ -258,6 +308,110 @@ func (repo *SrvRepository) UpdateUserItemPayload(ctx context.Context, itemID int
 
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (repo *SrvRepository) UpdateUserItemPayloadTx(ctx context.Context, tx *sql.Tx, itemID int64, userID int64, val string) error {
+	sql := "UPDATE item_payloads p SET ciphertext=$1 FROM items i WHERE p.item_id=$2 AND i.user_id=$3"
+
+	_, err := tx.ExecContext(ctx, sql, val, itemID, userID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repo *SrvRepository) ApplySync(ctx context.Context, in []shrModel.SyncPutChange, userID int64) error {
+	tx, err := repo.con.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("begin transaction: %w", err)
+	}
+
+	defer func() {
+		// todo error
+		_ = tx.Rollback()
+	}()
+
+	for _, item := range in {
+
+		repo.logger.Debugf("Sync Operation: %s", item.Operation)
+
+		line := models.ItemRepo{
+			ID:     int64(item.Item.ID),
+			UserID: userID,
+			Type:   item.Item.Type,
+		}
+
+		switch item.Operation {
+		case "CREATE":
+			repo.logger.Debug("create strategy")
+			itemID, err := repo.CreateItemTx(ctx, tx, line)
+
+			if err != nil {
+				return err
+			}
+
+			pl := models.ItemPayloadRepo{
+				ItemID:     itemID,
+				Ciphertext: item.Item.Ciphertext,
+			}
+
+			if err := repo.CreateItemPayloadTx(ctx, tx, pl); err != nil {
+				return err
+			}
+
+			for k, v := range item.Metadata {
+				if _, err := repo.GetCommonRepo().CreateMetaTx(ctx, tx, itemID, k, v); err != nil {
+					return err
+				}
+			}
+
+			if _, err := repo.CreateSyncChangesTx(ctx, tx, itemID, item.Operation, userID); err != nil {
+				return err
+			}
+		case "DELETE":
+			repo.logger.Debug("Delete strategy")
+			if err := repo.GetCommonRepo().DeleteUserMetaByItemIDTx(ctx, tx, int64(item.Item.ID), userID); err != nil {
+				return err
+			}
+
+			if err := repo.DeletePayloadByItemIDTx(ctx, tx, int64(item.Item.ID)); err != nil {
+				return err
+			}
+
+			if err := repo.GetCommonRepo().DeleteUserItemByIDTx(ctx, tx, int64(item.Item.ID), userID); err != nil {
+				return err
+			}
+
+			// todo op to const
+			if _, err := repo.CreateSyncChangesTx(ctx, tx, int64(item.Item.ID), "DELETE", userID); err != nil {
+				return err
+			}
+		case "UPDATE":
+			repo.logger.Debug("Update strategy")
+			if err := repo.UpdateUserItemPayloadTx(ctx, tx, int64(item.Item.ID), userID, item.Item.Ciphertext); err != nil {
+				return err
+			}
+
+			// todo update metadata
+
+			if _, err := repo.CreateSyncChangesTx(ctx, tx, int64(item.Item.ID), "UPDATE", userID); err != nil {
+				return err
+			}
+		default:
+			return fmt.Errorf("unknown operation: %s", item.Operation)
+		}
+
+		// todo op co conts
+
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("commit transaction: %w", err)
 	}
 
 	return nil

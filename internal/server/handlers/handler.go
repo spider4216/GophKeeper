@@ -129,7 +129,6 @@ func (h Handler) Login(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 
 	res := shrModel.LoginResp{
-		// todo status to const
 		Status:    "success",
 		Token:     token,
 		Message:   "Login successfully",
@@ -179,7 +178,7 @@ func (h Handler) SyncIn(w http.ResponseWriter, r *http.Request) {
 
 	userID := h.service.GetUserIdFromCtx(ctx)
 
-	if err := h.service.CreateItems(ctx, req.Changes, userID); err != nil {
+	if err := h.service.ApplySync(ctx, req.Changes, userID); err != nil {
 		h.logger.Errorf("failed sync: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
