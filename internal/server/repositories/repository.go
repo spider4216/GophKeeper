@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"go.uber.org/zap"
@@ -284,9 +285,11 @@ func (repo *SrvRepository) ApplySync(ctx context.Context, in []shrModel.SyncPutC
 		return fmt.Errorf("begin transaction: %w", err)
 	}
 
-	if err := tx.Rollback(); err != nil {
-		repo.logger.Warnf("cannot rollback in apply sync: %s", err)
-	}
+	defer func() {
+		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			repo.logger.Warnf("cannot rollback in apply sync: %s", err)
+		}
+	}()
 
 	for _, item := range in {
 
@@ -348,7 +351,11 @@ func (repo *SrvRepository) ApplySync(ctx context.Context, in []shrModel.SyncPutC
 				return err
 			}
 
-			// todo update metadata
+			for k, v := range item.Metadata {
+				if err := repo.UpdateMetaByItemIDAndKeyTx(ctx, tx, int64(item.Item.ID), k, v); err != nil {
+					return err
+				}
+			}
 
 			if _, err := repo.CreateSyncChangesTx(ctx, tx, int64(item.Item.ID), enum.OpUpdate, userID); err != nil {
 				return err
@@ -361,6 +368,18 @@ func (repo *SrvRepository) ApplySync(ctx context.Context, in []shrModel.SyncPutC
 
 	if err := tx.Commit(); err != nil {
 		return fmt.Errorf("commit transaction: %w", err)
+	}
+
+	return nil
+}
+
+func (repo *SrvRepository) UpdateMetaByItemIDAndKeyTx(ctx context.Context, tx *sql.Tx, itemID int64, key string, v string) error {
+	sql := "UPDATE metadata md SET value=$1 FROM items i WHERE i.id=$2 AND md.key=$3"
+
+	_, err := tx.ExecContext(ctx, sql, v, itemID, key)
+
+	if err != nil {
+		return err
 	}
 
 	return nil

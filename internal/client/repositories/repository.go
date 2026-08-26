@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"go.uber.org/zap"
@@ -358,9 +359,11 @@ func (repo *ClientRepository) CreateUserPassItem(ctx context.Context, item model
 		return fmt.Errorf("begin transaction: %w", err)
 	}
 
-	if err := tx.Rollback(); err != nil {
-		repo.logger.Warnf("cannot rollback in apply sync: %s", err)
-	}
+	defer func() {
+		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			repo.logger.Warnf("cannot rollback in create userpass: %s", err)
+		}
+	}()
 
 	itemID, err := repo.CreateItemTx(ctx, tx, item)
 
@@ -390,9 +393,11 @@ func (repo *ClientRepository) DeleteUserItem(ctx context.Context, itemID int64, 
 		return fmt.Errorf("begin transaction: %w", err)
 	}
 
-	if err := tx.Rollback(); err != nil {
-		repo.logger.Warnf("cannot rollback in apply sync: %s", err)
-	}
+	defer func() {
+		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			repo.logger.Warnf("cannot rollback in selete user item: %s", err)
+		}
+	}()
 
 	if err := repo.GetCommonRepo().DeleteUserMetaByItemIDTx(ctx, tx, itemID, userID); err != nil {
 		return fmt.Errorf("cannot delete meta: %w", err)
@@ -419,9 +424,11 @@ func (repo *ClientRepository) ApplySync(ctx context.Context, userID int64, res s
 		return fmt.Errorf("begin transaction: %w", err)
 	}
 
-	if err := tx.Rollback(); err != nil {
-		repo.logger.Warnf("cannot rollback in apply sync: %s", err)
-	}
+	defer func() {
+		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			repo.logger.Warnf("cannot rollback in apply sync: %s", err)
+		}
+	}()
 
 	for _, change := range res.Changes {
 		switch change.Operation {
@@ -482,9 +489,11 @@ func (repo *ClientRepository) UpdateLoginPass(ctx context.Context, itemID int64,
 		return fmt.Errorf("begin transaction: %w", err)
 	}
 
-	if err := tx.Rollback(); err != nil {
-		repo.logger.Warnf("cannot rollback in apply sync: %s", err)
-	}
+	defer func() {
+		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			repo.logger.Warnf("cannot rollback in update userpass: %s", err)
+		}
+	}()
 
 	if err := repo.UpdateUserItemTx(ctx, tx, itemID, userID, encrypted); err != nil {
 		return fmt.Errorf("cannot update user item: %w", err)
