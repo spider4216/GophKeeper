@@ -358,9 +358,9 @@ func (repo *ClientRepository) CreateUserPassItem(ctx context.Context, item model
 		return fmt.Errorf("begin transaction: %w", err)
 	}
 
-	defer func() {
-		_ = tx.Rollback()
-	}()
+	if err := tx.Rollback(); err != nil {
+		repo.logger.Warnf("cannot rollback in apply sync: %s", err)
+	}
 
 	itemID, err := repo.CreateItemTx(ctx, tx, item)
 
@@ -390,9 +390,9 @@ func (repo *ClientRepository) DeleteUserItem(ctx context.Context, itemID int64, 
 		return fmt.Errorf("begin transaction: %w", err)
 	}
 
-	defer func() {
-		_ = tx.Rollback()
-	}()
+	if err := tx.Rollback(); err != nil {
+		repo.logger.Warnf("cannot rollback in apply sync: %s", err)
+	}
 
 	if err := repo.GetCommonRepo().DeleteUserMetaByItemIDTx(ctx, tx, itemID, userID); err != nil {
 		return fmt.Errorf("cannot delete meta: %w", err)
@@ -402,7 +402,6 @@ func (repo *ClientRepository) DeleteUserItem(ctx context.Context, itemID int64, 
 		return fmt.Errorf("cannot delete item: %w", err)
 	}
 
-	// todo op to const
 	if err := repo.CreatePendingChangeTx(ctx, tx, itemID, enum.OpDelete, userID); err != nil {
 		return fmt.Errorf("cannot create pending: %w", err)
 	}
@@ -420,10 +419,9 @@ func (repo *ClientRepository) ApplySync(ctx context.Context, userID int64, res s
 		return fmt.Errorf("begin transaction: %w", err)
 	}
 
-	defer func() {
-		// todo error
-		_ = tx.Rollback()
-	}()
+	if err := tx.Rollback(); err != nil {
+		repo.logger.Warnf("cannot rollback in apply sync: %s", err)
+	}
 
 	for _, change := range res.Changes {
 		switch change.Operation {
@@ -484,10 +482,9 @@ func (repo *ClientRepository) UpdateLoginPass(ctx context.Context, itemID int64,
 		return fmt.Errorf("begin transaction: %w", err)
 	}
 
-	defer func() {
-		// todo error
-		_ = tx.Rollback()
-	}()
+	if err := tx.Rollback(); err != nil {
+		repo.logger.Warnf("cannot rollback in apply sync: %s", err)
+	}
 
 	if err := repo.UpdateUserItemTx(ctx, tx, itemID, userID, encrypted); err != nil {
 		return fmt.Errorf("cannot update user item: %w", err)

@@ -284,10 +284,9 @@ func (repo *SrvRepository) ApplySync(ctx context.Context, in []shrModel.SyncPutC
 		return fmt.Errorf("begin transaction: %w", err)
 	}
 
-	defer func() {
-		// todo error
-		_ = tx.Rollback()
-	}()
+	if err := tx.Rollback(); err != nil {
+		repo.logger.Warnf("cannot rollback in apply sync: %s", err)
+	}
 
 	for _, item := range in {
 
