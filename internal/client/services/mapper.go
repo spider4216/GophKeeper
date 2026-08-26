@@ -8,17 +8,12 @@ import (
 func (s *Service) buildItemsWithMeta(items []models.ItemRepo, metadata []shrModel.MetadataRepo) []models.ItemWithMeta {
 	// todo move to func because dry in buildSyncRequest
 
-	metadataByItemID := make(map[int64]map[string]string)
+	metadataByItemID := make(map[int64][]shrModel.MetadataRepo)
 
 	for _, m := range metadata {
-		if metadataByItemID[m.ItemID] == nil {
-			metadataByItemID[m.ItemID] = make(map[string]string)
-		}
-
-		metadataByItemID[m.ItemID][m.Key] = m.Value
+		metadataByItemID[m.ItemID] = append(metadataByItemID[m.ItemID], m)
 	}
 
-	// todo rename model - misatke
 	var res []models.ItemWithMeta
 
 	for _, item := range items {
@@ -34,10 +29,11 @@ func (s *Service) buildItemsWithMeta(items []models.ItemRepo, metadata []shrMode
 			},
 		}
 
-		for k, v := range meta {
+		for _, m := range meta {
 			one.Metadata = append(one.Metadata, shrModel.MetadataRepo{
-				Key:   k,
-				Value: v,
+				ID:    m.ID,
+				Key:   m.Key,
+				Value: m.Value,
 			})
 		}
 

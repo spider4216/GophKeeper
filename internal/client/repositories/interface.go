@@ -34,5 +34,5 @@ type Repository interface {
 	CreateUserPassItem(ctx context.Context, item models.ItemRepo, userID int64, title string) error
 	DeleteUserItem(ctx context.Context, itemID int64, userID int64) error
 	ApplySync(ctx context.Context, userID int64, res shrModel.SyncGet) error
-	UpdateLoginPass(ctx context.Context, itemID int64, userID int64, encrypted string) error
+	UpdateLoginPass(ctx context.Context, itemID int64, userID int64, encrypted string, metaID int64, title string) error
 }

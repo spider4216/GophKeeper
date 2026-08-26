@@ -174,6 +174,6 @@ make client-delete-item id= jwt=
 ### Обновление логина и пароля
 
 ```
-go run ./cmd/client update-loginpass --login= --password= --id= --token=
-make client-update-loginpass login= pass= id= jwt=
+go run ./cmd/client update-loginpass --login= --password= --id= --token= --meta-id= --title=
+make client-update-loginpass login= pass= id= jwt= metaid= title=
 ```

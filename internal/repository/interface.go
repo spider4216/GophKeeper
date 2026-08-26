@@ -15,4 +15,5 @@ type CommonRepositoryInterface interface {
 	DeleteUserMetaByItemIDTx(ctx context.Context, tx *sql.Tx, itemID int64, userID int64) error
 	CreateMeta(ctx context.Context, itemID int64, k string, v string) (int64, error)
 	CreateMetaTx(ctx context.Context, tx *sql.Tx, itemID int64, k string, v string) (int64, error)
+	UpdateMetaByIDTx(ctx context.Context, tx *sql.Tx, id int64, userID int64, v string) error
 }

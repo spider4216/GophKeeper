@@ -39,7 +39,7 @@ func (c *Command) UserList(ctx context.Context, args []string) (string, error) {
 		builder.WriteString("Meta:\n")
 
 		for _, meta := range item.Metadata {
-			builder.WriteString(fmt.Sprintf("%s: %s\n", meta.Key, meta.Value))
+			builder.WriteString(fmt.Sprintf("%d) %s: %s\n", meta.ID, meta.Key, meta.Value))
 		}
 
 		builder.WriteString("---------------\n")

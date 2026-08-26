@@ -176,7 +176,7 @@ func (s *Service) DeleteUserItem(ctx context.Context, itemID int64, userID int64
 	return s.repo.DeleteUserItem(ctx, itemID, userID)
 }
 
-func (s *Service) UpdateLoginPass(ctx context.Context, itemID int64, userID int64, login string, pass string, key string) error {
+func (s *Service) UpdateLoginPass(ctx context.Context, itemID int64, userID int64, login string, pass string, key string, title string, metaID int64) error {
 	data := models.LoginPassFmt{
 		Login: login,
 		Pass:  pass,
@@ -191,10 +191,10 @@ func (s *Service) UpdateLoginPass(ctx context.Context, itemID int64, userID int6
 	encrypted, err := s.EncryptData(b, []byte(key))
 
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot enctypt data: %w", err)
 	}
 
-	if err := s.repo.UpdateLoginPass(ctx, itemID, userID, encrypted); err != nil {
+	if err := s.repo.UpdateLoginPass(ctx, itemID, userID, encrypted, metaID, title); err != nil {
 		return fmt.Errorf("cannot update login and password: %w", err)
 	}
 

@@ -12,14 +12,15 @@ func (c *Command) UpdateLoginPass(ctx context.Context, args []string) (string, e
 
 	itemID := fs.Int64("id", 0, "Item id")
 	login := fs.String("login", "", "Login")
+	metaID := fs.Int64("meta-id", 0, "Metadata ID")
+	title := fs.String("title", "", "Title")
 	pass := fs.String("password", "", "Password")
 	token := fs.String("token", "", "JWT from server")
-	// todo подумать об обновлении meta
 
 	fs.Parse(args)
 
-	if *login == "" || *pass == "" || *token == "" {
-		return "", errors.New("login, password, title and jwt are required")
+	if *login == "" || *pass == "" || *token == "" || *title == "" || *metaID == 0 {
+		return "", errors.New("login, password, title, metadata id and jwt are required")
 	}
 
 	claims, err := c.getClaims(*token)
@@ -28,7 +29,7 @@ func (c *Command) UpdateLoginPass(ctx context.Context, args []string) (string, e
 		return "", fmt.Errorf("cannot parse jwt: %s", err)
 	}
 
-	if err := c.Service.UpdateLoginPass(ctx, *itemID, claims.UserID, *login, *pass, c.Cfg.EncryptKey); err != nil {
+	if err := c.Service.UpdateLoginPass(ctx, *itemID, claims.UserID, *login, *pass, c.Cfg.EncryptKey, *title, *metaID); err != nil {
 		return "", fmt.Errorf("cannot update: %s", err)
 	}
 

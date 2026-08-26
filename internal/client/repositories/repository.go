@@ -504,7 +504,7 @@ func (repo *ClientRepository) ApplySync(ctx context.Context, userID int64, res s
 	return nil
 }
 
-func (repo *ClientRepository) UpdateLoginPass(ctx context.Context, itemID int64, userID int64, encrypted string) error {
+func (repo *ClientRepository) UpdateLoginPass(ctx context.Context, itemID int64, userID int64, encrypted string, metaID int64, title string) error {
 	tx, err := repo.con.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("begin transaction: %w", err)
@@ -523,7 +523,9 @@ func (repo *ClientRepository) UpdateLoginPass(ctx context.Context, itemID int64,
 		return fmt.Errorf("cannot create pending change: %w", err)
 	}
 
-	// todo update metadata
+	if err := repo.GetCommonRepo().UpdateMetaByIDTx(ctx, tx, metaID, userID, title); err != nil {
+		return fmt.Errorf("cannot update metadata: %w", err)
+	}
 
 	if err := tx.Commit(); err != nil {
 		return fmt.Errorf("commit transaction: %w", err)

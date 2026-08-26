@@ -137,3 +137,15 @@ func (repo *CommonRepository) CreateMetaTx(ctx context.Context, tx *sql.Tx, item
 
 	return id, nil
 }
+
+func (repo *CommonRepository) UpdateMetaByIDTx(ctx context.Context, tx *sql.Tx, id int64, userID int64, v string) error {
+	sql := "UPDATE metadata md SET value=$1 FROM items i WHERE md.id=$2 AND i.user_id=$3"
+
+	_, err := tx.ExecContext(ctx, sql, v, id, userID)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

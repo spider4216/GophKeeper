@@ -84,7 +84,7 @@ func (c *Command) outLoginPass(decrypted []byte, meta []shrModel.MetadataRepo) (
 	log.Println(meta)
 
 	for _, v := range meta {
-		builder.WriteString(fmt.Sprintf("%s: %s\n", v.Key, v.Value))
+		builder.WriteString(fmt.Sprintf("%d: %s: %s\n", v.ID, v.Key, v.Value))
 	}
 
 	return builder.String(), nil

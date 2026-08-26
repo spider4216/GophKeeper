@@ -1,7 +1,7 @@
 APP_NAME=gophkeeper
 
 DSN?=postgres://postgres:postgres@localhost:5432/gophkeeper
-DSN_CLIENT?=postgres://postgres:postgres@localhost:5432/gophkeeper_client_2
+DSN_CLIENT?=postgres://postgres:postgres@localhost:5432/gophkeeper_client_1
 
 LOG_LEVEL?=debug
 JWT_KEY?=qwerty
@@ -21,7 +21,7 @@ client-insert-loginpass:
 	SERVER_HOST=${SERVER_HOST} JWT_KEY=${JWT_KEY} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client insert-loginpass --login=${login} --password=${pass} --title=${title} --token=${jwt}
 
 client-update-loginpass:
-	SERVER_HOST=${SERVER_HOST} JWT_KEY=${JWT_KEY} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client update-loginpass --login=${login} --password=${pass} --id=${id} --token=${jwt}
+	SERVER_HOST=${SERVER_HOST} JWT_KEY=${JWT_KEY} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client update-loginpass --login=${login} --password=${pass} --id=${id} --meta-id=${metaid} --title=${title} --token=${jwt}
 
 client-delete-item:
 	SERVER_HOST=${SERVER_HOST} JWT_KEY=${JWT_KEY} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client delete-item --id=${id} --token=${jwt}
