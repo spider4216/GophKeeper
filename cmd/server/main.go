@@ -1,13 +1,23 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"log"
 	"net/http"
+	"os/signal"
+	"sync"
+	"syscall"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/spider4216/GophKeeper/internal/server/handlers"
 	"github.com/spider4216/GophKeeper/internal/server/middlewares"
 	"github.com/spider4216/GophKeeper/internal/server/services"
+)
+
+const (
+	serverTimeout time.Duration = 5 * time.Second
 )
 
 func main() {
@@ -37,13 +47,37 @@ func main() {
 	}
 
 	// todo https
-	// todo gracefull shutdown
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
+	defer stop()
+
+	go func() {
+		defer wg.Done()
+
+		app.logger.Debug("Graceful shutdown mode on")
+		<-ctx.Done()
+
+		// Тут тоже останавляваем перехват сигналов
+		stop()
+
+		app.logger.Debug("Shutdown server...")
+
+		ctxShutdown, cancel := context.WithTimeout(context.Background(), serverTimeout)
+		defer cancel()
+
+		if err := srv.Shutdown(ctxShutdown); err != nil {
+			app.logger.Warnf("Cannot shutdown main server: %s", err)
+		}
+	}()
 
 	app.logger.Debugf("Listen server on %s", app.cfg.ServerAddress)
 
-	if err := srv.ListenAndServe(); err != nil {
+	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		app.logger.Fatalf("Server error: %s", err)
 	}
 
-	app.logger.Debug("Everything is ok")
+	wg.Wait()
 }
