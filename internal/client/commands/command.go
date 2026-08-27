@@ -60,7 +60,6 @@ func (c *Command) getClaims(token string) (*shrModel.Claims, error) {
 		func(t *jwt.Token) (interface{}, error) {
 			return []byte(c.Cfg.JWTKey), nil
 		})
-
 	if err != nil {
 		return nil, err
 	}

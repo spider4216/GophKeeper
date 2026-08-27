@@ -70,7 +70,6 @@ func (repo *CommonRepository) DeleteUserItemByID(ctx context.Context, itemID int
 	sql := "DELETE FROM items WHERE user_id=$1 and id=$2"
 
 	_, err := repo.con.ExecContext(ctx, sql, userID, itemID)
-
 	if err != nil {
 		return err
 	}
@@ -82,7 +81,6 @@ func (repo *CommonRepository) DeleteUserItemByIDTx(ctx context.Context, tx *sql.
 	sql := "DELETE FROM items WHERE user_id=$1 and id=$2"
 
 	_, err := tx.ExecContext(ctx, sql, userID, itemID)
-
 	if err != nil {
 		return err
 	}
@@ -94,7 +92,6 @@ func (repo *CommonRepository) DeleteUserMetaByItemID(ctx context.Context, itemID
 	sql := "DELETE FROM metadata md USING items i WHERE i.id = md.item_id AND md.item_id=$1 AND i.user_id=$2"
 
 	_, err := repo.con.ExecContext(ctx, sql, itemID, userID)
-
 	if err != nil {
 		return err
 	}
@@ -106,7 +103,6 @@ func (repo *CommonRepository) DeleteUserMetaByItemIDTx(ctx context.Context, tx *
 	sql := "DELETE FROM metadata md USING items i WHERE i.id = md.item_id AND md.item_id=$1 AND i.user_id=$2"
 
 	_, err := tx.ExecContext(ctx, sql, itemID, userID)
-
 	if err != nil {
 		return err
 	}
@@ -144,13 +140,11 @@ func (repo *CommonRepository) UpdateMetaByIDTx(ctx context.Context, tx *sql.Tx, 
 	repo.logger.Debugf("Val: %s, ID: %d, UserID: %d", v, id, userID)
 
 	r, err := tx.ExecContext(ctx, sql, v, id, userID)
-
 	if err != nil {
 		return err
 	}
 
 	aff, err := r.RowsAffected()
-
 	if err != nil {
 		return err
 	}
@@ -166,7 +160,6 @@ func (repo *CommonRepository) UpdateMetaByItemIDAndKeyTx(ctx context.Context, tx
 	repo.logger.Debugf("Val: %s, itemID: %d, Key: %s", v, itemID, key)
 
 	_, err := tx.ExecContext(ctx, sql, v, itemID, key)
-
 	if err != nil {
 		return err
 	}

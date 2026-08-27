@@ -68,7 +68,6 @@ func (repo *ClientRepository) CreatePendingChangeTx(ctx context.Context, tx *sql
 	sql := "INSERT INTO pending_changes (item_id,operation,user_id) VALUES ($1,$2,$3)"
 
 	_, err := tx.ExecContext(ctx, sql, itemID, op, userID)
-
 	if err != nil {
 		return err
 	}
@@ -192,7 +191,6 @@ func (repo *ClientRepository) DeletePendingByItemIDs(ctx context.Context, itemID
 	sql := "DELETE FROM pending_changes WHERE item_id = ANY($1)"
 
 	_, err := repo.con.ExecContext(ctx, sql, itemIDs)
-
 	if err != nil {
 		return err
 	}
@@ -204,7 +202,6 @@ func (repo *ClientRepository) DeletePendingByItemIDsTx(ctx context.Context, tx *
 	sql := "DELETE FROM pending_changes WHERE item_id = ANY($1)"
 
 	_, err := tx.ExecContext(ctx, sql, itemIDs)
-
 	if err != nil {
 		return err
 	}
@@ -216,7 +213,6 @@ func (repo *ClientRepository) UpdateLastUserRev(ctx context.Context, userID int6
 	sql := "UPDATE sync_state SET last_server_revision=$1 WHERE user_id=$2"
 
 	_, err := repo.con.ExecContext(ctx, sql, rev, userID)
-
 	if err != nil {
 		return err
 	}
@@ -228,7 +224,6 @@ func (repo *ClientRepository) UpdateLastUserRevTx(ctx context.Context, tx *sql.T
 	sql := "UPDATE sync_state SET last_server_revision=$1 WHERE user_id=$2"
 
 	_, err := tx.ExecContext(ctx, sql, rev, userID)
-
 	if err != nil {
 		return err
 	}
@@ -240,7 +235,6 @@ func (repo *ClientRepository) CreateLastUserRev(ctx context.Context, userID int6
 	sql := "INSERT INTO sync_state (user_id, last_server_revision) VALUES ($1,$2)"
 
 	_, err := repo.con.ExecContext(ctx, sql, userID, rev)
-
 	if err != nil {
 		return err
 	}
@@ -254,7 +248,6 @@ func (repo *ClientRepository) GetLatestUserRev(ctx context.Context, userID int64
 	var rev int64
 
 	err := repo.con.QueryRowContext(ctx, sql, userID).Scan(&rev)
-
 	if err != nil {
 		return 0, err
 	}
@@ -344,7 +337,6 @@ func (repo *ClientRepository) GetUserItemByID(ctx context.Context, itemID int64,
 	var item models.ItemRepo
 
 	err := repo.con.QueryRowContext(ctx, sql, itemID, userID).Scan(&item.ID, &item.Type, &item.Ciphertext, &item.UserID, &item.CreatedAt)
-
 	if err != nil {
 		return nil, err
 	}
@@ -356,7 +348,6 @@ func (repo *ClientRepository) UpdateUserItemTx(ctx context.Context, tx *sql.Tx, 
 	sql := "UPDATE items SET ciphertext=$1 WHERE id=$2 AND user_id=$3"
 
 	_, err := tx.ExecContext(ctx, sql, val, itemID, userID)
-
 	if err != nil {
 		return err
 	}
@@ -366,7 +357,6 @@ func (repo *ClientRepository) UpdateUserItemTx(ctx context.Context, tx *sql.Tx, 
 
 func (repo *ClientRepository) CreateUserPassItem(ctx context.Context, item models.ItemRepo, userID int64, title string) error {
 	tx, err := repo.con.BeginTx(ctx, nil)
-
 	if err != nil {
 		return fmt.Errorf("begin transaction: %w", err)
 	}
@@ -378,7 +368,6 @@ func (repo *ClientRepository) CreateUserPassItem(ctx context.Context, item model
 	}()
 
 	itemID, err := repo.CreateItemTx(ctx, tx, item)
-
 	if err != nil {
 		return fmt.Errorf("cannot create item: %w", err)
 	}
@@ -400,7 +389,6 @@ func (repo *ClientRepository) CreateUserPassItem(ctx context.Context, item model
 
 func (repo *ClientRepository) DeleteUserItem(ctx context.Context, itemID int64, userID int64) error {
 	tx, err := repo.con.BeginTx(ctx, nil)
-
 	if err != nil {
 		return fmt.Errorf("begin transaction: %w", err)
 	}
@@ -511,7 +499,6 @@ func (repo *ClientRepository) syncCreate(ctx context.Context, tx *sql.Tx, change
 	}
 
 	itemID, err := repo.CreateItemTx(ctx, tx, item)
-
 	if err != nil {
 		return fmt.Errorf("cannot create item: %w", err)
 	}

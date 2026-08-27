@@ -29,7 +29,6 @@ func (c *Command) Login(ctx context.Context, args []string) (string, error) {
 	}
 
 	resp, err := c.Service.Login(ctx, req)
-
 	if err != nil {
 		return "", fmt.Errorf("cannot login: %w", err)
 	}

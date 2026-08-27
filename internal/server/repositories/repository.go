@@ -45,7 +45,6 @@ func (repo *SrvRepository) CreateUser(ctx context.Context, user models.UserRepo)
 	var lastInsertId int64
 
 	err := repo.con.QueryRowContext(ctx, sql, user.Email, user.PasswordHash).Scan(&lastInsertId)
-
 	if err != nil {
 		return 0, err
 	}
@@ -59,7 +58,6 @@ func (repo *SrvRepository) GetUserByEmail(ctx context.Context, email string) (*m
 	user := models.UserRepo{}
 
 	err := repo.con.QueryRow(sql, email).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.CreatedAt)
-
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +93,6 @@ func (repo *SrvRepository) CreateItemPayloadTx(ctx context.Context, tx *sql.Tx, 
 	sql := "INSERT INTO item_payloads (item_id,ciphertext) VALUES ($1,$2)"
 
 	_, err := tx.ExecContext(ctx, sql, item.ItemID, item.Ciphertext)
-
 	if err != nil {
 		return err
 	}
@@ -121,7 +118,6 @@ func (repo *SrvRepository) GetSyncChangesByID(ctx context.Context, ID int64) (*m
 	var change models.SyncChangesRepo
 
 	err := repo.con.QueryRowContext(ctx, sql, ID).Scan(&change.ID, &change.ID, &change.ItemID, &change.Revision, &change.Operation, &change.CreatedAt)
-
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +131,6 @@ func (repo *SrvRepository) GetLatestUserRev(ctx context.Context, userID int64) (
 	var rev int64
 
 	err := repo.con.QueryRow(sql, userID).Scan(&rev)
-
 	if err != nil {
 		return 0, err
 	}
@@ -259,7 +254,6 @@ func (repo *SrvRepository) DeletePayloadByItemIDTx(ctx context.Context, tx *sql.
 	sql := "DELETE FROM item_payloads WHERE item_id=$1"
 
 	_, err := tx.ExecContext(ctx, sql, itemID)
-
 	if err != nil {
 		return err
 	}
@@ -271,7 +265,6 @@ func (repo *SrvRepository) UpdateUserItemPayloadTx(ctx context.Context, tx *sql.
 	sql := "UPDATE item_payloads p SET ciphertext=$1 FROM items i WHERE p.item_id=$2 AND i.user_id=$3"
 
 	_, err := tx.ExecContext(ctx, sql, val, itemID, userID)
-
 	if err != nil {
 		return err
 	}
@@ -372,7 +365,6 @@ func (repo *SrvRepository) syncDelete(ctx context.Context, tx *sql.Tx, itemID in
 func (repo *SrvRepository) syncCreate(ctx context.Context, tx *sql.Tx, line models.ItemRepo, item shrModel.SyncPutChange, userID int64) error {
 	repo.logger.Debug("create strategy")
 	itemID, err := repo.CreateItemTx(ctx, tx, line)
-
 	if err != nil {
 		return fmt.Errorf("cannot create item: %w", err)
 	}

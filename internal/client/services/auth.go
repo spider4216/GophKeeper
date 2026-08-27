@@ -19,13 +19,11 @@ const (
 
 func (s *Service) Register(ctx context.Context, req shrModel.RegisterReq) (*shrModel.RegisterResp, error) {
 	data, err := json.Marshal(req)
-
 	if err != nil {
 		return nil, err
 	}
 
 	url, err := url.JoinPath(s.host, regURL)
-
 	if err != nil {
 		return nil, err
 	}
@@ -58,13 +56,11 @@ func (s *Service) Register(ctx context.Context, req shrModel.RegisterReq) (*shrM
 
 func (s *Service) Login(ctx context.Context, req shrModel.LoginReq) (*shrModel.LoginResp, error) {
 	data, err := json.Marshal(req)
-
 	if err != nil {
 		return nil, err
 	}
 
 	url, err := url.JoinPath(s.host, authURL)
-
 	if err != nil {
 		return nil, err
 	}

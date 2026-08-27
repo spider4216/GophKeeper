@@ -62,7 +62,6 @@ func (app *app) initConfig() error {
 
 func (app *app) initRepo() error {
 	common, err := commonRep.NewRepository(app.cfg.DbDsn, app.logger)
-
 	if err != nil {
 		return err
 	}

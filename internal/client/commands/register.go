@@ -27,7 +27,6 @@ func (c *Command) Register(ctx context.Context, args []string) (string, error) {
 	}
 
 	resp, err := c.Service.Register(ctx, req)
-
 	if err != nil {
 		return "", fmt.Errorf("cannot create user: %s", err)
 	}

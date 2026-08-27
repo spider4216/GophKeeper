@@ -43,13 +43,11 @@ func (s *Service) CreateLoginPassItem(ctx context.Context, t enum.SecretType, da
 	}
 
 	b, err := json.Marshal(d)
-
 	if err != nil {
 		return 0, err
 	}
 
 	encrypted, err := s.EncryptData(b, []byte(key))
-
 	if err != nil {
 		return 0, err
 	}
@@ -141,7 +139,6 @@ func (s *Service) GetUserItems(ctx context.Context, userID int64) ([]models.Item
 
 func (s *Service) GetUserItemsWithMeta(ctx context.Context, userID int64) ([]models.ItemWithMeta, error) {
 	items, err := s.GetUserItems(ctx, userID)
-
 	if err != nil {
 		return nil, err
 	}
@@ -153,13 +150,11 @@ func (s *Service) GetUserItemsWithMeta(ctx context.Context, userID int64) ([]mod
 	}
 
 	meta, err := s.repo.GetCommonRepo().GetMetadataByItemIDs(ctx, itemIDs)
-
 	if err != nil {
 		return nil, fmt.Errorf("cannot get meta by item ids: %w", err)
 	}
 
 	return s.buildItemsWithMeta(items, meta), nil
-
 }
 
 func (s *Service) GetUserItemByID(ctx context.Context, itemID int64, userID int64) (*models.ItemRepo, error) {
@@ -177,13 +172,11 @@ func (s *Service) UpdateLoginPass(ctx context.Context, itemID int64, userID int6
 	}
 
 	b, err := json.Marshal(data)
-
 	if err != nil {
 		return fmt.Errorf("loginpass marshal err: %w", err)
 	}
 
 	encrypted, err := s.EncryptData(b, []byte(key))
-
 	if err != nil {
 		return fmt.Errorf("cannot enctypt data: %w", err)
 	}
@@ -207,13 +200,11 @@ func (s *Service) CreateUserPassItem(ctx context.Context, data models.LoginPassR
 	}
 
 	b, err := json.Marshal(d)
-
 	if err != nil {
 		return err
 	}
 
 	encrypted, err := s.EncryptData(b, []byte(key))
-
 	if err != nil {
 		return err
 	}

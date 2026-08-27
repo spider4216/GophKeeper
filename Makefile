@@ -49,3 +49,9 @@ migrate-down:
 
 migrate-force:
 	migrate -path ./migrations/${path} -database $(DSN) force $(ver)
+
+lint:
+	golangci-lint run
+
+fmt:
+	golangci-lint fmt

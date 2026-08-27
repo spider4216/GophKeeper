@@ -19,7 +19,6 @@ func (c *Command) SyncGet(ctx context.Context, args []string) (string, error) {
 	}
 
 	claims, err := c.getClaims(*token)
-
 	if err != nil {
 		return "", fmt.Errorf("cannot parse jwt: %s", err)
 	}

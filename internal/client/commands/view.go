@@ -37,19 +37,16 @@ func (c *Command) View(ctx context.Context, args []string) (string, error) {
 	}
 
 	item, err := c.Service.GetUserItemByID(ctx, *itemID, claims.UserID)
-
 	if err != nil {
 		return "", fmt.Errorf("cannot get user item by id: %s", err)
 	}
 
 	decrypted, err := c.Service.DecryptData(item.Ciphertext, []byte(c.Cfg.EncryptKey))
-
 	if err != nil {
 		return "", fmt.Errorf("cannot decrypt data: %s", err)
 	}
 
 	metas, err := c.Service.GetMetadataByItemID(ctx, item.ID)
-
 	if err != nil {
 		return "", fmt.Errorf("cannot get metadata: %s", err)
 	}

@@ -45,7 +45,6 @@ func (s *Service) SyncSend(ctx context.Context, userID int64, token string) erro
 
 		// Получаем ревизию изменений
 		lastRev, err := s.syncChunk(ctx, userID, token, chunk)
-
 		if err != nil {
 			return fmt.Errorf("cannot sync chunk %d-%d: %w", start+1, end, err)
 		}
@@ -99,7 +98,6 @@ func (s *Service) syncChunk(ctx context.Context, userID int64, token string, pen
 	}
 
 	r, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(data))
-
 	if err != nil {
 		return 0, fmt.Errorf("cannot create sync request: %w", err)
 	}
@@ -111,7 +109,6 @@ func (s *Service) syncChunk(ctx context.Context, userID int64, token string, pen
 	s.logger.Debug(string(data))
 
 	resp, err := s.client.Do(r)
-
 	if err != nil {
 		return 0, fmt.Errorf("cannot send sync request: %w", err)
 	}
@@ -127,7 +124,6 @@ func (s *Service) syncChunk(ctx context.Context, userID int64, token string, pen
 	}
 
 	body, err := io.ReadAll(resp.Body)
-
 	if err != nil {
 		return 0, fmt.Errorf("cannot read sync response: %w", err)
 	}
@@ -161,7 +157,6 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, token string) error
 		url = fmt.Sprintf("%s?since=%d&limit=%d", url, rev, syncLimit)
 
 		r, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-
 		if err != nil {
 			return fmt.Errorf("cannot create request for sync operation: %w", err)
 		}

@@ -37,7 +37,6 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, h.cfg.MaxBodySize)
 
 	body, err := io.ReadAll(r.Body)
-
 	if err != nil {
 		h.logger.Errorf("failed read body: %s", err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -56,7 +55,6 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	// todo валидация отсутствия почты в БД (уникальность)
 
 	userID, err := h.service.CreateUser(ctx, req.Email, req.Pass)
-
 	if err != nil {
 		h.logger.Errorf("cannot create user: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -68,7 +66,6 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	b, err := json.Marshal(res)
-
 	if err != nil {
 		h.logger.Errorf("marshall error: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -141,7 +138,6 @@ func (h Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	b, err := json.Marshal(res)
-
 	if err != nil {
 		h.logger.Errorf("failed marshal: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -155,7 +151,6 @@ func (h Handler) Login(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
 }
 
 func (h Handler) SyncIn(w http.ResponseWriter, r *http.Request) {
@@ -188,7 +183,6 @@ func (h Handler) SyncIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rev, err := h.service.GetLatestUserRev(ctx, userID)
-
 	if err != nil {
 		h.logger.Errorf("cannot get latest user revision: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -200,7 +194,6 @@ func (h Handler) SyncIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	b, err := json.Marshal(resp)
-
 	if err != nil {
 		h.logger.Errorf("failed marshal: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -214,7 +207,6 @@ func (h Handler) SyncIn(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
 }
 
 func (h Handler) SyncOut(w http.ResponseWriter, r *http.Request) {

@@ -24,7 +24,6 @@ func (c *Command) UpdateLoginPass(ctx context.Context, args []string) (string, e
 	}
 
 	claims, err := c.getClaims(*token)
-
 	if err != nil {
 		return "", fmt.Errorf("cannot parse jwt: %w", err)
 	}

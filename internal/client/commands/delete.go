@@ -21,13 +21,11 @@ func (c *Command) DeleteItem(ctx context.Context, args []string) (string, error)
 	}
 
 	claims, err := c.getClaims(*token)
-
 	if err != nil {
 		return "", fmt.Errorf("cannot parse jwt: %w", err)
 	}
 
 	itemIDInt, err := strconv.ParseInt(*itemID, 10, 64)
-
 	if err != nil {
 		return "", fmt.Errorf("cannot parse itemID: %w", err)
 	}
