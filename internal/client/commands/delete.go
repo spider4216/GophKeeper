@@ -14,7 +14,9 @@ func (c *Command) DeleteItem(ctx context.Context, args []string) (string, error)
 	itemID := fs.String("id", "", "Item id")
 	token := fs.String("token", "", "JWT from server")
 
-	fs.Parse(args)
+	if err := fs.Parse(args); err != nil {
+		return "", err
+	}
 
 	if *token == "" || *itemID == "" {
 		return "", errors.New("login, password, title and jwt are required")

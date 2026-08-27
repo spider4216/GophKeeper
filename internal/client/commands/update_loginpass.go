@@ -17,7 +17,9 @@ func (c *Command) UpdateLoginPass(ctx context.Context, args []string) (string, e
 	pass := fs.String("password", "", "Password")
 	token := fs.String("token", "", "JWT from server")
 
-	fs.Parse(args)
+	if err := fs.Parse(args); err != nil {
+		return "", err
+	}
 
 	if *login == "" || *pass == "" || *token == "" || *title == "" || *metaID == 0 {
 		return "", errors.New("login, password, title, metadata id and jwt are required")

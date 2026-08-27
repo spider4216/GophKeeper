@@ -29,6 +29,10 @@ func (s *Service) Register(ctx context.Context, req shrModel.RegisterReq) (*shrM
 	}
 
 	r, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(data))
+	if err != nil {
+		return nil, fmt.Errorf("cannot create request: %w", err)
+	}
+
 	r.Header.Add("Content-Type", "application/json")
 
 	resp, err := s.client.Do(r)
@@ -66,6 +70,10 @@ func (s *Service) Login(ctx context.Context, req shrModel.LoginReq) (*shrModel.L
 	}
 
 	r, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(data))
+	if err != nil {
+		return nil, fmt.Errorf("cannot create request: %w", err)
+	}
+
 	r.Header.Add("Content-Type", "application/json")
 
 	resp, err := s.client.Do(r)

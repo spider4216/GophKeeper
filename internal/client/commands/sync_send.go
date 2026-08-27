@@ -12,10 +12,12 @@ func (c *Command) SyncSend(ctx context.Context, args []string) (string, error) {
 
 	token := fs.String("token", "", "Token")
 
-	fs.Parse(args)
+	if err := fs.Parse(args); err != nil {
+		return "", err
+	}
 
 	if *token == "" {
-		return "", errors.New("Token is required")
+		return "", errors.New("token is required")
 	}
 
 	claims, err := c.getClaims(*token)

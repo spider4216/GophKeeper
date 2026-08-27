@@ -15,7 +15,9 @@ func (c *Command) Register(ctx context.Context, args []string) (string, error) {
 	email := fs.String("email", "", "user email")
 	pass := fs.String("password", "", "user password")
 
-	fs.Parse(args)
+	if err := fs.Parse(args); err != nil {
+		return "", err
+	}
 
 	if *email == "" || *pass == "" {
 		return "", errors.New("email and password are required")

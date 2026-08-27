@@ -17,7 +17,9 @@ func (c *Command) CreateLoginpass(ctx context.Context, args []string) (string, e
 	token := fs.String("token", "", "JWT from server")
 	title := fs.String("title", "", "Title")
 
-	fs.Parse(args)
+	if err := fs.Parse(args); err != nil {
+		return "", err
+	}
 
 	if *login == "" || *pass == "" || *token == "" || *title == "" {
 		return "", errors.New("login, password, title and jwt are required")

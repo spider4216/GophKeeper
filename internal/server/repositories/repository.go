@@ -285,7 +285,6 @@ func (repo *SrvRepository) ApplySync(ctx context.Context, in []shrModel.SyncPutC
 	}()
 
 	for _, item := range in {
-
 		repo.logger.Debugf("Sync Operation: %s", item.Operation)
 
 		line := models.ItemRepo{

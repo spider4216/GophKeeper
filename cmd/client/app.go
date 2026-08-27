@@ -145,7 +145,7 @@ func (app *app) initCli() error {
 
 func (app *app) InitArgs() error {
 	if len(os.Args) < 2 {
-		return errors.New("Too few arguments")
+		return errors.New("too few arguments")
 	}
 
 	app.cmdName = commands.CmdName(os.Args[1])

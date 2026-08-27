@@ -13,7 +13,9 @@ func (c *Command) UserList(ctx context.Context, args []string) (string, error) {
 
 	token := fs.String("token", "", "JWT from server")
 
-	fs.Parse(args)
+	if err := fs.Parse(args); err != nil {
+		return "", err
+	}
 
 	if *token == "" {
 		return "", errors.New("jwt is required")
@@ -32,12 +34,12 @@ func (c *Command) UserList(ctx context.Context, args []string) (string, error) {
 	var builder strings.Builder
 
 	for _, item := range items {
-		builder.WriteString(fmt.Sprintf("ID: %d\n", item.ID))
-		builder.WriteString(fmt.Sprintf("Type: %s\n", item.Type))
-		builder.WriteString("Meta:\n")
+		fmt.Fprintf(&builder, "ID: %d\n", item.ID)
+		fmt.Fprintf(&builder, "Type: %s\n", item.Type)
+		fmt.Fprint(&builder, "Meta:\n")
 
 		for _, meta := range item.Metadata {
-			builder.WriteString(fmt.Sprintf("%d) %s: %s\n", meta.ID, meta.Key, meta.Value))
+			fmt.Fprintf(&builder, "%d) %s: %s\n", meta.ID, meta.Key, meta.Value)
 		}
 
 		builder.WriteString("---------------\n")

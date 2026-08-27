@@ -21,7 +21,9 @@ func (c *Command) View(ctx context.Context, args []string) (string, error) {
 	itemID := fs.Int64("item_id", 0, "Item ID")
 	token := fs.String("token", "", "JWT from server")
 
-	fs.Parse(args)
+	if err := fs.Parse(args); err != nil {
+		return "", err
+	}
 
 	if *itemID == 0 && *token == "" {
 		return "", errors.New("jwt and item_id are required")
@@ -74,14 +76,14 @@ func (c *Command) outLoginPass(decrypted []byte, meta []shrModel.MetadataRepo) (
 
 	var builder strings.Builder
 
-	builder.WriteString(fmt.Sprintf("Login: %s\n", data.Login))
-	builder.WriteString(fmt.Sprintf("Password: %s\n", data.Pass))
-	builder.WriteString("Meta:\n")
+	fmt.Fprintf(&builder, "Login: %s\n", data.Login)
+	fmt.Fprintf(&builder, "Password: %s\n", data.Pass)
+	fmt.Fprint(&builder, "Meta:\n")
 
 	log.Println(meta)
 
 	for _, v := range meta {
-		builder.WriteString(fmt.Sprintf("%d: %s: %s\n", v.ID, v.Key, v.Value))
+		fmt.Fprintf(&builder, "%d: %s: %s\n", v.ID, v.Key, v.Value)
 	}
 
 	return builder.String(), nil

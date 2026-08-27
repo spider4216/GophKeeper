@@ -17,7 +17,9 @@ func (c *Command) Login(ctx context.Context, args []string) (string, error) {
 	email := fs.String("email", "", "user email")
 	pass := fs.String("password", "", "user password")
 
-	fs.Parse(args)
+	if err := fs.Parse(args); err != nil {
+		return "", err
+	}
 
 	if *email == "" || *pass == "" {
 		return "", errors.New("email and password are required")
@@ -39,7 +41,9 @@ func (c *Command) Login(ctx context.Context, args []string) (string, error) {
 	if _, err := c.Service.GetLatestUserRev(ctx, resp.UserID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			c.logger.Debug("no last rev. Create zero one")
-			c.Service.CreateLastUserRev(ctx, resp.UserID, 0)
+			if err := c.Service.CreateLastUserRev(ctx, resp.UserID, 0); err != nil {
+				return "", fmt.Errorf("cannot create last rev: %w", err)
+			}
 		} else {
 			return "", fmt.Errorf("cannot get latest revision: %w", err)
 		}

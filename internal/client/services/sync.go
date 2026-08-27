@@ -170,19 +170,19 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, token string) error
 			return err
 		}
 
+		defer func() {
+			if err := resp.Body.Close(); err != nil {
+				s.logger.Warnf("error closing body: %s", err)
+			}
+		}()
+
 		if resp.StatusCode != http.StatusOK {
-			resp.Body.Close()
 			return fmt.Errorf("status sync is not OK: %d", resp.StatusCode)
 		}
 
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			resp.Body.Close()
 			return fmt.Errorf("cannot read sync response: %w", err)
-		}
-
-		if err := resp.Body.Close(); err != nil {
-			s.logger.Warnf("error closing body: %s", err)
 		}
 
 		var res shrModel.SyncGet
