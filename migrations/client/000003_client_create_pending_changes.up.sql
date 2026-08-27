@@ -4,7 +4,3 @@ CREATE TABLE IF NOT EXISTS pending_changes (
     operation VARCHAR(50) NOT NULL, -- CREATE | UPDATE | DELETE
     user_id INT NOT NULL
 );
-
-/*
-todo индексы когда пойму по каким полям чаще делаю выборку
-*/
