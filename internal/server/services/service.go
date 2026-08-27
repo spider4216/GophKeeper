@@ -4,7 +4,10 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 	"github.com/spider4216/GophKeeper/internal/server/models"
 	"github.com/spider4216/GophKeeper/internal/server/repositories"
@@ -106,4 +109,15 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, since int64, limit 
 		nextRev,
 		hasMore,
 	), nil
+}
+
+// IsErrAsDuplicate проверка, является ли переданная ошибка типум дубликата.
+func (s *Service) IsErrAsDuplicate(err error) bool {
+	var pgErr *pgconn.PgError
+
+	if !errors.As(err, &pgErr) {
+		return false
+	}
+
+	return pgErr.Code == pgerrcode.UniqueViolation
 }

@@ -55,6 +55,13 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	// todo валидация отсутствия почты в БД (уникальность)
 
 	userID, err := h.service.CreateUser(ctx, req.Email, req.Pass)
+
+	if err != nil && h.service.IsErrAsDuplicate(err) {
+		h.logger.Debug("Duplicate user")
+		w.WriteHeader(http.StatusConflict)
+		return
+	}
+
 	if err != nil {
 		h.logger.Errorf("cannot create user: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
