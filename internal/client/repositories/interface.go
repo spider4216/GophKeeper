@@ -19,6 +19,7 @@ type Repository interface {
 	GetItemsByIDs(ctx context.Context, itemIDs []int64) ([]models.ItemRepo, error)
 	GetUserItemByID(ctx context.Context, itemID int64, userID int64) (*models.ItemRepo, error)
 	DeletePendingByItemIDs(ctx context.Context, itemIDs []int64) error
+	DeletePendingByItemIDsTx(ctx context.Context, tx *sql.Tx, itemIDs []int64) error
 	UpdateLastUserRev(ctx context.Context, userID int64, rev int64) error
 	UpdateLastUserRevTx(ctx context.Context, tx *sql.Tx, userID int64, rev int64) error
 	CreateLastUserRev(ctx context.Context, userID int64, rev int64) error
@@ -33,4 +34,5 @@ type Repository interface {
 	DeleteUserItem(ctx context.Context, itemID int64, userID int64) error
 	ApplySync(ctx context.Context, userID int64, res shrModel.SyncGet) error
 	UpdateLoginPass(ctx context.Context, itemID int64, userID int64, encrypted string, metaID int64, title string) error
+	CommitSyncChunkTx(ctx context.Context, ids []int64, userID int64, lastRev int64) error
 }

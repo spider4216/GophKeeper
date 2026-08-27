@@ -50,14 +50,9 @@ func (s *Service) SyncSend(ctx context.Context, userID int64, token string) erro
 			return fmt.Errorf("cannot sync chunk %d-%d: %w", start+1, end, err)
 		}
 
-		// Удаляем Pending для чанка
-		if err := s.repo.DeletePendingByItemIDs(ctx, s.pendingItemIDs(chunk)); err != nil {
-			return fmt.Errorf("cannot delete pending changes for chunk %d-%d: %w", start+1, end, err)
-		}
-
-		// Обновляем последнюю ревизию
-		if err := s.repo.UpdateLastUserRev(ctx, userID, lastRev); err != nil {
-			return fmt.Errorf("cannot update latest revision after chunk %d-%d: %w", start+1, end, err)
+		// Коммитим чанк (удляеем pending, обновляем ревизию на клиенте)
+		if err := s.repo.CommitSyncChunkTx(ctx, s.pendingItemIDs(chunk), userID, lastRev); err != nil {
+			return fmt.Errorf("cannot commit sync: %w", err)
 		}
 	}
 

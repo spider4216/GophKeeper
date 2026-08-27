@@ -200,6 +200,18 @@ func (repo *ClientRepository) DeletePendingByItemIDs(ctx context.Context, itemID
 	return nil
 }
 
+func (repo *ClientRepository) DeletePendingByItemIDsTx(ctx context.Context, tx *sql.Tx, itemIDs []int64) error {
+	sql := "DELETE FROM pending_changes WHERE item_id = ANY($1)"
+
+	_, err := tx.ExecContext(ctx, sql, itemIDs)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (repo *ClientRepository) UpdateLastUserRev(ctx context.Context, userID int64, rev int64) error {
 	sql := "UPDATE sync_state SET last_server_revision=$1 WHERE user_id=$2"
 
@@ -535,6 +547,35 @@ func (repo *ClientRepository) UpdateLoginPass(ctx context.Context, itemID int64,
 
 	if err := repo.GetCommonRepo().UpdateMetaByIDTx(ctx, tx, metaID, userID, title); err != nil {
 		return fmt.Errorf("cannot update metadata: %w", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("commit transaction: %w", err)
+	}
+
+	return nil
+}
+
+func (repo *ClientRepository) CommitSyncChunkTx(ctx context.Context, ids []int64, userID int64, lastRev int64) error {
+	tx, err := repo.con.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("begin transaction: %w", err)
+	}
+
+	defer func() {
+		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			repo.logger.Warnf("cannot rollback in commit sync: %s", err)
+		}
+	}()
+
+	// Удаляем Pending для чанка
+	if err := repo.DeletePendingByItemIDsTx(ctx, tx, ids); err != nil {
+		return fmt.Errorf("cannot delete pending changes for chunk: %w", err)
+	}
+
+	// Обновляем последнюю ревизию для чанка
+	if err := repo.UpdateLastUserRevTx(ctx, tx, userID, lastRev); err != nil {
+		return fmt.Errorf("cannot update latest revision after chunk: %w", err)
 	}
 
 	if err := tx.Commit(); err != nil {
