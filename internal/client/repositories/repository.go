@@ -433,38 +433,18 @@ func (repo *ClientRepository) ApplySync(ctx context.Context, userID int64, res s
 	for _, change := range res.Changes {
 		switch change.Operation {
 		case enum.OpCreate:
-			// todo to method
-			item := models.ItemRepo{
-				Type:       enum.SecretType(change.Item.Type),
-				Ciphertext: change.Item.Ciphertext,
-				UserID:     userID,
-			}
-
-			itemID, err := repo.CreateItemTx(ctx, tx, item)
-
-			if err != nil {
-				return err
-			}
-
-			for k, v := range change.Metadata {
-				if _, err := repo.GetCommonRepo().CreateMetaTx(ctx, tx, itemID, k, v); err != nil {
-					return err
-				}
+			if err := repo.syncCreate(ctx, tx, change, userID); err != nil {
+				return fmt.Errorf("sync error. Cannot create: %w", err)
 			}
 
 		case enum.OpDelete:
-			// todo to method
-			if err := repo.GetCommonRepo().DeleteUserMetaByItemIDTx(ctx, tx, change.Item.ID, userID); err != nil {
-				return err
-			}
-
-			if err := repo.GetCommonRepo().DeleteUserItemByIDTx(ctx, tx, change.Item.ID, userID); err != nil {
-				return err
+			if err := repo.syncDelete(ctx, tx, change.Item.ID, userID); err != nil {
+				return fmt.Errorf("sync error. Cannot delete: %w", err)
 			}
 
 		case enum.OpUpdate:
-			if err := repo.UpdateUserItemTx(ctx, tx, change.Item.ID, userID, change.Item.Ciphertext); err != nil {
-				return err
+			if err := repo.syncUpdate(ctx, tx, change, userID); err != nil {
+				return fmt.Errorf("sync error. Cannot update: %w", err)
 			}
 
 		default:
@@ -478,6 +458,56 @@ func (repo *ClientRepository) ApplySync(ctx context.Context, userID int64, res s
 
 	if err := tx.Commit(); err != nil {
 		return fmt.Errorf("commit transaction: %w", err)
+	}
+
+	return nil
+}
+
+func (repo *ClientRepository) syncUpdate(ctx context.Context, tx *sql.Tx, change shrModel.SyncGetChange, userID int64) error {
+	repo.logger.Debug("Update strategy on client")
+
+	if err := repo.UpdateUserItemTx(ctx, tx, change.Item.ID, userID, change.Item.Ciphertext); err != nil {
+		return fmt.Errorf("cannot update item: %w", err)
+	}
+
+	for k, v := range change.Metadata {
+		if err := repo.GetCommonRepo().UpdateMetaByItemIDAndKeyTx(ctx, tx, change.Item.ID, k, v); err != nil {
+			return fmt.Errorf("cannot update metadata: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func (repo *ClientRepository) syncDelete(ctx context.Context, tx *sql.Tx, itemID int64, userID int64) error {
+	if err := repo.GetCommonRepo().DeleteUserMetaByItemIDTx(ctx, tx, itemID, userID); err != nil {
+		return fmt.Errorf("cannot delete user metadata: %w", err)
+	}
+
+	if err := repo.GetCommonRepo().DeleteUserItemByIDTx(ctx, tx, itemID, userID); err != nil {
+		return fmt.Errorf("cannot delete user item: %w", err)
+	}
+
+	return nil
+}
+
+func (repo *ClientRepository) syncCreate(ctx context.Context, tx *sql.Tx, change shrModel.SyncGetChange, userID int64) error {
+	item := models.ItemRepo{
+		Type:       enum.SecretType(change.Item.Type),
+		Ciphertext: change.Item.Ciphertext,
+		UserID:     userID,
+	}
+
+	itemID, err := repo.CreateItemTx(ctx, tx, item)
+
+	if err != nil {
+		return fmt.Errorf("cannot create item: %w", err)
+	}
+
+	for k, v := range change.Metadata {
+		if _, err := repo.GetCommonRepo().CreateMetaTx(ctx, tx, itemID, k, v); err != nil {
+			return fmt.Errorf("cannot create metadata: %w", err)
+		}
 	}
 
 	return nil

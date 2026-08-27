@@ -141,7 +141,31 @@ func (repo *CommonRepository) CreateMetaTx(ctx context.Context, tx *sql.Tx, item
 func (repo *CommonRepository) UpdateMetaByIDTx(ctx context.Context, tx *sql.Tx, id int64, userID int64, v string) error {
 	sql := "UPDATE metadata md SET value=$1 FROM items i WHERE md.id=$2 AND i.user_id=$3"
 
-	_, err := tx.ExecContext(ctx, sql, v, id, userID)
+	repo.logger.Debugf("Val: %s, ID: %d, UserID: %d", v, id, userID)
+
+	r, err := tx.ExecContext(ctx, sql, v, id, userID)
+
+	if err != nil {
+		return err
+	}
+
+	aff, err := r.RowsAffected()
+
+	if err != nil {
+		return err
+	}
+
+	repo.logger.Debugf("Rows affected: %d", aff)
+
+	return nil
+}
+
+func (repo *CommonRepository) UpdateMetaByItemIDAndKeyTx(ctx context.Context, tx *sql.Tx, itemID int64, key string, v string) error {
+	sql := "UPDATE metadata SET value=$1 WHERE item_id=$2 AND key=$3"
+
+	repo.logger.Debugf("Val: %s, itemID: %d, Key: %s", v, itemID, key)
+
+	_, err := tx.ExecContext(ctx, sql, v, itemID, key)
 
 	if err != nil {
 		return err

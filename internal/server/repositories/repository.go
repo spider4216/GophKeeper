@@ -303,67 +303,23 @@ func (repo *SrvRepository) ApplySync(ctx context.Context, in []shrModel.SyncPutC
 
 		switch item.Operation {
 		case enum.OpCreate:
-			repo.logger.Debug("create strategy")
-			itemID, err := repo.CreateItemTx(ctx, tx, line)
-
-			if err != nil {
-				return err
+			if err := repo.syncCreate(ctx, tx, line, item, userID); err != nil {
+				return fmt.Errorf("error sync. Cannot create: %w", err)
 			}
 
-			pl := models.ItemPayloadRepo{
-				ItemID:     itemID,
-				Ciphertext: item.Item.Ciphertext,
-			}
-
-			if err := repo.CreateItemPayloadTx(ctx, tx, pl); err != nil {
-				return err
-			}
-
-			for k, v := range item.Metadata {
-				if _, err := repo.GetCommonRepo().CreateMetaTx(ctx, tx, itemID, k, v); err != nil {
-					return err
-				}
-			}
-
-			if _, err := repo.CreateSyncChangesTx(ctx, tx, itemID, item.Operation, userID); err != nil {
-				return err
-			}
 		case enum.OpDelete:
-			repo.logger.Debug("Delete strategy")
-			if err := repo.GetCommonRepo().DeleteUserMetaByItemIDTx(ctx, tx, int64(item.Item.ID), userID); err != nil {
-				return err
+			if err := repo.syncDelete(ctx, tx, int64(item.Item.ID), userID); err != nil {
+				return fmt.Errorf("error sync. Cannot delete: %w", err)
 			}
 
-			if err := repo.DeletePayloadByItemIDTx(ctx, tx, int64(item.Item.ID)); err != nil {
-				return err
-			}
-
-			if err := repo.GetCommonRepo().DeleteUserItemByIDTx(ctx, tx, int64(item.Item.ID), userID); err != nil {
-				return err
-			}
-
-			if _, err := repo.CreateSyncChangesTx(ctx, tx, int64(item.Item.ID), enum.OpDelete, userID); err != nil {
-				return err
-			}
 		case enum.OpUpdate:
-			repo.logger.Debug("Update strategy")
-			if err := repo.UpdateUserItemPayloadTx(ctx, tx, int64(item.Item.ID), userID, item.Item.Ciphertext); err != nil {
-				return err
+			if err := repo.syncUpdate(ctx, tx, userID, item); err != nil {
+				return fmt.Errorf("error sync. Cannot update: %w", err)
 			}
 
-			for k, v := range item.Metadata {
-				if err := repo.UpdateMetaByItemIDAndKeyTx(ctx, tx, int64(item.Item.ID), k, v); err != nil {
-					return err
-				}
-			}
-
-			if _, err := repo.CreateSyncChangesTx(ctx, tx, int64(item.Item.ID), enum.OpUpdate, userID); err != nil {
-				return err
-			}
 		default:
 			return fmt.Errorf("unknown operation: %s", item.Operation)
 		}
-
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -373,13 +329,71 @@ func (repo *SrvRepository) ApplySync(ctx context.Context, in []shrModel.SyncPutC
 	return nil
 }
 
-func (repo *SrvRepository) UpdateMetaByItemIDAndKeyTx(ctx context.Context, tx *sql.Tx, itemID int64, key string, v string) error {
-	sql := "UPDATE metadata md SET value=$1 FROM items i WHERE i.id=$2 AND md.key=$3"
+func (repo *SrvRepository) syncUpdate(ctx context.Context, tx *sql.Tx, userID int64, item shrModel.SyncPutChange) error {
+	repo.logger.Debug("Update strategy")
+	if err := repo.UpdateUserItemPayloadTx(ctx, tx, int64(item.Item.ID), userID, item.Item.Ciphertext); err != nil {
+		return fmt.Errorf("cannot update item payload: %w", err)
+	}
 
-	_, err := tx.ExecContext(ctx, sql, v, itemID, key)
+	for k, v := range item.Metadata {
+		if err := repo.GetCommonRepo().UpdateMetaByItemIDAndKeyTx(ctx, tx, int64(item.Item.ID), k, v); err != nil {
+			return fmt.Errorf("cannot update metadata: %w", err)
+		}
+	}
+
+	if _, err := repo.CreateSyncChangesTx(ctx, tx, int64(item.Item.ID), enum.OpUpdate, userID); err != nil {
+		return fmt.Errorf("cannot create sync changes: %w", err)
+	}
+
+	return nil
+}
+
+func (repo *SrvRepository) syncDelete(ctx context.Context, tx *sql.Tx, itemID int64, userID int64) error {
+	repo.logger.Debug("Delete strategy")
+	if err := repo.GetCommonRepo().DeleteUserMetaByItemIDTx(ctx, tx, itemID, userID); err != nil {
+		return fmt.Errorf("cannot delete metadata: %w", err)
+	}
+
+	if err := repo.DeletePayloadByItemIDTx(ctx, tx, itemID); err != nil {
+		return fmt.Errorf("cannot delete payload: %w", err)
+	}
+
+	if err := repo.GetCommonRepo().DeleteUserItemByIDTx(ctx, tx, itemID, userID); err != nil {
+		return fmt.Errorf("cannot delete user item: %w", err)
+	}
+
+	if _, err := repo.CreateSyncChangesTx(ctx, tx, itemID, enum.OpDelete, userID); err != nil {
+		return fmt.Errorf("cannot delete sync changes: %w", err)
+	}
+
+	return nil
+}
+
+func (repo *SrvRepository) syncCreate(ctx context.Context, tx *sql.Tx, line models.ItemRepo, item shrModel.SyncPutChange, userID int64) error {
+	repo.logger.Debug("create strategy")
+	itemID, err := repo.CreateItemTx(ctx, tx, line)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot create item: %w", err)
+	}
+
+	pl := models.ItemPayloadRepo{
+		ItemID:     itemID,
+		Ciphertext: item.Item.Ciphertext,
+	}
+
+	if err := repo.CreateItemPayloadTx(ctx, tx, pl); err != nil {
+		return fmt.Errorf("cannot create item payload: %w", err)
+	}
+
+	for k, v := range item.Metadata {
+		if _, err := repo.GetCommonRepo().CreateMetaTx(ctx, tx, itemID, k, v); err != nil {
+			return fmt.Errorf("cannot create meta: %w", err)
+		}
+	}
+
+	if _, err := repo.CreateSyncChangesTx(ctx, tx, itemID, item.Operation, userID); err != nil {
+		return fmt.Errorf("cannot create sync changes: %w", err)
 	}
 
 	return nil

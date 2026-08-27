@@ -29,5 +29,4 @@ type Repository interface {
 	UpdateUserItemPayloadTx(ctx context.Context, tx *sql.Tx, itemID int64, userID int64, val string) error
 	GetCommonRepo() repository.CommonRepositoryInterface
 	ApplySync(ctx context.Context, in []shrModel.SyncPutChange, userID int64) error
-	UpdateMetaByItemIDAndKeyTx(ctx context.Context, tx *sql.Tx, itemID int64, key string, v string) error
 }
