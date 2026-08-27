@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"strconv"
 
 	"github.com/spider4216/GophKeeper/internal/client/models"
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
@@ -17,6 +16,7 @@ import (
 const (
 	syncURL       string = "/sync"
 	syncChunkSize int    = 1
+	syncLimit     int    = 1
 )
 
 func (s *Service) SyncSend(ctx context.Context, userID int64, token string) error {
@@ -146,62 +146,67 @@ func (s *Service) syncChunk(ctx context.Context, userID int64, token string, pen
 func (s *Service) SyncGet(ctx context.Context, userID int64, token string) error {
 	// Получаем последнюю версию синхронизации
 	rev, err := s.GetLatestUserRev(ctx, userID)
-
 	if err != nil {
 		return err
 	}
 
-	url, err := url.JoinPath(s.host, syncURL)
+	for {
+		s.logger.Debugf("Get sync changes since revision %d", rev)
 
-	if err != nil {
-		return err
-	}
-
-	revStr := strconv.FormatInt(rev, 10)
-
-	url = url + "?since=" + revStr
-
-	r, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-
-	if err != nil {
-		return fmt.Errorf("cannot create request for sync operation: %w", err)
-	}
-
-	r.Header.Add("Authorization", token)
-
-	s.logger.Debug("Get sync...")
-	resp, err := s.client.Do(r)
-
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("Status sync is not OK: %d", resp.StatusCode)
-	}
-
-	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			s.logger.Warnf("Error closing body: %s", err)
+		url, err := url.JoinPath(s.host, syncURL)
+		if err != nil {
+			return fmt.Errorf("cannot join sync url: %w", err)
 		}
-	}()
 
-	body, err := io.ReadAll(resp.Body)
+		url = fmt.Sprintf("%s?since=%d&limit=%d", url, rev, syncLimit)
 
-	if err != nil {
-		return err
-	}
+		r, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 
-	var res shrModel.SyncGet
+		if err != nil {
+			return fmt.Errorf("cannot create request for sync operation: %w", err)
+		}
 
-	if err := json.Unmarshal(body, &res); err != nil {
-		return fmt.Errorf("cannot unmarshal: %w", err)
-	}
+		r.Header.Set("Authorization", token)
 
-	s.logger.Debugf("Changes: %d", len(res.Changes))
+		s.logger.Debug("Get sync...")
 
-	if err := s.repo.ApplySync(ctx, userID, res); err != nil {
-		return fmt.Errorf("cannot apply sync: %w", err)
+		resp, err := s.client.Do(r)
+		if err != nil {
+			return err
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			resp.Body.Close()
+			return fmt.Errorf("status sync is not OK: %d", resp.StatusCode)
+		}
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			resp.Body.Close()
+			return fmt.Errorf("cannot read sync response: %w", err)
+		}
+
+		if err := resp.Body.Close(); err != nil {
+			s.logger.Warnf("error closing body: %s", err)
+		}
+
+		var res shrModel.SyncGet
+
+		if err := json.Unmarshal(body, &res); err != nil {
+			return fmt.Errorf("cannot unmarshal sync response: %w", err)
+		}
+
+		s.logger.Debugf("Changes: %d", len(res.Changes))
+
+		if err := s.repo.ApplySync(ctx, userID, res); err != nil {
+			return fmt.Errorf("cannot apply sync: %w", err)
+		}
+
+		rev = res.NextRev
+
+		if !res.HasMore {
+			break
+		}
 	}
 
 	return nil

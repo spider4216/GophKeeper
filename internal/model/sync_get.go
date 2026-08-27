@@ -5,6 +5,7 @@ import "github.com/spider4216/GophKeeper/internal/enum"
 type SyncGet struct {
 	Changes []SyncGetChange `json:"changes"`
 	NextRev int64           `json:"next_revision"`
+	HasMore bool            `json:"has_more"`
 }
 
 type SyncGetChange struct {

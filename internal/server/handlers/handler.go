@@ -13,6 +13,10 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	syncGetLimit int = 1
+)
+
 type Handler struct {
 	cfg     *config.Config
 	service *services.Service
@@ -216,26 +220,36 @@ func (h Handler) SyncIn(w http.ResponseWriter, r *http.Request) {
 func (h Handler) SyncOut(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	since := r.URL.Query().Get("since")
-
-	if since == "" {
+	sinceStr := r.URL.Query().Get("since")
+	if sinceStr == "" {
 		h.logger.Error("no since found")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	sintInt, err := strconv.Atoi(since)
-
+	since, err := strconv.ParseInt(sinceStr, 10, 64)
 	if err != nil {
-		h.logger.Errorf("cannot covert since to int: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		h.logger.Errorf("cannot convert since to int: %s", err)
+		w.WriteHeader(http.StatusBadRequest)
 		return
+	}
+
+	limitStr := r.URL.Query().Get("limit")
+
+	limit := syncGetLimit
+
+	if limitStr != "" {
+		limit, err = strconv.Atoi(limitStr)
+		if err != nil {
+			h.logger.Errorf("cannot convert limit to int: %s", err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 	}
 
 	userID := h.service.GetUserIdFromCtx(ctx)
 
-	resp, err := h.service.SyncGet(ctx, userID, int64(sintInt))
-
+	resp, err := h.service.SyncGet(ctx, userID, since, limit)
 	if err != nil {
 		h.logger.Errorf("cannot sync: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -243,7 +257,6 @@ func (h Handler) SyncOut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	b, err := json.Marshal(resp)
-
 	if err != nil {
 		h.logger.Errorf("cannot marshal response: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -254,7 +267,5 @@ func (h Handler) SyncOut(w http.ResponseWriter, r *http.Request) {
 
 	if _, err := w.Write(b); err != nil {
 		h.logger.Errorf("failed to write response: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
 	}
 }

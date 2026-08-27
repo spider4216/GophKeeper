@@ -22,7 +22,7 @@ type Repository interface {
 	CreateSyncChangesTx(ctx context.Context, tx *sql.Tx, itemID int64, op enum.OpType, userID int64) (int64, error)
 	GetSyncChangesByID(ctx context.Context, ID int64) (*models.SyncChangesRepo, error)
 	GetLatestUserRev(ctx context.Context, userID int64) (int64, error)
-	GetUserSyncChanges(ctx context.Context, userID int64, since int64) ([]models.SyncChangesRepo, error)
+	GetUserSyncChanges(ctx context.Context, userID int64, since int64, limit int) ([]models.SyncChangesRepo, error)
 	GetItemsByIDs(ctx context.Context, itemIDs []int64) ([]models.ItemRepo, error)
 	GetPayloadByItemIDs(ctx context.Context, itemIDs []int64) ([]models.ItemPayloadRepo, error)
 	DeletePayloadByItemIDTx(ctx context.Context, tx *sql.Tx, itemID int64) error

@@ -11,6 +11,8 @@ func (s *Service) mapSyncResponse(
 	payloads []models.ItemPayloadRepo,
 	metadata []shrModel.MetadataRepo,
 	since int64,
+	nextRev int64,
+	hasMore bool,
 ) *shrModel.SyncGet {
 	itemByID := make(map[int64]models.ItemRepo, len(items))
 	for _, item := range items {
@@ -34,7 +36,8 @@ func (s *Service) mapSyncResponse(
 
 	result := shrModel.SyncGet{
 		Changes: make([]shrModel.SyncGetChange, 0, len(changes)),
-		NextRev: since,
+		NextRev: nextRev,
+		HasMore: hasMore,
 	}
 
 	for _, change := range changes {

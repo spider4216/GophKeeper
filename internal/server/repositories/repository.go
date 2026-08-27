@@ -143,10 +143,10 @@ func (repo *SrvRepository) GetLatestUserRev(ctx context.Context, userID int64) (
 	return rev, nil
 }
 
-func (repo *SrvRepository) GetUserSyncChanges(ctx context.Context, userID int64, since int64) ([]models.SyncChangesRepo, error) {
-	sql := "SELECT id, item_id, revision, operation, created_at FROM sync_changes WHERE user_id=$1 and revision > $2;"
+func (repo *SrvRepository) GetUserSyncChanges(ctx context.Context, userID int64, since int64, limit int) ([]models.SyncChangesRepo, error) {
+	sql := "SELECT id, item_id, revision, operation, created_at FROM sync_changes WHERE user_id=$1 and revision > $2 ORDER BY revision LIMIT $3;"
 
-	rows, err := repo.con.QueryContext(ctx, sql, userID, since)
+	rows, err := repo.con.QueryContext(ctx, sql, userID, since, limit)
 	if err != nil {
 		return nil, err
 	}

@@ -48,24 +48,23 @@ func (s *Service) GetLatestUserRev(ctx context.Context, userID int64) (int64, er
 	return s.repo.GetLatestUserRev(ctx, userID)
 }
 
-func (s *Service) SyncGet(ctx context.Context, userID int64, since int64) (*shrModel.SyncGet, error) {
+func (s *Service) SyncGet(ctx context.Context, userID int64, since int64, limit int) (*shrModel.SyncGet, error) {
 	s.logger.Debug("Get changes...")
-	changes, err := s.repo.GetUserSyncChanges(ctx, userID, since)
 
+	changes, err := s.repo.GetUserSyncChanges(ctx, userID, since, limit)
 	if err != nil {
 		return nil, err
 	}
 
 	var itemIDs []int64
 
-	for _, item := range changes {
-		itemIDs = append(itemIDs, item.ItemID)
+	for _, change := range changes {
+		itemIDs = append(itemIDs, change.ItemID)
 	}
 
 	s.logger.Debug("Get Items...")
 
 	items, err := s.repo.GetItemsByIDs(ctx, itemIDs)
-
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +72,6 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, since int64) (*shrM
 	s.logger.Debug("Get payloads...")
 
 	payloads, err := s.repo.GetPayloadByItemIDs(ctx, itemIDs)
-
 	if err != nil {
 		return nil, err
 	}
@@ -81,19 +79,31 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, since int64) (*shrM
 	s.logger.Debug("Get metadata...")
 
 	meta, err := s.repo.GetCommonRepo().GetMetadataByItemIDs(ctx, itemIDs)
-
 	if err != nil {
 		return nil, err
 	}
 
-	s.logger.Debug("Get latest rev...")
+	var nextRev int64
 
-	rev, err := s.repo.GetLatestUserRev(ctx, userID)
-
-	if err != nil {
-		return nil, err
+	// Если изменения есть, то след. ревизия - краяняя
+	if len(changes) > 0 {
+		nextRev = changes[len(changes)-1].Revision
+	} else {
+		// Если изменений для синхронизации нет, то следующая
+		// ревизия - это переданная
+		nextRev = since
 	}
 
-	return s.mapSyncResponse(changes, items, payloads, meta, rev), nil
+	// Есть ли еще записи
+	hasMore := len(changes) == limit
 
+	return s.mapSyncResponse(
+		changes,
+		items,
+		payloads,
+		meta,
+		since,
+		nextRev,
+		hasMore,
+	), nil
 }
