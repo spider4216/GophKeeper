@@ -31,6 +31,8 @@ func (c *Command) Register(ctx context.Context, args []string) (string, error) {
 		return "", errors.New("incorrect email format")
 	}
 
+	// todo validate exist user with email
+
 	req := shrModel.RegisterReq{
 		Email: *email,
 		Pass:  *pass,

@@ -25,6 +25,10 @@ func (c *Command) Login(ctx context.Context, args []string) (string, error) {
 		return "", errors.New("email and password are required")
 	}
 
+	if ok := c.Service.ValidateEmailFormat(*email); !ok {
+		return "", errors.New("incorrect email format")
+	}
+
 	req := shrModel.LoginReq{
 		Email: *email,
 		Pass:  *pass,
