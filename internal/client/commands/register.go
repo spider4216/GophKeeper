@@ -23,6 +23,14 @@ func (c *Command) Register(ctx context.Context, args []string) (string, error) {
 		return "", errors.New("email and password are required")
 	}
 
+	if ok := c.Service.ValidateStrongPassword(*pass); !ok {
+		return "", errors.New("password not strong enough (need one upper, one lower, one digit and >= 8 characters)")
+	}
+
+	if ok := c.Service.ValidateEmailFormat(*email); !ok {
+		return "", errors.New("incorrect email format")
+	}
+
 	req := shrModel.RegisterReq{
 		Email: *email,
 		Pass:  *pass,
