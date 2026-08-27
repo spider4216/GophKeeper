@@ -33,10 +33,14 @@ func main() {
 
 	r := chi.NewRouter()
 
-	r.Post("/auth/register", http.HandlerFunc(handler.CreateUser))
-	r.Post("/auth/login", http.HandlerFunc(handler.Login))
-	r.With(middleware.WithJwt).Post("/sync", http.HandlerFunc(handler.SyncIn))
-	r.With(middleware.WithJwt).Get("/sync", http.HandlerFunc(handler.SyncOut))
+	r.Route("/", func(r chi.Router) {
+		r.Use(middleware.WithLogging)
+
+		r.Post("/auth/register", http.HandlerFunc(handler.CreateUser))
+		r.Post("/auth/login", http.HandlerFunc(handler.Login))
+		r.With(middleware.WithJwt).Post("/sync", http.HandlerFunc(handler.SyncIn))
+		r.With(middleware.WithJwt).Get("/sync", http.HandlerFunc(handler.SyncOut))
+	})
 
 	srv := &http.Server{
 		Addr:         app.cfg.ServerAddress,

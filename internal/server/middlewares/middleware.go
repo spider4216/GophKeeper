@@ -6,8 +6,6 @@ import (
 	"go.uber.org/zap"
 )
 
-// todo реализовать логер middleware
-
 type Middleware struct {
 	logger  *zap.SugaredLogger
 	cfg     *config.Config
