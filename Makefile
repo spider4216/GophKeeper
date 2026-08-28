@@ -6,7 +6,7 @@ DSN_CLIENT?=postgres://postgres:postgres@localhost:5432/gophkeeper_client_1
 LOG_LEVEL?=debug
 JWT_KEY?=qwerty
 ENCRYPT_KEY?=12345678901234567890123456789012
-SERVER_HOST?=https://127.0.0.1:8080
+SERVER_HOST?=http://127.0.0.1:8080
 CLI_VERSION?=1.0.0
 
 run-srv:
