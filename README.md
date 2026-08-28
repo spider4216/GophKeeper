@@ -1,5 +1,9 @@
 # GophKeeper
 
+## Todo
+Описать каие переменные нужны
+Описать какие функции еще стоит реализовать
+
 ## Server
 
 ### Endpoints
@@ -178,7 +182,7 @@ go run ./cmd/client update-loginpass --login= --password= --id= --token= --meta-
 make client-update-loginpass login= pass= id= jwt= metaid= title=
 ```
 
-# Сертификаты
+## Сертификаты
 
 Сервис может работать в режиме HTTPS. Для активации этого режима нужно на сервере установить значение для переменной окружения ENABLE_HTTPS
 

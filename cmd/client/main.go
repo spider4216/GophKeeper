@@ -47,6 +47,8 @@ func main() {
 		msg, err = cmd.DeleteItem(ctx, app.args)
 	case commands.UpdateLoginPass:
 		msg, err = cmd.UpdateLoginPass(ctx, app.args)
+	case commands.Version:
+		msg, err = cmd.PrintVersion()
 	default:
 		err = errors.New("command not found")
 	}
