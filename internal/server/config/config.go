@@ -16,6 +16,9 @@ type Config struct {
 	IdleTimeout   time.Duration `env:"IDLE_TIMEOUT" envDefault:"30s"`
 	JWTKey        string        `env:"JWT_KEY"`
 	ExpToken      time.Duration `env:"TOKEN_EXPIRE" envDefault:"1h"`
+	Https         bool          `env:"ENABLE_HTTPS" json:"enable_https"`                      // Режим HTTPS
+	PKPath        string        `env:"PK_PATH" envDefault:"certs/private.pem" json:"pk_path"` // Путь до приватного ключа для режимо HTTPS
+	CrtPath       string        `env:"CRT_PATH" envDefault:"certs/cert.pem" json:"crt_path"`  // Путь до сертификата для режимо HTTPS
 }
 
 func New() (*Config, error) {

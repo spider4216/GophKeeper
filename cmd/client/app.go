@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -127,10 +128,15 @@ func (app *app) initCli() error {
 		Timeout: app.cfg.DialerTimeout,
 	}
 
+	tlsCfg := tls.Config{
+		InsecureSkipVerify: true,
+	}
+
 	trans := &http.Transport{
 		DialContext:           dialer.DialContext,
 		TLSHandshakeTimeout:   app.cfg.TLSHandshakeTimeout,
 		ResponseHeaderTimeout: app.cfg.RespHeaderTimeout,
+		TLSClientConfig:       &tlsCfg,
 	}
 
 	client := &http.Client{

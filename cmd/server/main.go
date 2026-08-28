@@ -11,9 +11,11 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/spider4216/GophKeeper/internal/server/config"
 	"github.com/spider4216/GophKeeper/internal/server/handlers"
 	"github.com/spider4216/GophKeeper/internal/server/middlewares"
 	"github.com/spider4216/GophKeeper/internal/server/services"
+	"go.uber.org/zap"
 )
 
 const (
@@ -79,9 +81,19 @@ func main() {
 
 	app.logger.Debugf("Listen server on %s", app.cfg.ServerAddress)
 
-	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	if err := runServer(srv, app.cfg, app.logger); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		app.logger.Fatalf("Server error: %s", err)
 	}
 
 	wg.Wait()
+}
+
+func runServer(srv *http.Server, cfg *config.Config, logger *zap.SugaredLogger) error {
+	if cfg.Https {
+		logger.Info("Run HTTPS mode")
+		return srv.ListenAndServeTLS(cfg.CrtPath, cfg.PKPath)
+	}
+
+	logger.Info("Run HTTP mode")
+	return srv.ListenAndServe()
 }

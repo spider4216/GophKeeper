@@ -177,3 +177,15 @@ make client-delete-item id= jwt=
 go run ./cmd/client update-loginpass --login= --password= --id= --token= --meta-id= --title=
 make client-update-loginpass login= pass= id= jwt= metaid= title=
 ```
+
+# Сертификаты
+
+Сервис может работать в режиме HTTPS. Для активации этого режима нужно на сервере установить значение для переменной окружения ENABLE_HTTPS
+
+Также нужно сгенерировать сертификаты
+
+```
+make crt
+```
+
+Если флаг HTTPS включен, нужно не забыть установить значение хоста с протоколом https (переменная SERVER_HOST). Сделать это можно в Makefile или мануально
