@@ -26,9 +26,7 @@ func New(repo repositories.Repository, logger *zap.SugaredLogger) *Service {
 }
 
 func (s *Service) CreateUser(ctx context.Context, email string, plainPass string) (int64, error) {
-	// todo посолить пароль
 	b, err := bcrypt.GenerateFromPassword([]byte(plainPass), bcrypt.DefaultCost)
-
 	if err != nil {
 		return 0, err
 	}
