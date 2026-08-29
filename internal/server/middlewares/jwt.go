@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -28,6 +29,11 @@ func (m Middleware) WithJwt(h http.Handler) http.Handler {
 		claims := &claims{}
 		token, err := jwt.ParseWithClaims(tokenStr, claims,
 			func(t *jwt.Token) (interface{}, error) {
+				if t.Method != jwt.SigningMethodHS256 {
+					m.logger.Error("JWT Alg not match")
+					return nil, fmt.Errorf("JWT Alg not match: %s", t.Method.Alg())
+				}
+
 				return []byte(m.cfg.JWTKey), nil
 			})
 		if err != nil {
