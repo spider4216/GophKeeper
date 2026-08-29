@@ -36,6 +36,13 @@ func (s *Service) Register(ctx context.Context, req shrModel.RegisterReq) (*shrM
 	r.Header.Add("Content-Type", "application/json")
 
 	resp, err := s.client.Do(r)
+
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			s.logger.Warn("Cannot close body in register method")
+		}
+	}()
+
 	if err != nil {
 		return nil, err
 	}
@@ -77,6 +84,13 @@ func (s *Service) Login(ctx context.Context, req shrModel.LoginReq) (*shrModel.L
 	r.Header.Add("Content-Type", "application/json")
 
 	resp, err := s.client.Do(r)
+
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			s.logger.Warn("Cannot close body in login method")
+		}
+	}()
+
 	if err != nil {
 		return nil, err
 	}
