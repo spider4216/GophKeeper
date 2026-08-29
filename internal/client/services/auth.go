@@ -37,15 +37,15 @@ func (s *Service) Register(ctx context.Context, req shrModel.RegisterReq) (*shrM
 
 	resp, err := s.client.Do(r)
 
+	if err != nil {
+		return nil, err
+	}
+
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
 			s.logger.Warn("Cannot close body in register method")
 		}
 	}()
-
-	if err != nil {
-		return nil, err
-	}
 
 	if resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("response status is %d", resp.StatusCode)
@@ -85,15 +85,15 @@ func (s *Service) Login(ctx context.Context, req shrModel.LoginReq) (*shrModel.L
 
 	resp, err := s.client.Do(r)
 
+	if err != nil {
+		return nil, err
+	}
+
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
 			s.logger.Warn("Cannot close body in login method")
 		}
 	}()
-
-	if err != nil {
-		return nil, err
-	}
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("response status is %d", resp.StatusCode)

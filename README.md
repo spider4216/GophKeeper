@@ -41,6 +41,8 @@ RESPONSE_HEADER_TIMEOUT
 DEALER_TIMEOUT
 CLIENT_TIMEOUT
 CTX_TIMEOUT
+SYNC_CHANK_SIZE
+SYNC_LIMIT
 ```
 
 Примеры использования и примеры значений можно найти в Makefile

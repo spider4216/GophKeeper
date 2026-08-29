@@ -25,7 +25,7 @@ func (c *Command) SyncSend(ctx context.Context, args []string) (string, error) {
 		return "", fmt.Errorf("cannot parse jwt: %s", err)
 	}
 
-	if err := c.Service.SyncSend(ctx, claims.UserID, *token); err != nil {
+	if err := c.Service.SyncSend(ctx, claims.UserID, *token, c.Cfg.SyncChankSize); err != nil {
 		return "", fmt.Errorf("cannot sync: %s", err)
 	}
 

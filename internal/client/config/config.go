@@ -17,6 +17,8 @@ type Config struct {
 	DialerTimeout       time.Duration `env:"DEALER_TIMEOUT" envDefault:"5s"`
 	CliTimeout          time.Duration `env:"CLIENT_TIMEOUT" envDefault:"10s"`
 	CtxTimeout          time.Duration `env:"CTX_TIMEOUT" envDefault:"3s"`
+	SyncChankSize       int           `env:"SYNC_CHANK_SIZE" envDefault:"100"`
+	SyncLimit           int           `env:"SYNC_LIMIT" envDefault:"100"`
 }
 
 func New() (*Config, error) {

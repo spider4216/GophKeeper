@@ -14,12 +14,10 @@ import (
 )
 
 const (
-	syncURL       string = "/sync"
-	syncChunkSize int    = 1
-	syncLimit     int    = 1
+	syncURL string = "/sync"
 )
 
-func (s *Service) SyncSend(ctx context.Context, userID int64, token string) error {
+func (s *Service) SyncSend(ctx context.Context, userID int64, token string, syncChunkSize int) error {
 	s.logger.Debug("Get pendings...")
 
 	pends, err := s.repo.GetPendingUserChanges(ctx, int(userID))
@@ -139,7 +137,7 @@ func (s *Service) syncChunk(ctx context.Context, userID int64, token string, pen
 	return res.LastRev, nil
 }
 
-func (s *Service) SyncGet(ctx context.Context, userID int64, token string) error {
+func (s *Service) SyncGet(ctx context.Context, userID int64, token string, syncLimit int) error {
 	// Получаем последнюю версию синхронизации
 	rev, err := s.GetLatestUserRev(ctx, userID)
 	if err != nil {
