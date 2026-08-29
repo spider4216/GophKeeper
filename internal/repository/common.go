@@ -3,8 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
-
-	"go.uber.org/zap"
+	"log/slog"
 
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
@@ -12,11 +11,11 @@ import (
 // хранилище где данные складываются в БД PostgreSQL.
 type CommonRepository struct {
 	con    *sql.DB
-	logger *zap.SugaredLogger
+	logger *slog.Logger
 }
 
 // NewPgxStorage создание хранилища с БД PostgreSQL.
-func NewRepository(dsn string, logger *zap.SugaredLogger) (*CommonRepository, error) {
+func NewRepository(dsn string, logger *slog.Logger) (*CommonRepository, error) {
 	db, err := sql.Open("pgx", dsn)
 	if err != nil {
 		return nil, err
@@ -38,7 +37,7 @@ func (repo *CommonRepository) GetMetadataByItemIDs(ctx context.Context, itemIDs 
 
 	defer func() {
 		if err := rows.Close(); err != nil {
-			repo.logger.Warnf("Cannot close rows: %s", err)
+			repo.logger.Warn("Cannot close rows", "error", err)
 		}
 	}()
 
@@ -137,8 +136,6 @@ func (repo *CommonRepository) CreateMetaTx(ctx context.Context, tx *sql.Tx, item
 func (repo *CommonRepository) UpdateMetaByIDTx(ctx context.Context, tx *sql.Tx, id int64, userID int64, v string) error {
 	sql := "UPDATE metadata md SET value=$1 FROM items i WHERE md.id=$2 AND i.user_id=$3"
 
-	repo.logger.Debugf("Val: %s, ID: %d, UserID: %d", v, id, userID)
-
 	r, err := tx.ExecContext(ctx, sql, v, id, userID)
 	if err != nil {
 		return err
@@ -149,15 +146,13 @@ func (repo *CommonRepository) UpdateMetaByIDTx(ctx context.Context, tx *sql.Tx, 
 		return err
 	}
 
-	repo.logger.Debugf("Rows affected: %d", aff)
+	repo.logger.Debug("Rows affected", "count", aff)
 
 	return nil
 }
 
 func (repo *CommonRepository) UpdateMetaByItemIDAndKeyTx(ctx context.Context, tx *sql.Tx, itemID string, key string, v string) error {
 	sql := "UPDATE metadata SET value=$1 WHERE item_id=$2 AND key=$3"
-
-	repo.logger.Debugf("Val: %s, itemID: %d, Key: %s", v, itemID, key)
 
 	_, err := tx.ExecContext(ctx, sql, v, itemID, key)
 	if err != nil {

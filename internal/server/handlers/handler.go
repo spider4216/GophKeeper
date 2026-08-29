@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"io"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -10,7 +11,6 @@ import (
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 	"github.com/spider4216/GophKeeper/internal/server/config"
 	"github.com/spider4216/GophKeeper/internal/server/services"
-	"go.uber.org/zap"
 )
 
 const (
@@ -20,10 +20,10 @@ const (
 type Handler struct {
 	cfg     *config.Config
 	service *services.Service
-	logger  *zap.SugaredLogger
+	logger  *slog.Logger
 }
 
-func New(cfg *config.Config, logger *zap.SugaredLogger, service *services.Service) Handler {
+func New(cfg *config.Config, logger *slog.Logger, service *services.Service) Handler {
 	return Handler{
 		cfg:     cfg,
 		service: service,
@@ -38,7 +38,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		h.logger.Errorf("failed read body: %s", err)
+		h.logger.Error("failed read body", "error", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -46,7 +46,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var req shrModel.RegisterReq
 
 	if err := json.Unmarshal(body, &req); err != nil {
-		h.logger.Errorf("unmarshall error: %s", err)
+		h.logger.Error("unmarshall error", "error", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -62,7 +62,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		h.logger.Errorf("cannot create user: %s", err)
+		h.logger.Error("cannot create user", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -73,7 +73,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	b, err := json.Marshal(res)
 	if err != nil {
-		h.logger.Errorf("marshall error: %s", err)
+		h.logger.Error("marshall error", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -81,7 +81,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 
 	if _, err := w.Write(b); err != nil {
-		h.logger.Errorf("failed to write response: %s", err)
+		h.logger.Error("failed to write response", "error", err)
 		return
 	}
 }
@@ -95,7 +95,7 @@ func (h Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		h.logger.Errorf("failed read body: %s", err)
+		h.logger.Error("failed read body", "error", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -103,7 +103,7 @@ func (h Handler) Login(w http.ResponseWriter, r *http.Request) {
 	req := shrModel.LoginReq{}
 
 	if err := json.Unmarshal(body, &req); err != nil {
-		h.logger.Errorf("failed read unmarshal: %s", err)
+		h.logger.Error("failed read unmarshal", "error", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -111,7 +111,7 @@ func (h Handler) Login(w http.ResponseWriter, r *http.Request) {
 	// Извлечение пользователя по логину
 	user, err := h.service.GetUserByEmail(ctx, req.Email)
 	if err != nil {
-		h.logger.Errorf("User not found: %s", err)
+		h.logger.Error("User not found", "error", err)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -126,7 +126,7 @@ func (h Handler) Login(w http.ResponseWriter, r *http.Request) {
 	// Авторизация
 	token, err := h.service.BuildJWTString(user.ID, h.cfg.JWTKey, h.cfg.ExpToken)
 	if err != nil {
-		h.logger.Errorf("Unathorized: %s", err)
+		h.logger.Error("Unathorized: %s", "error", err)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -144,7 +144,7 @@ func (h Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	b, err := json.Marshal(res)
 	if err != nil {
-		h.logger.Errorf("failed marshal: %s", err)
+		h.logger.Error("failed marshal: %s", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -152,7 +152,7 @@ func (h Handler) Login(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	if _, err := w.Write(b); err != nil {
-		h.logger.Errorf("failed to write response: %s", err)
+		h.logger.Error("failed to write response: %s", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -166,7 +166,7 @@ func (h Handler) SyncIn(w http.ResponseWriter, r *http.Request) {
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		h.logger.Errorf("failed read body: %s", err)
+		h.logger.Error("failed read body", "error", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -174,7 +174,7 @@ func (h Handler) SyncIn(w http.ResponseWriter, r *http.Request) {
 	var req shrModel.SyncPutReq
 
 	if err := json.Unmarshal(body, &req); err != nil {
-		h.logger.Errorf("failed read unmarshal: %s", err)
+		h.logger.Error("failed read unmarshal", "error", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -182,14 +182,14 @@ func (h Handler) SyncIn(w http.ResponseWriter, r *http.Request) {
 	userID := h.service.GetUserIdFromCtx(ctx)
 
 	if err := h.service.ApplySync(ctx, req.Changes, userID); err != nil {
-		h.logger.Errorf("failed sync: %s", err)
+		h.logger.Error("failed sync", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	rev, err := h.service.GetLatestUserRev(ctx, userID)
 	if err != nil {
-		h.logger.Errorf("cannot get latest user revision: %s", err)
+		h.logger.Error("cannot get latest user revision", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -200,7 +200,7 @@ func (h Handler) SyncIn(w http.ResponseWriter, r *http.Request) {
 
 	b, err := json.Marshal(resp)
 	if err != nil {
-		h.logger.Errorf("failed marshal: %s", err)
+		h.logger.Error("failed marshal", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -208,7 +208,7 @@ func (h Handler) SyncIn(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	if _, err := w.Write(b); err != nil {
-		h.logger.Errorf("failed to write response: %s", err)
+		h.logger.Error("failed to write response", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -226,7 +226,7 @@ func (h Handler) SyncOut(w http.ResponseWriter, r *http.Request) {
 
 	since, err := strconv.ParseInt(sinceStr, 10, 64)
 	if err != nil {
-		h.logger.Errorf("cannot convert since to int: %s", err)
+		h.logger.Error("cannot convert since to int", "error", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -238,7 +238,7 @@ func (h Handler) SyncOut(w http.ResponseWriter, r *http.Request) {
 	if limitStr != "" {
 		limit, err = strconv.Atoi(limitStr)
 		if err != nil {
-			h.logger.Errorf("cannot convert limit to int: %s", err)
+			h.logger.Error("cannot convert limit to int", "error", err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -248,14 +248,14 @@ func (h Handler) SyncOut(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.service.SyncGet(ctx, userID, since, limit)
 	if err != nil {
-		h.logger.Errorf("cannot sync: %s", err)
+		h.logger.Error("cannot sync", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	b, err := json.Marshal(resp)
 	if err != nil {
-		h.logger.Errorf("cannot marshal response: %s", err)
+		h.logger.Error("cannot marshal response", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -263,6 +263,6 @@ func (h Handler) SyncOut(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	if _, err := w.Write(b); err != nil {
-		h.logger.Errorf("failed to write response: %s", err)
+		h.logger.Error("failed to write response", "error", err)
 	}
 }

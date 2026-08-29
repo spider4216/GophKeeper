@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"log"
+	"log/slog"
 	"net/http"
+	"os"
 	"os/signal"
 	"sync"
 	"syscall"
@@ -15,7 +17,6 @@ import (
 	"github.com/spider4216/GophKeeper/internal/server/handlers"
 	"github.com/spider4216/GophKeeper/internal/server/middlewares"
 	"github.com/spider4216/GophKeeper/internal/server/services"
-	"go.uber.org/zap"
 )
 
 const (
@@ -75,20 +76,21 @@ func main() {
 		defer cancel()
 
 		if err := srv.Shutdown(ctxShutdown); err != nil {
-			app.logger.Warnf("Cannot shutdown main server: %s", err)
+			app.logger.Warn("Cannot shutdown main server", "error", err)
 		}
 	}()
 
-	app.logger.Debugf("Listen server on %s", app.cfg.ServerAddress)
+	app.logger.Debug("Listen server", "address", app.cfg.ServerAddress)
 
 	if err := runServer(srv, app.cfg, app.logger); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		app.logger.Fatalf("Server error: %s", err)
+		app.logger.Error("Server error", "error", err)
+		os.Exit(1)
 	}
 
 	wg.Wait()
 }
 
-func runServer(srv *http.Server, cfg *config.Config, logger *zap.SugaredLogger) error {
+func runServer(srv *http.Server, cfg *config.Config, logger *slog.Logger) error {
 	if cfg.Https {
 		logger.Info("Run HTTPS mode")
 		return srv.ListenAndServeTLS(cfg.CrtPath, cfg.PKPath)

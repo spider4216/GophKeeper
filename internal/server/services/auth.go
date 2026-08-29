@@ -54,7 +54,7 @@ func (s *Service) BuildJWTString(userId int64, secret string, exp time.Duration)
 		return "", err
 	}
 
-	s.logger.Debug("User ID is ", userId, " set to token")
+	s.logger.Debug("Set to token", "user id", userId)
 
 	// возвращаем строку токена
 	return tokenString, nil

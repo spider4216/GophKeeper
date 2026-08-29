@@ -2,12 +2,12 @@ package commands
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/spider4216/GophKeeper/internal/client/config"
 	"github.com/spider4216/GophKeeper/internal/client/services"
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
-	"go.uber.org/zap"
 )
 
 type CmdName string
@@ -45,10 +45,10 @@ type CommandInterface interface {
 type Command struct {
 	Service *services.Service
 	Cfg     *config.Config
-	logger  *zap.SugaredLogger
+	logger  *slog.Logger
 }
 
-func New(service *services.Service, cfg *config.Config, logger *zap.SugaredLogger) CommandInterface {
+func New(service *services.Service, cfg *config.Config, logger *slog.Logger) CommandInterface {
 	return &Command{
 		Service: service,
 		Cfg:     cfg,

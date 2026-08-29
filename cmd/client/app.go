@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
@@ -15,11 +16,10 @@ import (
 	"github.com/spider4216/GophKeeper/internal/logger"
 	commonRep "github.com/spider4216/GophKeeper/internal/repository"
 	migCli "github.com/spider4216/GophKeeper/migrations/client"
-	"go.uber.org/zap"
 )
 
 type app struct {
-	logger  *zap.SugaredLogger
+	logger  *slog.Logger
 	repo    repositories.Repository
 	cfg     *config.Config
 	cli     *http.Client
@@ -113,10 +113,7 @@ func (app *app) initMigrations() error {
 }
 
 func (app *app) initLogger() error {
-	logger, err := logger.InitZap(app.cfg.LogLvl)
-	if err != nil {
-		return err
-	}
+	logger := logger.Init(app.cfg.LogLvl)
 
 	app.logger = logger
 

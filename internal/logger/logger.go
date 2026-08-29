@@ -1,20 +1,30 @@
 package logger
 
-import "go.uber.org/zap"
+import (
+	"log/slog"
+	"os"
+	"strings"
+)
 
-func InitZap(lvl string) (*zap.SugaredLogger, error) {
-	level, err := zap.ParseAtomicLevel(lvl)
-	if err != nil {
-		return nil, err
+func Init(lvl string) *slog.Logger {
+	return slog.New(
+		slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+			Level: parseLogLevel(lvl),
+		}),
+	)
+}
+
+func parseLogLevel(level string) slog.Level {
+	switch strings.ToLower(level) {
+	case "debug":
+		return slog.LevelDebug
+	case "info":
+		return slog.LevelInfo
+	case "warn", "warning":
+		return slog.LevelWarn
+	case "error":
+		return slog.LevelError
+	default:
+		return slog.LevelInfo
 	}
-
-	cfg := zap.NewDevelopmentConfig()
-	cfg.Level = level
-
-	logger, err := cfg.Build()
-	if err != nil {
-		return nil, err
-	}
-
-	return logger.Sugar(), nil
 }

@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -17,17 +18,16 @@ import (
 	"github.com/spider4216/GophKeeper/internal/client/repositories"
 	"github.com/spider4216/GophKeeper/internal/enum"
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
-	"go.uber.org/zap"
 )
 
 type Service struct {
 	client *http.Client
 	host   string
 	repo   repositories.Repository
-	logger *zap.SugaredLogger
+	logger *slog.Logger
 }
 
-func New(client *http.Client, host string, repo repositories.Repository, logger *zap.SugaredLogger) *Service {
+func New(client *http.Client, host string, repo repositories.Repository, logger *slog.Logger) *Service {
 	return &Service{
 		client: client,
 		host:   host,

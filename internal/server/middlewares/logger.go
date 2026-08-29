@@ -33,7 +33,7 @@ func (m Middleware) WithLogging(h http.Handler) http.Handler {
 
 		duration := time.Since(start)
 
-		m.logger.Infoln(
+		m.logger.Info("Info",
 			"url", url,
 			"method", method,
 			"duration", duration,

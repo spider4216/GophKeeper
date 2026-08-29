@@ -25,7 +25,7 @@ func (s *Service) SyncSend(ctx context.Context, userID int64, token string, sync
 		return fmt.Errorf("cannot get pending changes: %w", err)
 	}
 
-	s.logger.Debugf("Pendings count: %d", len(pends))
+	s.logger.Debug("Pendings count", "count", len(pends))
 
 	for start := 0; start < len(pends); start += syncChunkSize {
 		end := start + syncChunkSize
@@ -39,7 +39,7 @@ func (s *Service) SyncSend(ctx context.Context, userID int64, token string, sync
 		chunk := pends[start:end]
 
 		// Отправляем чанк на сервер
-		s.logger.Debugf("Sync chunk: %d-%d of %d", start+1, end, len(pends))
+		s.logger.Debug("Sync chunk", "start", start+1, "end", end, "len", len(pends))
 
 		// Получаем ревизию изменений
 		lastRev, err := s.syncChunk(ctx, userID, token, chunk)
@@ -76,7 +76,7 @@ func (s *Service) syncChunk(ctx context.Context, userID int64, token string, pen
 		return 0, fmt.Errorf("cannot get items: %w", err)
 	}
 
-	s.logger.Debugf("User items sync: %d", len(items))
+	s.logger.Debug("User items sync", "len items", len(items))
 
 	meta, err := s.repo.GetCommonRepo().GetMetadataByItemIDs(ctx, itemIDs)
 	if err != nil {
@@ -113,7 +113,7 @@ func (s *Service) syncChunk(ctx context.Context, userID int64, token string, pen
 
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
-			s.logger.Warnf("error closing response body: %s", err)
+			s.logger.Warn("error closing response body", "error", err)
 		}
 	}()
 
@@ -132,7 +132,7 @@ func (s *Service) syncChunk(ctx context.Context, userID int64, token string, pen
 		return 0, fmt.Errorf("cannot decode sync response: %w", err)
 	}
 
-	s.logger.Debugf("Latest revision: %d, for user: %d", res.LastRev, userID)
+	s.logger.Debug("Latest revision for user", "rev", res.LastRev, "user", userID)
 
 	return res.LastRev, nil
 }
@@ -145,7 +145,7 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, token string, syncL
 	}
 
 	for {
-		s.logger.Debugf("Get sync changes since revision %d", rev)
+		s.logger.Debug("Get sync changes since revision", "rev", rev)
 
 		url, err := url.JoinPath(s.host, syncURL)
 		if err != nil {
@@ -170,7 +170,7 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, token string, syncL
 
 		defer func() {
 			if err := resp.Body.Close(); err != nil {
-				s.logger.Warnf("error closing body: %s", err)
+				s.logger.Warn("error closing body", "error", err)
 			}
 		}()
 
@@ -183,7 +183,7 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, token string, syncL
 			return fmt.Errorf("cannot read sync response: %w", err)
 		}
 
-		s.logger.Debugf("Response from server: %s", string(body))
+		s.logger.Debug("Response from server", "content", string(body))
 
 		var res shrModel.SyncGet
 
@@ -191,7 +191,7 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, token string, syncL
 			return fmt.Errorf("cannot unmarshal sync response: %w", err)
 		}
 
-		s.logger.Debugf("Changes: %d", len(res.Changes))
+		s.logger.Debug("Changes", "count", len(res.Changes))
 
 		if err := s.repo.ApplySync(ctx, userID, res); err != nil {
 			return fmt.Errorf("cannot apply sync: %w", err)

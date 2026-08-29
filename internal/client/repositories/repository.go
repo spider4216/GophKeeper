@@ -5,8 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-
-	"go.uber.org/zap"
+	"log/slog"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/spider4216/GophKeeper/internal/client/models"
@@ -18,12 +17,12 @@ import (
 // PgxStorage хранилище где данные складываются в БД PostgreSQL.
 type ClientRepository struct {
 	con       *sql.DB
-	logger    *zap.SugaredLogger
+	logger    *slog.Logger
 	commonRep commonRep.CommonRepositoryInterface
 }
 
 // NewPgxStorage создание хранилища с БД PostgreSQL.
-func NewRepository(dsn string, logger *zap.SugaredLogger, common commonRep.CommonRepositoryInterface) (*ClientRepository, error) {
+func NewRepository(dsn string, logger *slog.Logger, common commonRep.CommonRepositoryInterface) (*ClientRepository, error) {
 	db, err := sql.Open("pgx", dsn)
 	if err != nil {
 		return nil, err
@@ -85,7 +84,7 @@ func (repo *ClientRepository) GetPendingUserChanges(ctx context.Context, userID 
 
 	defer func() {
 		if err := rows.Close(); err != nil {
-			repo.logger.Warnf("Cannot close rows: %s", err)
+			repo.logger.Warn("Cannot close rows", "error", err)
 		}
 	}()
 
@@ -122,7 +121,7 @@ func (repo *ClientRepository) GetItemsByIDs(ctx context.Context, itemIDs []strin
 
 	defer func() {
 		if err := rows.Close(); err != nil {
-			repo.logger.Warnf("Cannot close rows: %s", err)
+			repo.logger.Warn("Cannot close rows", "error", err)
 		}
 	}()
 
@@ -159,7 +158,7 @@ func (repo *ClientRepository) GetMetadataByItemIDs(ctx context.Context, itemIDs 
 
 	defer func() {
 		if err := rows.Close(); err != nil {
-			repo.logger.Warnf("Cannot close rows: %s", err)
+			repo.logger.Warn("Cannot close rows", "error", err)
 		}
 	}()
 
@@ -264,7 +263,7 @@ func (repo *ClientRepository) GetMetadataByItemID(ctx context.Context, itemID st
 
 	defer func() {
 		if err := rows.Close(); err != nil {
-			repo.logger.Warnf("Cannot close rows: %s", err)
+			repo.logger.Warn("Cannot close rows", "error", err)
 		}
 	}()
 
@@ -302,7 +301,7 @@ func (repo *ClientRepository) GetUserItems(ctx context.Context, userID int64) ([
 
 	defer func() {
 		if err := rows.Close(); err != nil {
-			repo.logger.Warnf("Cannot close rows: %s", err)
+			repo.logger.Warn("Cannot close rows", "error", err)
 		}
 	}()
 
@@ -363,7 +362,7 @@ func (repo *ClientRepository) CreateUserPassItem(ctx context.Context, item model
 
 	defer func() {
 		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
-			repo.logger.Warnf("cannot rollback in create userpass: %s", err)
+			repo.logger.Warn("cannot rollback in create userpass", "error", err)
 		}
 	}()
 
@@ -395,7 +394,7 @@ func (repo *ClientRepository) DeleteUserItem(ctx context.Context, itemID string,
 
 	defer func() {
 		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
-			repo.logger.Warnf("cannot rollback in selete user item: %s", err)
+			repo.logger.Warn("cannot rollback in selete user item", "error", err)
 		}
 	}()
 
@@ -426,7 +425,7 @@ func (repo *ClientRepository) ApplySync(ctx context.Context, userID int64, res s
 
 	defer func() {
 		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
-			repo.logger.Warnf("cannot rollback in apply sync: %s", err)
+			repo.logger.Warn("cannot rollback in apply sync", "error", err)
 		}
 	}()
 
@@ -521,7 +520,7 @@ func (repo *ClientRepository) UpdateLoginPass(ctx context.Context, itemID string
 
 	defer func() {
 		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
-			repo.logger.Warnf("cannot rollback in update userpass: %s", err)
+			repo.logger.Warn("cannot rollback in update userpass", "error", err)
 		}
 	}()
 
@@ -552,7 +551,7 @@ func (repo *ClientRepository) CommitSyncChunkTx(ctx context.Context, ids []strin
 
 	defer func() {
 		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
-			repo.logger.Warnf("cannot rollback in commit sync: %s", err)
+			repo.logger.Warn("cannot rollback in commit sync", "error", err)
 		}
 	}()
 

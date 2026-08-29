@@ -3,22 +3,22 @@ package services
 import (
 	"context"
 	"errors"
+	"log/slog"
 
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 	"github.com/spider4216/GophKeeper/internal/server/models"
 	"github.com/spider4216/GophKeeper/internal/server/repositories"
-	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type Service struct {
 	repo   repositories.Repository
-	logger *zap.SugaredLogger
+	logger *slog.Logger
 }
 
-func New(repo repositories.Repository, logger *zap.SugaredLogger) *Service {
+func New(repo repositories.Repository, logger *slog.Logger) *Service {
 	return &Service{
 		repo:   repo,
 		logger: logger,

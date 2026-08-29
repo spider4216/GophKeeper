@@ -5,8 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-
-	"go.uber.org/zap"
+	"log/slog"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/spider4216/GophKeeper/internal/enum"
@@ -18,12 +17,12 @@ import (
 // хранилище где данные складываются в БД PostgreSQL.
 type SrvRepository struct {
 	con        *sql.DB
-	logger     *zap.SugaredLogger
+	logger     *slog.Logger
 	commonRepo commonRep.CommonRepositoryInterface
 }
 
 // NewPgxStorage создание хранилища с БД PostgreSQL.
-func NewRepository(dsn string, logger *zap.SugaredLogger, common commonRep.CommonRepositoryInterface) (*SrvRepository, error) {
+func NewRepository(dsn string, logger *slog.Logger, common commonRep.CommonRepositoryInterface) (*SrvRepository, error) {
 	db, err := sql.Open("pgx", dsn)
 	if err != nil {
 		return nil, err
@@ -135,7 +134,7 @@ func (repo *SrvRepository) GetUserSyncChanges(ctx context.Context, userID int64,
 
 	defer func() {
 		if err := rows.Close(); err != nil {
-			repo.logger.Warnf("Cannot close rows: %s", err)
+			repo.logger.Warn("Cannot close rows", "error", err)
 		}
 	}()
 
@@ -174,7 +173,7 @@ func (repo *SrvRepository) GetItemsByIDs(ctx context.Context, itemIDs []string) 
 
 	defer func() {
 		if err := rows.Close(); err != nil {
-			repo.logger.Warnf("Cannot close rows: %s", err)
+			repo.logger.Warn("Cannot close rows", "error", err)
 		}
 	}()
 
@@ -211,7 +210,7 @@ func (repo *SrvRepository) GetPayloadByItemIDs(ctx context.Context, itemIDs []st
 
 	defer func() {
 		if err := rows.Close(); err != nil {
-			repo.logger.Warnf("Cannot close rows: %s", err)
+			repo.logger.Warn("Cannot close rows", "error", err)
 		}
 	}()
 
@@ -267,12 +266,12 @@ func (repo *SrvRepository) ApplySync(ctx context.Context, in []shrModel.SyncPutC
 
 	defer func() {
 		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
-			repo.logger.Warnf("cannot rollback in apply sync: %s", err)
+			repo.logger.Warn("cannot rollback in apply sync", "error", err)
 		}
 	}()
 
 	for _, item := range in {
-		repo.logger.Debugf("Sync Operation: %s", item.Operation)
+		repo.logger.Debug("Sync Operation", "operation", item.Operation)
 
 		line := models.ItemRepo{
 			ID:     item.Item.ID,
