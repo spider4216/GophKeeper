@@ -2,8 +2,6 @@ package services
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"errors"
 
 	"github.com/jackc/pgerrcode"
@@ -12,6 +10,7 @@ import (
 	"github.com/spider4216/GophKeeper/internal/server/models"
 	"github.com/spider4216/GophKeeper/internal/server/repositories"
 	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Service struct {
@@ -28,12 +27,15 @@ func New(repo repositories.Repository, logger *zap.SugaredLogger) *Service {
 
 func (s *Service) CreateUser(ctx context.Context, email string, plainPass string) (int64, error) {
 	// todo посолить пароль
-	b := sha256.Sum256([]byte(plainPass))
-	hash := hex.EncodeToString(b[:])
+	b, err := bcrypt.GenerateFromPassword([]byte(plainPass), bcrypt.DefaultCost)
+
+	if err != nil {
+		return 0, err
+	}
 
 	u := models.UserRepo{
 		Email:        email,
-		PasswordHash: hash,
+		PasswordHash: string(b),
 	}
 
 	return s.repo.CreateUser(ctx, u)
