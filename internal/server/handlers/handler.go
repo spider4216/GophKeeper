@@ -47,12 +47,11 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.Unmarshal(body, &req); err != nil {
 		h.logger.Errorf("unmarshall error: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	// todo валидация почты и пароля
-	// todo валидация отсутствия почты в БД (уникальность)
 
 	userID, err := h.service.CreateUser(ctx, req.Email, req.Pass)
 
@@ -83,7 +82,6 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	if _, err := w.Write(b); err != nil {
 		h.logger.Errorf("failed to write response: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 }
