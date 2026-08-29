@@ -40,31 +40,31 @@ func (repo *ClientRepository) Source() any {
 	return repo.con
 }
 
-func (repo *ClientRepository) CreateItem(ctx context.Context, item models.ItemRepo) (int64, error) {
+func (repo *ClientRepository) CreateItem(ctx context.Context, item models.ItemRepo) (string, error) {
 	sql := "INSERT INTO items (type,ciphertext,user_id) VALUES ($1,$2,$3) RETURNING id"
 
-	var id int64
+	var id string
 
 	if err := repo.con.QueryRowContext(ctx, sql, item.Type, item.Ciphertext, item.UserID).Scan(&id); err != nil {
-		return 0, err
+		return "", err
 	}
 
 	return id, nil
 }
 
-func (repo *ClientRepository) CreateItemTx(ctx context.Context, tx *sql.Tx, item models.ItemRepo) (int64, error) {
-	sql := "INSERT INTO items (type,ciphertext,user_id) VALUES ($1,$2,$3) RETURNING id"
+func (repo *ClientRepository) CreateItemTx(ctx context.Context, tx *sql.Tx, item models.ItemRepo) (string, error) {
+	sql := "INSERT INTO items (id, type,ciphertext,user_id) VALUES ($1,$2,$3,$4) RETURNING id"
 
-	var id int64
+	var id string
 
-	if err := tx.QueryRowContext(ctx, sql, item.Type, item.Ciphertext, item.UserID).Scan(&id); err != nil {
-		return 0, err
+	if err := tx.QueryRowContext(ctx, sql, item.ID, item.Type, item.Ciphertext, item.UserID).Scan(&id); err != nil {
+		return "", err
 	}
 
 	return id, nil
 }
 
-func (repo *ClientRepository) CreatePendingChangeTx(ctx context.Context, tx *sql.Tx, itemID int64, op enum.OpType, userID int64) error {
+func (repo *ClientRepository) CreatePendingChangeTx(ctx context.Context, tx *sql.Tx, itemID string, op enum.OpType, userID int64) error {
 	sql := "INSERT INTO pending_changes (item_id,operation,user_id) VALUES ($1,$2,$3)"
 
 	_, err := tx.ExecContext(ctx, sql, itemID, op, userID)
@@ -112,7 +112,7 @@ func (repo *ClientRepository) GetPendingUserChanges(ctx context.Context, userID 
 	return items, nil
 }
 
-func (repo *ClientRepository) GetItemsByIDs(ctx context.Context, itemIDs []int64) ([]models.ItemRepo, error) {
+func (repo *ClientRepository) GetItemsByIDs(ctx context.Context, itemIDs []string) ([]models.ItemRepo, error) {
 	sql := "SELECT id, type, ciphertext, created_at FROM items WHERE id = ANY($1);"
 
 	rows, err := repo.con.QueryContext(ctx, sql, itemIDs)
@@ -150,7 +150,7 @@ func (repo *ClientRepository) GetItemsByIDs(ctx context.Context, itemIDs []int64
 	return items, nil
 }
 
-func (repo *ClientRepository) GetMetadataByItemIDs(ctx context.Context, itemIDs []int64) ([]shrModel.MetadataRepo, error) {
+func (repo *ClientRepository) GetMetadataByItemIDs(ctx context.Context, itemIDs []string) ([]shrModel.MetadataRepo, error) {
 	sql := "SELECT id, item_id, key, value FROM metadata WHERE item_id = ANY($1);"
 	rows, err := repo.con.QueryContext(ctx, sql, itemIDs)
 	if err != nil {
@@ -187,7 +187,7 @@ func (repo *ClientRepository) GetMetadataByItemIDs(ctx context.Context, itemIDs 
 	return items, nil
 }
 
-func (repo *ClientRepository) DeletePendingByItemIDs(ctx context.Context, itemIDs []int64) error {
+func (repo *ClientRepository) DeletePendingByItemIDs(ctx context.Context, itemIDs []string) error {
 	sql := "DELETE FROM pending_changes WHERE item_id = ANY($1)"
 
 	_, err := repo.con.ExecContext(ctx, sql, itemIDs)
@@ -198,7 +198,7 @@ func (repo *ClientRepository) DeletePendingByItemIDs(ctx context.Context, itemID
 	return nil
 }
 
-func (repo *ClientRepository) DeletePendingByItemIDsTx(ctx context.Context, tx *sql.Tx, itemIDs []int64) error {
+func (repo *ClientRepository) DeletePendingByItemIDsTx(ctx context.Context, tx *sql.Tx, itemIDs []string) error {
 	sql := "DELETE FROM pending_changes WHERE item_id = ANY($1)"
 
 	_, err := tx.ExecContext(ctx, sql, itemIDs)
@@ -255,7 +255,7 @@ func (repo *ClientRepository) GetLatestUserRev(ctx context.Context, userID int64
 	return rev, nil
 }
 
-func (repo *ClientRepository) GetMetadataByItemID(ctx context.Context, itemID int64) ([]shrModel.MetadataRepo, error) {
+func (repo *ClientRepository) GetMetadataByItemID(ctx context.Context, itemID string) ([]shrModel.MetadataRepo, error) {
 	sql := "SELECT id, item_id, key, value FROM metadata WHERE item_id = $1;"
 	rows, err := repo.con.QueryContext(ctx, sql, itemID)
 	if err != nil {
@@ -331,7 +331,7 @@ func (repo *ClientRepository) GetUserItems(ctx context.Context, userID int64) ([
 	return items, nil
 }
 
-func (repo *ClientRepository) GetUserItemByID(ctx context.Context, itemID int64, userID int64) (*models.ItemRepo, error) {
+func (repo *ClientRepository) GetUserItemByID(ctx context.Context, itemID string, userID int64) (*models.ItemRepo, error) {
 	sql := "SELECT id, type, ciphertext, user_id, created_at FROM items WHERE id=$1 and user_id=$2;"
 
 	var item models.ItemRepo
@@ -344,7 +344,7 @@ func (repo *ClientRepository) GetUserItemByID(ctx context.Context, itemID int64,
 	return &item, nil
 }
 
-func (repo *ClientRepository) UpdateUserItemTx(ctx context.Context, tx *sql.Tx, itemID int64, userID int64, val string) error {
+func (repo *ClientRepository) UpdateUserItemTx(ctx context.Context, tx *sql.Tx, itemID string, userID int64, val string) error {
 	sql := "UPDATE items SET ciphertext=$1 WHERE id=$2 AND user_id=$3"
 
 	_, err := tx.ExecContext(ctx, sql, val, itemID, userID)
@@ -387,7 +387,7 @@ func (repo *ClientRepository) CreateUserPassItem(ctx context.Context, item model
 	return nil
 }
 
-func (repo *ClientRepository) DeleteUserItem(ctx context.Context, itemID int64, userID int64) error {
+func (repo *ClientRepository) DeleteUserItem(ctx context.Context, itemID string, userID int64) error {
 	tx, err := repo.con.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("begin transaction: %w", err)
@@ -479,7 +479,7 @@ func (repo *ClientRepository) syncUpdate(ctx context.Context, tx *sql.Tx, change
 	return nil
 }
 
-func (repo *ClientRepository) syncDelete(ctx context.Context, tx *sql.Tx, itemID int64, userID int64) error {
+func (repo *ClientRepository) syncDelete(ctx context.Context, tx *sql.Tx, itemID string, userID int64) error {
 	if err := repo.GetCommonRepo().DeleteUserMetaByItemIDTx(ctx, tx, itemID, userID); err != nil {
 		return fmt.Errorf("cannot delete user metadata: %w", err)
 	}
@@ -493,6 +493,7 @@ func (repo *ClientRepository) syncDelete(ctx context.Context, tx *sql.Tx, itemID
 
 func (repo *ClientRepository) syncCreate(ctx context.Context, tx *sql.Tx, change shrModel.SyncGetChange, userID int64) error {
 	item := models.ItemRepo{
+		ID:         change.Item.ID,
 		Type:       enum.SecretType(change.Item.Type),
 		Ciphertext: change.Item.Ciphertext,
 		UserID:     userID,
@@ -512,7 +513,7 @@ func (repo *ClientRepository) syncCreate(ctx context.Context, tx *sql.Tx, change
 	return nil
 }
 
-func (repo *ClientRepository) UpdateLoginPass(ctx context.Context, itemID int64, userID int64, encrypted string, metaID int64, title string) error {
+func (repo *ClientRepository) UpdateLoginPass(ctx context.Context, itemID string, userID int64, encrypted string, metaID int64, title string) error {
 	tx, err := repo.con.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("begin transaction: %w", err)
@@ -543,7 +544,7 @@ func (repo *ClientRepository) UpdateLoginPass(ctx context.Context, itemID int64,
 	return nil
 }
 
-func (repo *ClientRepository) CommitSyncChunkTx(ctx context.Context, ids []int64, userID int64, lastRev int64) error {
+func (repo *ClientRepository) CommitSyncChunkTx(ctx context.Context, ids []string, userID int64, lastRev int64) error {
 	tx, err := repo.con.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("begin transaction: %w", err)

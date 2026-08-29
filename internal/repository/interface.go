@@ -8,13 +8,13 @@ import (
 )
 
 type CommonRepositoryInterface interface {
-	GetMetadataByItemIDs(ctx context.Context, itemIDs []int64) ([]shrModel.MetadataRepo, error)
-	DeleteUserItemByID(ctx context.Context, itemID int64, userID int64) error
-	DeleteUserItemByIDTx(ctx context.Context, tx *sql.Tx, itemID int64, userID int64) error
-	DeleteUserMetaByItemID(ctx context.Context, itemID int64, userID int64) error
-	DeleteUserMetaByItemIDTx(ctx context.Context, tx *sql.Tx, itemID int64, userID int64) error
-	CreateMeta(ctx context.Context, itemID int64, k string, v string) (int64, error)
-	CreateMetaTx(ctx context.Context, tx *sql.Tx, itemID int64, k string, v string) (int64, error)
+	GetMetadataByItemIDs(ctx context.Context, itemIDs []string) ([]shrModel.MetadataRepo, error)
+	DeleteUserItemByID(ctx context.Context, itemID string, userID int64) error
+	DeleteUserItemByIDTx(ctx context.Context, tx *sql.Tx, itemID string, userID int64) error
+	DeleteUserMetaByItemID(ctx context.Context, itemID string, userID int64) error
+	DeleteUserMetaByItemIDTx(ctx context.Context, tx *sql.Tx, itemID string, userID int64) error
+	CreateMeta(ctx context.Context, itemID string, k string, v string) (int64, error)
+	CreateMetaTx(ctx context.Context, tx *sql.Tx, itemID string, k string, v string) (int64, error)
 	UpdateMetaByIDTx(ctx context.Context, tx *sql.Tx, id int64, userID int64, v string) error
-	UpdateMetaByItemIDAndKeyTx(ctx context.Context, tx *sql.Tx, itemID int64, key string, v string) error
+	UpdateMetaByItemIDAndKeyTx(ctx context.Context, tx *sql.Tx, itemID string, key string, v string) error
 }

@@ -65,25 +65,25 @@ func (repo *SrvRepository) GetUserByEmail(ctx context.Context, email string) (*m
 	return &user, nil
 }
 
-func (repo *SrvRepository) CreateItem(ctx context.Context, item models.ItemRepo) (int64, error) {
+func (repo *SrvRepository) CreateItem(ctx context.Context, item models.ItemRepo) (string, error) {
 	sql := "INSERT INTO items (id, type ,user_id) VALUES ($1,$2,$3) RETURNING id"
 
-	var id int64
+	var id string
 
 	if err := repo.con.QueryRowContext(ctx, sql, item.ID, item.Type, item.UserID).Scan(&id); err != nil {
-		return 0, err
+		return "", err
 	}
 
 	return id, nil
 }
 
-func (repo *SrvRepository) CreateItemTx(ctx context.Context, tx *sql.Tx, item models.ItemRepo) (int64, error) {
+func (repo *SrvRepository) CreateItemTx(ctx context.Context, tx *sql.Tx, item models.ItemRepo) (string, error) {
 	sql := "INSERT INTO items (id, type ,user_id) VALUES ($1,$2,$3) RETURNING id"
 
-	var id int64
+	var id string
 
 	if err := tx.QueryRowContext(ctx, sql, item.ID, item.Type, item.UserID).Scan(&id); err != nil {
-		return 0, err
+		return "", err
 	}
 
 	return id, nil
@@ -100,7 +100,7 @@ func (repo *SrvRepository) CreateItemPayloadTx(ctx context.Context, tx *sql.Tx, 
 	return nil
 }
 
-func (repo *SrvRepository) CreateSyncChangesTx(ctx context.Context, tx *sql.Tx, itemID int64, op enum.OpType, userID int64) (int64, error) {
+func (repo *SrvRepository) CreateSyncChangesTx(ctx context.Context, tx *sql.Tx, itemID string, op enum.OpType, userID int64) (int64, error) {
 	sql := "INSERT INTO sync_changes (item_id,operation,user_id) VALUES ($1,$2,$3) RETURNING id"
 
 	var id int64
@@ -177,7 +177,7 @@ func (repo *SrvRepository) GetUserSyncChanges(ctx context.Context, userID int64,
 	return items, nil
 }
 
-func (repo *SrvRepository) GetItemsByIDs(ctx context.Context, itemIDs []int64) ([]models.ItemRepo, error) {
+func (repo *SrvRepository) GetItemsByIDs(ctx context.Context, itemIDs []string) ([]models.ItemRepo, error) {
 	sql := "SELECT id, type, created_at FROM items WHERE id = ANY($1);"
 
 	rows, err := repo.con.QueryContext(ctx, sql, itemIDs)
@@ -214,7 +214,7 @@ func (repo *SrvRepository) GetItemsByIDs(ctx context.Context, itemIDs []int64) (
 	return items, nil
 }
 
-func (repo *SrvRepository) GetPayloadByItemIDs(ctx context.Context, itemIDs []int64) ([]models.ItemPayloadRepo, error) {
+func (repo *SrvRepository) GetPayloadByItemIDs(ctx context.Context, itemIDs []string) ([]models.ItemPayloadRepo, error) {
 	sql := "SELECT item_id, ciphertext FROM item_payloads WHERE item_id = ANY($1);"
 
 	rows, err := repo.con.QueryContext(ctx, sql, itemIDs)
@@ -250,7 +250,7 @@ func (repo *SrvRepository) GetPayloadByItemIDs(ctx context.Context, itemIDs []in
 	return items, nil
 }
 
-func (repo *SrvRepository) DeletePayloadByItemIDTx(ctx context.Context, tx *sql.Tx, itemID int64) error {
+func (repo *SrvRepository) DeletePayloadByItemIDTx(ctx context.Context, tx *sql.Tx, itemID string) error {
 	sql := "DELETE FROM item_payloads WHERE item_id=$1"
 
 	_, err := tx.ExecContext(ctx, sql, itemID)
@@ -261,7 +261,7 @@ func (repo *SrvRepository) DeletePayloadByItemIDTx(ctx context.Context, tx *sql.
 	return nil
 }
 
-func (repo *SrvRepository) UpdateUserItemPayloadTx(ctx context.Context, tx *sql.Tx, itemID int64, userID int64, val string) error {
+func (repo *SrvRepository) UpdateUserItemPayloadTx(ctx context.Context, tx *sql.Tx, itemID string, userID int64, val string) error {
 	sql := "UPDATE item_payloads p SET ciphertext=$1 FROM items i WHERE p.item_id=$2 AND i.user_id=$3"
 
 	_, err := tx.ExecContext(ctx, sql, val, itemID, userID)
@@ -288,7 +288,7 @@ func (repo *SrvRepository) ApplySync(ctx context.Context, in []shrModel.SyncPutC
 		repo.logger.Debugf("Sync Operation: %s", item.Operation)
 
 		line := models.ItemRepo{
-			ID:     int64(item.Item.ID),
+			ID:     item.Item.ID,
 			UserID: userID,
 			Type:   item.Item.Type,
 		}
@@ -300,7 +300,7 @@ func (repo *SrvRepository) ApplySync(ctx context.Context, in []shrModel.SyncPutC
 			}
 
 		case enum.OpDelete:
-			if err := repo.syncDelete(ctx, tx, int64(item.Item.ID), userID); err != nil {
+			if err := repo.syncDelete(ctx, tx, item.Item.ID, userID); err != nil {
 				return fmt.Errorf("error sync. Cannot delete: %w", err)
 			}
 
@@ -323,24 +323,24 @@ func (repo *SrvRepository) ApplySync(ctx context.Context, in []shrModel.SyncPutC
 
 func (repo *SrvRepository) syncUpdate(ctx context.Context, tx *sql.Tx, userID int64, item shrModel.SyncPutChange) error {
 	repo.logger.Debug("Update strategy")
-	if err := repo.UpdateUserItemPayloadTx(ctx, tx, int64(item.Item.ID), userID, item.Item.Ciphertext); err != nil {
+	if err := repo.UpdateUserItemPayloadTx(ctx, tx, item.Item.ID, userID, item.Item.Ciphertext); err != nil {
 		return fmt.Errorf("cannot update item payload: %w", err)
 	}
 
 	for k, v := range item.Metadata {
-		if err := repo.GetCommonRepo().UpdateMetaByItemIDAndKeyTx(ctx, tx, int64(item.Item.ID), k, v); err != nil {
+		if err := repo.GetCommonRepo().UpdateMetaByItemIDAndKeyTx(ctx, tx, item.Item.ID, k, v); err != nil {
 			return fmt.Errorf("cannot update metadata: %w", err)
 		}
 	}
 
-	if _, err := repo.CreateSyncChangesTx(ctx, tx, int64(item.Item.ID), enum.OpUpdate, userID); err != nil {
+	if _, err := repo.CreateSyncChangesTx(ctx, tx, item.Item.ID, enum.OpUpdate, userID); err != nil {
 		return fmt.Errorf("cannot create sync changes: %w", err)
 	}
 
 	return nil
 }
 
-func (repo *SrvRepository) syncDelete(ctx context.Context, tx *sql.Tx, itemID int64, userID int64) error {
+func (repo *SrvRepository) syncDelete(ctx context.Context, tx *sql.Tx, itemID string, userID int64) error {
 	repo.logger.Debug("Delete strategy")
 	if err := repo.GetCommonRepo().DeleteUserMetaByItemIDTx(ctx, tx, itemID, userID); err != nil {
 		return fmt.Errorf("cannot delete metadata: %w", err)

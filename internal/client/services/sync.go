@@ -60,8 +60,8 @@ func (s *Service) SyncSend(ctx context.Context, userID int64, token string) erro
 	return nil
 }
 
-func (s *Service) pendingItemIDs(pends []models.PendChangesRepo) []int64 {
-	ids := make([]int64, 0, len(pends))
+func (s *Service) pendingItemIDs(pends []models.PendChangesRepo) []string {
+	ids := make([]string, 0, len(pends))
 
 	for _, pend := range pends {
 		ids = append(ids, pend.ItemID)
@@ -184,6 +184,8 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, token string) error
 		if err != nil {
 			return fmt.Errorf("cannot read sync response: %w", err)
 		}
+
+		s.logger.Debugf("Response from server: %s", string(body))
 
 		var res shrModel.SyncGet
 

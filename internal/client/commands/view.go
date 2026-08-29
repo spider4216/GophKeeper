@@ -18,14 +18,14 @@ func (c *Command) View(ctx context.Context, args []string) (string, error) {
 	fs := flag.NewFlagSet(View.String(), flag.ExitOnError)
 
 	// todo validation
-	itemID := fs.Int64("item_id", 0, "Item ID")
+	itemID := fs.String("item_id", "", "Item ID")
 	token := fs.String("token", "", "JWT from server")
 
 	if err := fs.Parse(args); err != nil {
 		return "", err
 	}
 
-	if *itemID == 0 && *token == "" {
+	if *itemID == "" && *token == "" {
 		return "", errors.New("jwt and item_id are required")
 	}
 

@@ -16,17 +16,17 @@ type Repository interface {
 
 	CreateUser(ctx context.Context, user models.UserRepo) (int64, error)
 	GetUserByEmail(ctx context.Context, email string) (*models.UserRepo, error)
-	CreateItem(ctx context.Context, item models.ItemRepo) (int64, error)
-	CreateItemTx(ctx context.Context, tx *sql.Tx, item models.ItemRepo) (int64, error)
+	CreateItem(ctx context.Context, item models.ItemRepo) (string, error)
+	CreateItemTx(ctx context.Context, tx *sql.Tx, item models.ItemRepo) (string, error)
 	CreateItemPayloadTx(ctx context.Context, tx *sql.Tx, item models.ItemPayloadRepo) error
-	CreateSyncChangesTx(ctx context.Context, tx *sql.Tx, itemID int64, op enum.OpType, userID int64) (int64, error)
+	CreateSyncChangesTx(ctx context.Context, tx *sql.Tx, itemID string, op enum.OpType, userID int64) (int64, error)
 	GetSyncChangesByID(ctx context.Context, ID int64) (*models.SyncChangesRepo, error)
 	GetLatestUserRev(ctx context.Context, userID int64) (int64, error)
 	GetUserSyncChanges(ctx context.Context, userID int64, since int64, limit int) ([]models.SyncChangesRepo, error)
-	GetItemsByIDs(ctx context.Context, itemIDs []int64) ([]models.ItemRepo, error)
-	GetPayloadByItemIDs(ctx context.Context, itemIDs []int64) ([]models.ItemPayloadRepo, error)
-	DeletePayloadByItemIDTx(ctx context.Context, tx *sql.Tx, itemID int64) error
-	UpdateUserItemPayloadTx(ctx context.Context, tx *sql.Tx, itemID int64, userID int64, val string) error
+	GetItemsByIDs(ctx context.Context, itemIDs []string) ([]models.ItemRepo, error)
+	GetPayloadByItemIDs(ctx context.Context, itemIDs []string) ([]models.ItemPayloadRepo, error)
+	DeletePayloadByItemIDTx(ctx context.Context, tx *sql.Tx, itemID string) error
+	UpdateUserItemPayloadTx(ctx context.Context, tx *sql.Tx, itemID string, userID int64, val string) error
 	GetCommonRepo() repository.CommonRepositoryInterface
 	ApplySync(ctx context.Context, in []shrModel.SyncPutChange, userID int64) error
 }

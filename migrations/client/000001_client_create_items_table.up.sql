@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS items (
-    id SERIAL PRIMARY KEY,
+    id CHAR(36) NOT NULL UNIQUE,
     user_id INT NOT NULL,
     type VARCHAR(50) NOT NULL,
     ciphertext TEXT NOT NULL,

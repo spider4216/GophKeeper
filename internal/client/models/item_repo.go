@@ -7,7 +7,7 @@ import (
 )
 
 type ItemRepo struct {
-	ID         int64
+	ID         string
 	Type       enum.SecretType
 	Ciphertext string
 	UserID     int64

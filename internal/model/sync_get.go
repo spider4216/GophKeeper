@@ -15,7 +15,7 @@ type SyncGetChange struct {
 }
 
 type ItemSyncGet struct {
-	ID         int64  `json:"id"`
+	ID         string `json:"id"`
 	Type       string `json:"type"`
 	Ciphertext string `json:"ciphertext"`
 }

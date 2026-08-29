@@ -10,21 +10,20 @@ func (s *Service) mapSyncResponse(
 	items []models.ItemRepo,
 	payloads []models.ItemPayloadRepo,
 	metadata []shrModel.MetadataRepo,
-	since int64,
 	nextRev int64,
 	hasMore bool,
 ) *shrModel.SyncGet {
-	itemByID := make(map[int64]models.ItemRepo, len(items))
+	itemByID := make(map[string]models.ItemRepo, len(items))
 	for _, item := range items {
 		itemByID[item.ID] = item
 	}
 
-	payloadByItemID := make(map[int64]models.ItemPayloadRepo, len(payloads))
+	payloadByItemID := make(map[string]models.ItemPayloadRepo, len(payloads))
 	for _, payload := range payloads {
 		payloadByItemID[payload.ItemID] = payload
 	}
 
-	metadataByItemID := make(map[int64]map[string]string)
+	metadataByItemID := make(map[string]map[string]string)
 
 	for _, m := range metadata {
 		if metadataByItemID[m.ItemID] == nil {

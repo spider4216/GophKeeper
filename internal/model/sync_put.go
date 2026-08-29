@@ -13,7 +13,7 @@ type SyncPutChange struct {
 }
 
 type ItemSyncPut struct {
-	ID         int    `json:"id"`
+	ID         string `json:"id"`
 	Type       string `json:"type"`
 	Ciphertext string `json:"ciphertext"`
 }

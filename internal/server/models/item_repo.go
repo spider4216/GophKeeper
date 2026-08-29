@@ -3,7 +3,7 @@ package models
 import "time"
 
 type ItemRepo struct {
-	ID        int64
+	ID        string
 	UserID    int64
 	Type      string
 	CreatedAt time.Time

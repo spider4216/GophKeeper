@@ -1,7 +1,7 @@
 APP_NAME=gophkeeper
 
 DSN?=postgres://postgres:postgres@localhost:5432/gophkeeper
-DSN_CLIENT?=postgres://postgres:postgres@localhost:5432/gophkeeper_client_1
+DSN_CLIENT?=postgres://postgres:postgres@localhost:5432/gophkeeper_client_2
 
 LOG_LEVEL?=debug
 JWT_KEY?=qwerty

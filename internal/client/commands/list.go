@@ -34,7 +34,7 @@ func (c *Command) UserList(ctx context.Context, args []string) (string, error) {
 	var builder strings.Builder
 
 	for _, item := range items {
-		fmt.Fprintf(&builder, "ID: %d\n", item.ID)
+		fmt.Fprintf(&builder, "ID: %s\n", item.ID)
 		fmt.Fprintf(&builder, "Type: %s\n", item.Type)
 		fmt.Fprint(&builder, "Meta:\n")
 

@@ -1,6 +1,6 @@
 package models
 
 type ItemPayloadRepo struct {
-	ItemID     int64
+	ItemID     string
 	Ciphertext string
 }

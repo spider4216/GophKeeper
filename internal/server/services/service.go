@@ -61,7 +61,7 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, since int64, limit 
 		return nil, err
 	}
 
-	var itemIDs []int64
+	var itemIDs []string
 
 	for _, change := range changes {
 		itemIDs = append(itemIDs, change.ItemID)
@@ -107,7 +107,6 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, since int64, limit 
 		items,
 		payloads,
 		meta,
-		since,
 		nextRev,
 		hasMore,
 	), nil

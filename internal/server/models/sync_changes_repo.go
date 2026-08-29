@@ -9,7 +9,7 @@ import (
 type SyncChangesRepo struct {
 	ID        int64
 	Revision  int64
-	ItemID    int64
+	ItemID    string
 	Operation enum.OpType
 	CreatedAt time.Time
 }

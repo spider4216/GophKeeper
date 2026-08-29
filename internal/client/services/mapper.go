@@ -6,7 +6,7 @@ import (
 )
 
 func (s *Service) buildItemsWithMeta(items []models.ItemRepo, metadata []shrModel.MetadataRepo) []models.ItemWithMeta {
-	metadataByItemID := make(map[int64][]shrModel.MetadataRepo)
+	metadataByItemID := make(map[string][]shrModel.MetadataRepo)
 
 	for _, m := range metadata {
 		metadataByItemID[m.ItemID] = append(metadataByItemID[m.ItemID], m)
@@ -42,13 +42,13 @@ func (s *Service) buildItemsWithMeta(items []models.ItemRepo, metadata []shrMode
 }
 
 func (s *Service) buildSyncRequest(pendingChanges []models.PendChangesRepo, items []models.ItemRepo, metadata []shrModel.MetadataRepo) shrModel.SyncPutReq {
-	itemByID := make(map[int64]models.ItemRepo, len(items))
+	itemByID := make(map[string]models.ItemRepo, len(items))
 
 	for _, item := range items {
 		itemByID[item.ID] = item
 	}
 
-	metadataByItemID := make(map[int64]map[string]string)
+	metadataByItemID := make(map[string]map[string]string)
 
 	for _, m := range metadata {
 		if metadataByItemID[m.ItemID] == nil {
@@ -69,7 +69,7 @@ func (s *Service) buildSyncRequest(pendingChanges []models.PendChangesRepo, item
 			req.Changes = append(req.Changes, shrModel.SyncPutChange{
 				Operation: pending.Operation,
 				Item: shrModel.ItemSyncPut{
-					ID: int(pending.ItemID),
+					ID: pending.ItemID,
 				},
 			})
 
@@ -79,7 +79,7 @@ func (s *Service) buildSyncRequest(pendingChanges []models.PendChangesRepo, item
 		req.Changes = append(req.Changes, shrModel.SyncPutChange{
 			Operation: pending.Operation,
 			Item: shrModel.ItemSyncPut{
-				ID:         int(item.ID),
+				ID:         item.ID,
 				Type:       item.Type.String(),
 				Ciphertext: item.Ciphertext,
 			},

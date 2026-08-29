@@ -12,6 +12,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/spider4216/GophKeeper/internal/client/models"
 	"github.com/spider4216/GophKeeper/internal/client/repositories"
 	"github.com/spider4216/GophKeeper/internal/enum"
@@ -35,7 +36,7 @@ func New(client *http.Client, host string, repo repositories.Repository, logger 
 	}
 }
 
-func (s *Service) CreateLoginPassItem(ctx context.Context, t enum.SecretType, data models.LoginPassReq, key string, userID int64) (int64, error) {
+func (s *Service) CreateLoginPassItem(ctx context.Context, t enum.SecretType, data models.LoginPassReq, key string, userID int64) (string, error) {
 	// Формат хранения для типа
 	d := models.LoginPassFmt{
 		Login: data.Login,
@@ -44,12 +45,12 @@ func (s *Service) CreateLoginPassItem(ctx context.Context, t enum.SecretType, da
 
 	b, err := json.Marshal(d)
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 
 	encrypted, err := s.EncryptData(b, []byte(key))
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 
 	item := models.ItemRepo{
@@ -117,7 +118,7 @@ func (s *Service) DecryptData(encryptedHex string, key []byte) ([]byte, error) {
 	return plainText, nil
 }
 
-func (s *Service) CreateMeta(ctx context.Context, itemID int64, k string, v string) (int64, error) {
+func (s *Service) CreateMeta(ctx context.Context, itemID string, k string, v string) (int64, error) {
 	return s.repo.GetCommonRepo().CreateMeta(ctx, itemID, k, v)
 }
 
@@ -143,7 +144,7 @@ func (s *Service) GetUserItemsWithMeta(ctx context.Context, userID int64) ([]mod
 		return nil, err
 	}
 
-	var itemIDs []int64
+	var itemIDs []string
 
 	for _, item := range items {
 		itemIDs = append(itemIDs, item.ID)
@@ -157,15 +158,15 @@ func (s *Service) GetUserItemsWithMeta(ctx context.Context, userID int64) ([]mod
 	return s.buildItemsWithMeta(items, meta), nil
 }
 
-func (s *Service) GetUserItemByID(ctx context.Context, itemID int64, userID int64) (*models.ItemRepo, error) {
+func (s *Service) GetUserItemByID(ctx context.Context, itemID string, userID int64) (*models.ItemRepo, error) {
 	return s.repo.GetUserItemByID(ctx, itemID, userID)
 }
 
-func (s *Service) DeleteUserItem(ctx context.Context, itemID int64, userID int64) error {
+func (s *Service) DeleteUserItem(ctx context.Context, itemID string, userID int64) error {
 	return s.repo.DeleteUserItem(ctx, itemID, userID)
 }
 
-func (s *Service) UpdateLoginPass(ctx context.Context, itemID int64, userID int64, login string, pass string, key string, title string, metaID int64) error {
+func (s *Service) UpdateLoginPass(ctx context.Context, itemID string, userID int64, login string, pass string, key string, title string, metaID int64) error {
 	data := models.LoginPassFmt{
 		Login: login,
 		Pass:  pass,
@@ -188,7 +189,7 @@ func (s *Service) UpdateLoginPass(ctx context.Context, itemID int64, userID int6
 	return nil
 }
 
-func (s *Service) GetMetadataByItemID(ctx context.Context, itemID int64) ([]shrModel.MetadataRepo, error) {
+func (s *Service) GetMetadataByItemID(ctx context.Context, itemID string) ([]shrModel.MetadataRepo, error) {
 	return s.repo.GetMetadataByItemID(ctx, itemID)
 }
 
@@ -210,6 +211,7 @@ func (s *Service) CreateUserPassItem(ctx context.Context, data models.LoginPassR
 	}
 
 	item := models.ItemRepo{
+		ID:         uuid.NewString(),
 		Type:       enum.LoginPass,
 		Ciphertext: encrypted,
 		UserID:     userID,

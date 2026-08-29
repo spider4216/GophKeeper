@@ -29,7 +29,7 @@ func (repo *CommonRepository) Source() any {
 	return repo.con
 }
 
-func (repo *CommonRepository) GetMetadataByItemIDs(ctx context.Context, itemIDs []int64) ([]shrModel.MetadataRepo, error) {
+func (repo *CommonRepository) GetMetadataByItemIDs(ctx context.Context, itemIDs []string) ([]shrModel.MetadataRepo, error) {
 	sql := "SELECT id, item_id, key, value FROM metadata WHERE item_id = ANY($1);"
 	rows, err := repo.con.QueryContext(ctx, sql, itemIDs)
 	if err != nil {
@@ -66,7 +66,7 @@ func (repo *CommonRepository) GetMetadataByItemIDs(ctx context.Context, itemIDs 
 	return items, nil
 }
 
-func (repo *CommonRepository) DeleteUserItemByID(ctx context.Context, itemID int64, userID int64) error {
+func (repo *CommonRepository) DeleteUserItemByID(ctx context.Context, itemID string, userID int64) error {
 	sql := "DELETE FROM items WHERE user_id=$1 and id=$2"
 
 	_, err := repo.con.ExecContext(ctx, sql, userID, itemID)
@@ -77,7 +77,7 @@ func (repo *CommonRepository) DeleteUserItemByID(ctx context.Context, itemID int
 	return nil
 }
 
-func (repo *CommonRepository) DeleteUserItemByIDTx(ctx context.Context, tx *sql.Tx, itemID int64, userID int64) error {
+func (repo *CommonRepository) DeleteUserItemByIDTx(ctx context.Context, tx *sql.Tx, itemID string, userID int64) error {
 	sql := "DELETE FROM items WHERE user_id=$1 and id=$2"
 
 	_, err := tx.ExecContext(ctx, sql, userID, itemID)
@@ -88,7 +88,7 @@ func (repo *CommonRepository) DeleteUserItemByIDTx(ctx context.Context, tx *sql.
 	return nil
 }
 
-func (repo *CommonRepository) DeleteUserMetaByItemID(ctx context.Context, itemID int64, userID int64) error {
+func (repo *CommonRepository) DeleteUserMetaByItemID(ctx context.Context, itemID string, userID int64) error {
 	sql := "DELETE FROM metadata md USING items i WHERE i.id = md.item_id AND md.item_id=$1 AND i.user_id=$2"
 
 	_, err := repo.con.ExecContext(ctx, sql, itemID, userID)
@@ -99,7 +99,7 @@ func (repo *CommonRepository) DeleteUserMetaByItemID(ctx context.Context, itemID
 	return nil
 }
 
-func (repo *CommonRepository) DeleteUserMetaByItemIDTx(ctx context.Context, tx *sql.Tx, itemID int64, userID int64) error {
+func (repo *CommonRepository) DeleteUserMetaByItemIDTx(ctx context.Context, tx *sql.Tx, itemID string, userID int64) error {
 	sql := "DELETE FROM metadata md USING items i WHERE i.id = md.item_id AND md.item_id=$1 AND i.user_id=$2"
 
 	_, err := tx.ExecContext(ctx, sql, itemID, userID)
@@ -110,7 +110,7 @@ func (repo *CommonRepository) DeleteUserMetaByItemIDTx(ctx context.Context, tx *
 	return nil
 }
 
-func (repo *CommonRepository) CreateMeta(ctx context.Context, itemID int64, k string, v string) (int64, error) {
+func (repo *CommonRepository) CreateMeta(ctx context.Context, itemID string, k string, v string) (int64, error) {
 	sql := "INSERT INTO metadata (item_id,key,value) VALUES ($1,$2,$3) RETURNING id"
 
 	var id int64
@@ -122,7 +122,7 @@ func (repo *CommonRepository) CreateMeta(ctx context.Context, itemID int64, k st
 	return id, nil
 }
 
-func (repo *CommonRepository) CreateMetaTx(ctx context.Context, tx *sql.Tx, itemID int64, k string, v string) (int64, error) {
+func (repo *CommonRepository) CreateMetaTx(ctx context.Context, tx *sql.Tx, itemID string, k string, v string) (int64, error) {
 	sql := "INSERT INTO metadata (item_id,key,value) VALUES ($1,$2,$3) RETURNING id"
 
 	var id int64
@@ -154,7 +154,7 @@ func (repo *CommonRepository) UpdateMetaByIDTx(ctx context.Context, tx *sql.Tx, 
 	return nil
 }
 
-func (repo *CommonRepository) UpdateMetaByItemIDAndKeyTx(ctx context.Context, tx *sql.Tx, itemID int64, key string, v string) error {
+func (repo *CommonRepository) UpdateMetaByItemIDAndKeyTx(ctx context.Context, tx *sql.Tx, itemID string, key string, v string) error {
 	sql := "UPDATE metadata SET value=$1 WHERE item_id=$2 AND key=$3"
 
 	repo.logger.Debugf("Val: %s, itemID: %d, Key: %s", v, itemID, key)

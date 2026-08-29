@@ -10,7 +10,7 @@ import (
 func (c *Command) UpdateLoginPass(ctx context.Context, args []string) (string, error) {
 	fs := flag.NewFlagSet(UpdateLoginPass.String(), flag.ExitOnError)
 
-	itemID := fs.Int64("id", 0, "Item id")
+	itemID := fs.String("id", "", "Item id")
 	login := fs.String("login", "", "Login")
 	metaID := fs.Int64("meta-id", 0, "Metadata ID")
 	title := fs.String("title", "", "Title")
