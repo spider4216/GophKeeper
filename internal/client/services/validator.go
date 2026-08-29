@@ -5,9 +5,10 @@ import (
 	"unicode"
 )
 
+var emailRe = regexp.MustCompile(`^[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,}$`)
+
 func (s *Service) ValidateEmailFormat(email string) bool {
-	re := regexp.MustCompile(`^[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,}$`)
-	return re.MatchString(email)
+	return emailRe.MatchString(email)
 }
 
 func (s *Service) ValidateStrongPassword(password string) bool {
