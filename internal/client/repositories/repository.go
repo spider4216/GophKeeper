@@ -582,6 +582,7 @@ func (repo *ClientRepository) SaveUserToken(ctx context.Context, userID int64, t
 
 	return nil
 }
+
 func (repo *ClientRepository) GetToken(ctx context.Context, userID int64) (*models.Auth, error) {
 	sql := "SELECT id,user_id,token FROM auth WHERE user_id=$1;"
 

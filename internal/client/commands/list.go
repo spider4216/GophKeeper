@@ -22,7 +22,6 @@ func (c *Command) UserList(ctx context.Context, args []string) (string, error) {
 	}
 
 	auth, err := c.Service.GetToken(ctx, *userID)
-
 	if err != nil {
 		return "", err
 	}

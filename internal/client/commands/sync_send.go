@@ -21,7 +21,6 @@ func (c *Command) SyncSend(ctx context.Context, args []string) (string, error) {
 	}
 
 	auth, err := c.Service.GetToken(ctx, *userID)
-
 	if err != nil {
 		return "", err
 	}

@@ -6,7 +6,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/spider4216/GophKeeper/internal/client/models"
@@ -30,7 +29,6 @@ func (c *Command) View(ctx context.Context, args []string) (string, error) {
 	}
 
 	auth, err := c.Service.GetToken(ctx, *userID)
-
 	if err != nil {
 		return "", err
 	}
@@ -76,8 +74,6 @@ func (c *Command) outLoginPass(decrypted []byte, meta []shrModel.MetadataRepo) (
 	fmt.Fprintf(&builder, "Login: %s\n", data.Login)
 	fmt.Fprintf(&builder, "Password: %s\n", data.Pass)
 	fmt.Fprint(&builder, "Meta:\n")
-
-	log.Println(meta)
 
 	for _, v := range meta {
 		fmt.Fprintf(&builder, "%d: %s: %s\n", v.ID, v.Key, v.Value)

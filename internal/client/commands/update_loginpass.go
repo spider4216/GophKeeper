@@ -26,7 +26,6 @@ func (c *Command) UpdateLoginPass(ctx context.Context, args []string) (string, e
 	}
 
 	auth, err := c.Service.GetToken(ctx, *userID)
-
 	if err != nil {
 		return "", err
 	}
