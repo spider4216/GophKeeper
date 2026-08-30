@@ -19,26 +19,23 @@ func (c *Command) View(ctx context.Context, args []string) (string, error) {
 
 	// todo validation
 	itemID := fs.String("item_id", "", "Item ID")
-	token := fs.String("token", "", "JWT from server")
+	userID := fs.Int64("user-id", 0, "User ID from server")
 
 	if err := fs.Parse(args); err != nil {
 		return "", err
 	}
 
-	if *itemID == "" && *token == "" {
+	if *itemID == "" || *userID == 0 {
 		return "", errors.New("jwt and item_id are required")
 	}
 
-	claims, err := c.getClaims(*token)
-	if err != nil {
-		return "", fmt.Errorf("cannot parse jwt: %s", err)
-	}
+	auth, err := c.Service.GetToken(ctx, *userID)
 
 	if err != nil {
-		return "", fmt.Errorf("cannot convert item ID to int: %s", err)
+		return "", err
 	}
 
-	item, err := c.Service.GetUserItemByID(ctx, *itemID, claims.UserID)
+	item, err := c.Service.GetUserItemByID(ctx, *itemID, auth.UserID)
 	if err != nil {
 		return "", fmt.Errorf("cannot get user item by id: %s", err)
 	}

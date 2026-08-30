@@ -14,30 +14,31 @@ func (c *Command) CreateLoginpass(ctx context.Context, args []string) (string, e
 
 	login := fs.String("login", "", "Login")
 	pass := fs.String("password", "", "Password")
-	token := fs.String("token", "", "JWT from server")
 	title := fs.String("title", "", "Title")
+	userID := fs.Int64("user-id", 0, "User ID")
 
 	if err := fs.Parse(args); err != nil {
 		return "", err
 	}
 
-	if *login == "" || *pass == "" || *token == "" || *title == "" {
-		return "", errors.New("login, password, title and jwt are required")
+	if *login == "" || *pass == "" || *title == "" || *userID == 0 {
+		return "", errors.New("login, password, title and user-id are required")
+	}
+
+	auth, err := c.Service.GetToken(ctx, *userID)
+
+	if err != nil {
+		return "", err
 	}
 
 	req := models.LoginPassReq{
 		Login: *login,
 		Pass:  *pass,
 		Title: *title,
-		JWT:   *token,
+		JWT:   auth.Token,
 	}
 
-	claims, err := c.getClaims(*token)
-	if err != nil {
-		return "", fmt.Errorf("cannot parse jwt: %w", err)
-	}
-
-	if err := c.Service.CreateUserPassItem(ctx, req, c.Cfg.EncryptKey, claims.UserID); err != nil {
+	if err := c.Service.CreateUserPassItem(ctx, req, c.Cfg.EncryptKey, auth.UserID); err != nil {
 		return "", fmt.Errorf("cannot create userpass: %w", err)
 	}
 

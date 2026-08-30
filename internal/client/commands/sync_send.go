@@ -10,22 +10,23 @@ import (
 func (c *Command) SyncSend(ctx context.Context, args []string) (string, error) {
 	fs := flag.NewFlagSet(SyncSend.String(), flag.ExitOnError)
 
-	token := fs.String("token", "", "Token")
+	userID := fs.Int64("user-id", 0, "User ID")
 
 	if err := fs.Parse(args); err != nil {
 		return "", err
 	}
 
-	if *token == "" {
+	if *userID == 0 {
 		return "", errors.New("token is required")
 	}
 
-	claims, err := c.getClaims(*token)
+	auth, err := c.Service.GetToken(ctx, *userID)
+
 	if err != nil {
-		return "", fmt.Errorf("cannot parse jwt: %s", err)
+		return "", err
 	}
 
-	if err := c.Service.SyncSend(ctx, claims.UserID, *token, c.Cfg.SyncChankSize); err != nil {
+	if err := c.Service.SyncSend(ctx, auth.UserID, auth.Token, c.Cfg.SyncChankSize); err != nil {
 		return "", fmt.Errorf("cannot sync: %s", err)
 	}
 

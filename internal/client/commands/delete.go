@@ -11,26 +11,23 @@ func (c *Command) DeleteItem(ctx context.Context, args []string) (string, error)
 	fs := flag.NewFlagSet(Delete.String(), flag.ExitOnError)
 
 	itemID := fs.String("id", "", "Item id")
-	token := fs.String("token", "", "JWT from server")
+	userID := fs.Int64("user-id", 0, "User ID")
 
 	if err := fs.Parse(args); err != nil {
 		return "", err
 	}
 
-	if *token == "" || *itemID == "" {
-		return "", errors.New("login, password, title and jwt are required")
+	if *userID == 0 || *itemID == "" {
+		return "", errors.New("userID and itemID are required")
 	}
 
-	claims, err := c.getClaims(*token)
-	if err != nil {
-		return "", fmt.Errorf("cannot parse jwt: %w", err)
-	}
+	auth, err := c.Service.GetToken(ctx, *userID)
 
 	if err != nil {
-		return "", fmt.Errorf("cannot parse itemID: %w", err)
+		return "", err
 	}
 
-	if err := c.Service.DeleteUserItem(ctx, *itemID, claims.UserID); err != nil {
+	if err := c.Service.DeleteUserItem(ctx, *itemID, auth.UserID); err != nil {
 		return "", fmt.Errorf("cannot delete item: %w", err)
 	}
 

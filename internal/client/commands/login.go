@@ -53,8 +53,13 @@ func (c *Command) Login(ctx context.Context, args []string) (string, error) {
 		}
 	}
 
+	// Сохранение токена
+	if err := c.Service.SaveUserToken(ctx, resp.UserID, resp.Token); err != nil {
+		return "", err
+	}
+
 	expObj := time.Unix(resp.ExpiredAt, 0)
 	expStr := expObj.Format("2006-01-02 15:04:05")
 
-	return fmt.Sprintf("JWT token\n\n%s\n\nExpired: %s\n", resp.Token, expStr), nil
+	return fmt.Sprintf("\nUser ID: %d\nSession expired: %s\n", resp.UserID, expStr), nil
 }

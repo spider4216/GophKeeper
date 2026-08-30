@@ -203,8 +203,8 @@ JWT token
 #### Создание пары логин / пароль
 
 ```
-go run ./cmd/client  insert-loginpass --login= --password=
-make client-insert-loginpass login= pass= title= jwt=
+go run ./cmd/client  insert-loginpass --login= --password= --user-login=
+make client-insert-loginpass login= pass= title= userid=
 ```
 
 Ожидаемый результат
@@ -215,22 +215,22 @@ JWT token
 #### Отправка данных на сервер (синхронизация)
 
 ```
-go run ./cmd/client  sync-send --token=
-make client-sync-send jwt=
+go run ./cmd/client  sync-send --user-id=
+make client-sync-send userid=
 ```
 
 #### Список всех секретов пользователя
 
 ```
-go run ./cmd/client list --token=
-make client-list jwt=
+go run ./cmd/client list --user-id=
+make client-list userid=
 ```
 
 #### Расшифровка секрета
 
 ```
-go run ./cmd/client view --item_id= --token=
-make client-view: id= jwt=
+go run ./cmd/client view --item_id= --user-id=
+make client-view: id= userid=
 ```
 
 ### Получение данных с сервера (синхронизация)
@@ -243,15 +243,15 @@ make client-sync-get jwt=
 ### Удаление данных
 
 ```
-go run ./cmd/client delete-item --id= --token=
-make client-delete-item id= jwt=
+go run ./cmd/client delete-item --id= --user-id=
+make client-delete-item id= userid=
 ```
 
 ### Обновление логина и пароля
 
 ```
-go run ./cmd/client update-loginpass --login= --password= --id= --token= --meta-id= --title=
-make client-update-loginpass login= pass= id= jwt= metaid= title=
+go run ./cmd/client update-loginpass --login= --password= --id= --user-id= --meta-id= --title=
+make client-update-loginpass login= pass= id= userid= metaid= title=
 ```
 
 ## Сертификаты

@@ -11,22 +11,23 @@ import (
 func (c *Command) UserList(ctx context.Context, args []string) (string, error) {
 	fs := flag.NewFlagSet(List.String(), flag.ExitOnError)
 
-	token := fs.String("token", "", "JWT from server")
+	userID := fs.Int64("user-id", 0, "User ID")
 
 	if err := fs.Parse(args); err != nil {
 		return "", err
 	}
 
-	if *token == "" {
+	if *userID == 0 {
 		return "", errors.New("jwt is required")
 	}
 
-	claims, err := c.getClaims(*token)
+	auth, err := c.Service.GetToken(ctx, *userID)
+
 	if err != nil {
-		return "", fmt.Errorf("cannot parse jwt: %w", err)
+		return "", err
 	}
 
-	items, err := c.Service.GetUserItemsWithMeta(ctx, claims.UserID)
+	items, err := c.Service.GetUserItemsWithMeta(ctx, auth.UserID)
 	if err != nil {
 		return "", fmt.Errorf("cannot get user items: %w", err)
 	}

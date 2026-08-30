@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/spider4216/GophKeeper/internal/client/models"
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
@@ -76,4 +77,12 @@ func postRequest[TReq, TResp any](ctx context.Context, url string, req TReq, cli
 	}
 
 	return &res, nil
+}
+
+func (s *Service) SaveUserToken(ctx context.Context, userID int64, token string) error {
+	return s.repo.SaveUserToken(ctx, userID, token)
+}
+
+func (s *Service) GetToken(ctx context.Context, userID int64) (*models.Auth, error) {
+	return s.repo.GetToken(ctx, userID)
 }

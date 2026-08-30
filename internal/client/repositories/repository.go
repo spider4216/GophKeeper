@@ -571,3 +571,26 @@ func (repo *ClientRepository) CommitSyncChunkTx(ctx context.Context, ids []strin
 
 	return nil
 }
+
+func (repo *ClientRepository) SaveUserToken(ctx context.Context, userID int64, token string) error {
+	sql := "INSERT INTO auth (user_id, token) VALUES ($1,$2) ON CONFLICT (user_id) DO UPDATE SET token=EXCLUDED.token"
+
+	_, err := repo.con.ExecContext(ctx, sql, userID, token)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+func (repo *ClientRepository) GetToken(ctx context.Context, userID int64) (*models.Auth, error) {
+	sql := "SELECT id,user_id,token FROM auth WHERE user_id=$1;"
+
+	var auth models.Auth
+
+	err := repo.con.QueryRowContext(ctx, sql, userID).Scan(&auth.ID, &auth.UserID, &auth.Token)
+	if err != nil {
+		return nil, err
+	}
+
+	return &auth, nil
+}
