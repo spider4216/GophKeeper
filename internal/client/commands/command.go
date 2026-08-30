@@ -4,10 +4,8 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/spider4216/GophKeeper/internal/client/config"
 	"github.com/spider4216/GophKeeper/internal/client/services"
-	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
 type CmdName string
@@ -54,17 +52,4 @@ func New(service *services.Service, cfg *config.Config, logger *slog.Logger) Com
 		Cfg:     cfg,
 		logger:  logger,
 	}
-}
-
-func (c *Command) getClaims(token string) (*shrModel.Claims, error) {
-	claims := &shrModel.Claims{}
-	_, err := jwt.ParseWithClaims(token, claims,
-		func(t *jwt.Token) (interface{}, error) {
-			return []byte(c.Cfg.JWTKey), nil
-		})
-	if err != nil {
-		return nil, err
-	}
-
-	return claims, nil
 }
