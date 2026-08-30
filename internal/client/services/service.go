@@ -20,6 +20,8 @@ import (
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
+type Option func(*Service) error
+
 type Service struct {
 	client *http.Client
 	host   string
@@ -27,13 +29,43 @@ type Service struct {
 	logger *slog.Logger
 }
 
-func New(client *http.Client, host string, repo repositories.Repository, logger *slog.Logger) *Service {
-	return &Service{
-		client: client,
-		host:   host,
-		repo:   repo,
-		logger: logger,
+func WithHTTPClient(cli *http.Client) Option {
+	return func(s *Service) error {
+		s.client = cli
+		return nil
 	}
+}
+
+func WithHost(h string) Option {
+	return func(s *Service) error {
+		s.host = h
+		return nil
+	}
+}
+
+func WithRepo(r repositories.Repository) Option {
+	return func(s *Service) error {
+		s.repo = r
+		return nil
+	}
+}
+
+func WithLogger(l *slog.Logger) Option {
+	return func(s *Service) error {
+		s.logger = l
+		return nil
+	}
+}
+
+func New(opts ...Option) (*Service, error) {
+	s := &Service{}
+	for _, opt := range opts {
+		if err := opt(s); err != nil {
+			return nil, err
+		}
+	}
+
+	return s, nil
 }
 
 func (s *Service) CreateLoginPassItem(ctx context.Context, t enum.SecretType, data models.LoginPassReq, key string, userID int64) (string, error) {

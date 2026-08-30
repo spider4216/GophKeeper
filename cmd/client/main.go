@@ -18,7 +18,17 @@ func main() {
 		log.Fatal("Cannot run app", err)
 	}
 
-	service := services.New(app.cli, app.cfg.SrvHost, app.repo, app.logger)
+	service, errService := services.New(
+		services.WithHTTPClient(app.cli),
+		services.WithHost(app.cfg.SrvHost),
+		services.WithRepo(app.repo),
+		services.WithLogger(app.logger),
+	)
+
+	if errService != nil {
+		fmt.Println(errService)
+		os.Exit(1)
+	}
 
 	cmd := commands.New(service, app.cfg, app.logger)
 
