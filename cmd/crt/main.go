@@ -93,11 +93,11 @@ func main() {
 
 	dir := filepath.Join(wd, crtDir)
 
-	if err = os.WriteFile(filepath.Join(dir, crtName), crtPEM.Bytes(), 0o644); err != nil {
+	if err = os.WriteFile(filepath.Join(dir, crtName), crtPEM.Bytes(), 0o600); err != nil {
 		log.Fatal(err)
 	}
 
-	if err = os.WriteFile(filepath.Join(dir, pkName), pkPEM.Bytes(), 0o644); err != nil {
+	if err = os.WriteFile(filepath.Join(dir, pkName), pkPEM.Bytes(), 0o600); err != nil {
 		log.Fatal(err)
 	}
 
