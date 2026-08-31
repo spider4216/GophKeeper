@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"slices"
 
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -54,10 +55,9 @@ func (s *Service) GetLatestUserRev(ctx context.Context, userID int64) (int64, er
 func (s *Service) SyncGet(ctx context.Context, userID int64, since int64, limit int) (*shrModel.SyncGet, error) {
 	s.logger.Debug("Get changes...")
 
-	changes, err := s.repo.GetUserSyncChanges(ctx, userID, since, limit)
-	if err != nil {
-		return nil, err
-	}
+	changes := slices.Collect(
+		s.repo.GetUserSyncChanges(ctx, userID, since, limit),
+	)
 
 	var itemIDs []string
 

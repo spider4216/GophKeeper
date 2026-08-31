@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"database/sql"
+	"iter"
 
 	"github.com/spider4216/GophKeeper/internal/enum"
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
@@ -21,7 +22,7 @@ type Repository interface {
 	CreateItemPayloadTx(ctx context.Context, tx *sql.Tx, item models.ItemPayloadRepo) error
 	CreateSyncChangesTx(ctx context.Context, tx *sql.Tx, itemID string, op enum.OpType, userID int64) (int64, error)
 	GetLatestUserRev(ctx context.Context, userID int64) (int64, error)
-	GetUserSyncChanges(ctx context.Context, userID int64, since int64, limit int) ([]models.SyncChangesRepo, error)
+	GetUserSyncChanges(ctx context.Context, userID int64, since int64, limit int) iter.Seq[models.SyncChangesRepo]
 	GetItemsByIDs(ctx context.Context, itemIDs []string) ([]models.ItemRepo, error)
 	GetPayloadByItemIDs(ctx context.Context, itemIDs []string) ([]models.ItemPayloadRepo, error)
 	DeletePayloadByItemIDTx(ctx context.Context, tx *sql.Tx, itemID string) error

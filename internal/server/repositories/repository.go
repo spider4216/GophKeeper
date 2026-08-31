@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"iter"
 	"log/slog"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -120,43 +121,46 @@ func (repo *SrvRepository) GetLatestUserRev(ctx context.Context, userID int64) (
 	return rev, nil
 }
 
-func (repo *SrvRepository) GetUserSyncChanges(ctx context.Context, userID int64, since int64, limit int) ([]models.SyncChangesRepo, error) {
-	sql := "SELECT id, item_id, revision, operation, created_at FROM sync_changes WHERE user_id=$1 and revision > $2 ORDER BY revision LIMIT $3;"
+func (repo *SrvRepository) GetUserSyncChanges(ctx context.Context, userID int64, since int64, limit int) iter.Seq[models.SyncChangesRepo] {
+	return func(yield func(models.SyncChangesRepo) bool) {
+		sql := "SELECT id, item_id, revision, operation, created_at FROM sync_changes WHERE user_id=$1 and revision > $2 ORDER BY revision LIMIT $3;"
 
-	rows, err := repo.con.QueryContext(ctx, sql, userID, since, limit)
-	if err != nil {
-		return nil, err
-	}
-
-	defer func() {
-		if err := rows.Close(); err != nil {
-			repo.logger.Warn("Cannot close rows", "error", err)
-		}
-	}()
-
-	var items []models.SyncChangesRepo
-
-	for rows.Next() {
-		var item models.SyncChangesRepo
-
-		if err := rows.Scan(
-			&item.ID,
-			&item.ItemID,
-			&item.Revision,
-			&item.Operation,
-			&item.CreatedAt,
-		); err != nil {
-			return nil, err
+		rows, err := repo.con.QueryContext(ctx, sql, userID, since, limit)
+		if err != nil {
+			repo.logger.Error("Cannot get sync rows", "error", err)
+			return
 		}
 
-		items = append(items, item)
-	}
+		defer func() {
+			if err := rows.Close(); err != nil {
+				repo.logger.Warn("Cannot close rows", "error", err)
+			}
+		}()
 
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
+		for rows.Next() {
+			var item models.SyncChangesRepo
 
-	return items, nil
+			if err := rows.Scan(
+				&item.ID,
+				&item.ItemID,
+				&item.Revision,
+				&item.Operation,
+				&item.CreatedAt,
+			); err != nil {
+				repo.logger.Error("cannot scan sync changes", "error", err)
+				return
+			}
+
+			if !yield(item) {
+				return
+			}
+		}
+
+		if err := rows.Err(); err != nil {
+			repo.logger.Error("row error in get sync changes", "error", err)
+			return
+		}
+	}
 }
 
 func (repo *SrvRepository) GetItemsByIDs(ctx context.Context, itemIDs []string) ([]models.ItemRepo, error) {
