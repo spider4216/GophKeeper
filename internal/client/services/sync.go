@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"iter"
 	"net/http"
 	"net/url"
 
@@ -137,6 +138,78 @@ func (s *Service) syncChunk(ctx context.Context, userID int64, token string, pen
 	return res.LastRev, nil
 }
 
+func (s *Service) syncGetPage(ctx context.Context, token string, syncLimit int, rev int64) iter.Seq[shrModel.SyncGet] {
+	return func(yield func(shrModel.SyncGet) bool) {
+		lastRev := rev
+
+		for {
+			s.logger.Debug("Get sync changes since revision", "rev", lastRev)
+
+			url, err := url.JoinPath(s.host, syncURL)
+			if err != nil {
+				s.logger.Error("cannot join sync url", "error", err)
+				return
+			}
+
+			url = fmt.Sprintf("%s?since=%d&limit=%d", url, lastRev, syncLimit)
+
+			r, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+			if err != nil {
+				s.logger.Error("cannot create request for sync operation", "error", err)
+				return
+			}
+
+			r.Header.Set("Authorization", token)
+
+			s.logger.Debug("Get sync...")
+
+			resp, err := s.client.Do(r)
+			if err != nil {
+				s.logger.Error("cannot do request", "error", err)
+				return
+			}
+
+			defer func() {
+				if err := resp.Body.Close(); err != nil {
+					s.logger.Warn("error closing body", "error", err)
+				}
+			}()
+
+			if resp.StatusCode != http.StatusOK {
+				s.logger.Error("status sync is not OK", "status", resp.StatusCode)
+				return
+			}
+
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				s.logger.Error("cannot read sync response", "error", err)
+				return
+			}
+
+			s.logger.Debug("Response from server", "content", string(body))
+
+			var res shrModel.SyncGet
+
+			if err := json.Unmarshal(body, &res); err != nil {
+				s.logger.Error("cannot unmarshal sync response", "error", err)
+				return
+			}
+
+			s.logger.Debug("Changes", "count", len(res.Changes))
+
+			lastRev = res.NextRev
+
+			if !yield(res) {
+				return
+			}
+
+			if !res.HasMore {
+				return
+			}
+		}
+	}
+}
+
 func (s *Service) SyncGet(ctx context.Context, userID int64, token string, syncLimit int) error {
 	// Получаем последнюю версию синхронизации
 	rev, err := s.GetLatestUserRev(ctx, userID)
@@ -144,63 +217,10 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, token string, syncL
 		return err
 	}
 
-	for {
-		s.logger.Debug("Get sync changes since revision", "rev", rev)
-
-		url, err := url.JoinPath(s.host, syncURL)
-		if err != nil {
-			return fmt.Errorf("cannot join sync url: %w", err)
-		}
-
-		url = fmt.Sprintf("%s?since=%d&limit=%d", url, rev, syncLimit)
-
-		r, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-		if err != nil {
-			return fmt.Errorf("cannot create request for sync operation: %w", err)
-		}
-
-		r.Header.Set("Authorization", token)
-
-		s.logger.Debug("Get sync...")
-
-		resp, err := s.client.Do(r)
-		if err != nil {
+	for page := range s.syncGetPage(ctx, token, syncLimit, rev) {
+		if err := s.repo.ApplySync(ctx, userID, page); err != nil {
+			s.logger.Error("cannot apply sync", "error", err)
 			return err
-		}
-
-		defer func() {
-			if err := resp.Body.Close(); err != nil {
-				s.logger.Warn("error closing body", "error", err)
-			}
-		}()
-
-		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("status sync is not OK: %d", resp.StatusCode)
-		}
-
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return fmt.Errorf("cannot read sync response: %w", err)
-		}
-
-		s.logger.Debug("Response from server", "content", string(body))
-
-		var res shrModel.SyncGet
-
-		if err := json.Unmarshal(body, &res); err != nil {
-			return fmt.Errorf("cannot unmarshal sync response: %w", err)
-		}
-
-		s.logger.Debug("Changes", "count", len(res.Changes))
-
-		if err := s.repo.ApplySync(ctx, userID, res); err != nil {
-			return fmt.Errorf("cannot apply sync: %w", err)
-		}
-
-		rev = res.NextRev
-
-		if !res.HasMore {
-			break
 		}
 	}
 
