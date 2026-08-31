@@ -12,6 +12,7 @@ import (
 	"github.com/spider4216/GophKeeper/internal/server/models"
 	"github.com/spider4216/GophKeeper/internal/server/repositories"
 	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/sync/errgroup"
 )
 
 type syncChange struct {
@@ -84,22 +85,38 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, since int64, limit 
 
 	s.logger.Debug("Get Items...")
 
-	items, err := s.repo.GetItemsByIDs(ctx, itemIDs)
-	if err != nil {
-		return nil, err
-	}
+	var items []models.ItemRepo
+	var payloads []models.ItemPayloadRepo
+	var meta []shrModel.MetadataRepo
 
-	s.logger.Debug("Get payloads...")
+	g, ctx := errgroup.WithContext(ctx)
+	g.SetLimit(3)
 
-	payloads, err := s.repo.GetPayloadByItemIDs(ctx, itemIDs)
-	if err != nil {
-		return nil, err
-	}
+	g.Go(func() error {
+		s.logger.Debug("Get items...")
+		var err error
+		items, err = s.repo.GetItemsByIDs(ctx, itemIDs)
 
-	s.logger.Debug("Get metadata...")
+		return err
+	})
 
-	meta, err := s.repo.GetCommonRepo().GetMetadataByItemIDs(ctx, itemIDs)
-	if err != nil {
+	g.Go(func() error {
+		s.logger.Debug("Get payloads...")
+		var err error
+		payloads, err = s.repo.GetPayloadByItemIDs(ctx, itemIDs)
+
+		return err
+	})
+
+	g.Go(func() error {
+		s.logger.Debug("Get metadata...")
+		var err error
+		meta, err = s.repo.GetCommonRepo().GetMetadataByItemIDs(ctx, itemIDs)
+
+		return err
+	})
+
+	if err := g.Wait(); err != nil {
 		return nil, err
 	}
 
