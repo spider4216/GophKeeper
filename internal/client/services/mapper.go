@@ -18,21 +18,11 @@ func (s *Service) buildItemsWithMeta(items []models.ItemRepo, metadata []shrMode
 		meta := metadataByItemID[item.ID]
 
 		one := models.ItemWithMeta{
-			ItemRepo: models.ItemRepo{
-				ID:         item.ID,
-				Type:       item.Type,
-				Ciphertext: item.Ciphertext,
-				UserID:     item.UserID,
-				CreatedAt:  item.CreatedAt,
-			},
+			ItemRepo: item,
 		}
 
 		for _, m := range meta {
-			one.Metadata = append(one.Metadata, shrModel.MetadataRepo{
-				ID:    m.ID,
-				Key:   m.Key,
-				Value: m.Value,
-			})
+			one.Metadata = append(one.Metadata, m)
 		}
 
 		res = append(res, one)
