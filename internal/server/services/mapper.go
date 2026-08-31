@@ -1,12 +1,13 @@
 package services
 
 import (
+	"github.com/spider4216/GophKeeper/internal/enum"
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 	"github.com/spider4216/GophKeeper/internal/server/models"
 )
 
 func (s *Service) mapSyncResponse(
-	changes []models.SyncChangesRepo,
+	changes []syncChange,
 	items []models.ItemRepo,
 	payloads []models.ItemPayloadRepo,
 	metadata []shrModel.MetadataRepo,
@@ -41,20 +42,19 @@ func (s *Service) mapSyncResponse(
 
 	for _, change := range changes {
 		syncChange := shrModel.SyncGetChange{
-			Operation: change.Operation,
-			Metadata:  metadataByItemID[change.ItemID],
+			Operation: change.operation,
+			Metadata:  metadataByItemID[change.itemID],
 		}
 
 		// DELETE: item уже может отсутствовать.
-		if change.Operation == "DELETE" {
-			syncChange.Item.ID = change.ItemID
+		if change.operation == enum.OpDelete {
+			syncChange.Item.ID = change.itemID
 			result.Changes = append(result.Changes, syncChange)
-			result.NextRev = change.Revision
 			continue
 		}
 
-		item := itemByID[change.ItemID]
-		payload := payloadByItemID[change.ItemID]
+		item := itemByID[change.itemID]
+		payload := payloadByItemID[change.itemID]
 
 		syncChange.Item = shrModel.ItemSyncGet{
 			ID:         item.ID,
@@ -63,7 +63,6 @@ func (s *Service) mapSyncResponse(
 		}
 
 		result.Changes = append(result.Changes, syncChange)
-		result.NextRev = change.Revision
 	}
 
 	return &result

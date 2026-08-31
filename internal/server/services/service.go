@@ -4,15 +4,20 @@ import (
 	"context"
 	"errors"
 	"log/slog"
-	"slices"
 
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/spider4216/GophKeeper/internal/enum"
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 	"github.com/spider4216/GophKeeper/internal/server/models"
 	"github.com/spider4216/GophKeeper/internal/server/repositories"
 	"golang.org/x/crypto/bcrypt"
 )
+
+type syncChange struct {
+	itemID    string
+	operation enum.OpType
+}
 
 type Service struct {
 	repo   repositories.Repository
@@ -55,14 +60,26 @@ func (s *Service) GetLatestUserRev(ctx context.Context, userID int64) (int64, er
 func (s *Service) SyncGet(ctx context.Context, userID int64, since int64, limit int) (*shrModel.SyncGet, error) {
 	s.logger.Debug("Get changes...")
 
-	changes := slices.Collect(
-		s.repo.GetUserSyncChanges(ctx, userID, since, limit),
-	)
+	changes := make([]syncChange, 0, limit)
+	itemIDs := make([]string, 0, limit)
 
-	var itemIDs []string
+	var lastRevision int64
 
-	for _, change := range changes {
+	for change := range s.repo.GetUserSyncChanges(ctx, userID, since, limit) {
+		changes = append(changes, syncChange{
+			itemID:    change.ItemID,
+			operation: change.Operation,
+		})
+
 		itemIDs = append(itemIDs, change.ItemID)
+		lastRevision = change.Revision
+	}
+
+	count := len(changes)
+	nextRev := since
+
+	if count > 0 {
+		nextRev = lastRevision
 	}
 
 	s.logger.Debug("Get Items...")
@@ -86,20 +103,8 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, since int64, limit 
 		return nil, err
 	}
 
-	var nextRev int64
-
-	// Если изменения есть, то след. ревизия - краяняя
-	if len(changes) > 0 {
-		nextRev = changes[len(changes)-1].Revision
-	} else {
-		// Если изменений для синхронизации нет, то следующая
-		// ревизия - это переданная
-		nextRev = since
-	}
-
 	// Есть ли еще записи
-	hasMore := len(changes) == limit
-
+	hasMore := count == limit
 	return s.mapSyncResponse(
 		changes,
 		items,
