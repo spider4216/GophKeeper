@@ -48,7 +48,7 @@ func (m Middleware) WithJwt(h http.Handler) http.Handler {
 			return
 		}
 
-		m.logger.Debug("User id is ", claims.UserID, " set to ctx")
+		m.logger.Debug("User set to ctx", "userid", claims.UserID)
 
 		// Устанавливаем идентификатор пользователя в контекст
 		ctx := m.service.SetUserIdToCtx(r.Context(), int64(claims.UserID))
