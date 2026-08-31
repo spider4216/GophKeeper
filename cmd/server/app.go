@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	shrConfig "github.com/spider4216/GophKeeper/config"
 	"github.com/spider4216/GophKeeper/internal/logger"
 	commonRep "github.com/spider4216/GophKeeper/internal/repository"
 	"github.com/spider4216/GophKeeper/internal/server/config"
@@ -23,27 +24,18 @@ func newApp() *app {
 	return &app{}
 }
 
-func (app *app) Run() error {
-	if err := app.initConfig(); err != nil {
-		return err
-	}
+func (a *app) Run() error {
+	_, err := shrConfig.NewBuilder(a).
+		Step((*app).initConfig).
+		Step((*app).initLogger).
+		Step((*app).initRepo).
+		Step((*app).initMigrations).
+		Build()
 
-	if err := app.initLogger(); err != nil {
-		return err
-	}
-
-	if err := app.initRepo(); err != nil {
-		return err
-	}
-
-	if err := app.initMigrations(); err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
-func (app *app) initConfig() error {
+func (a *app) initConfig() error {
 	var cfg *config.Config
 
 	cfg, err := config.New()
@@ -55,31 +47,31 @@ func (app *app) initConfig() error {
 		return errors.New("dsn didtn't passed")
 	}
 
-	app.cfg = cfg
+	a.cfg = cfg
 
 	return nil
 }
 
-func (app *app) initRepo() error {
-	common, err := commonRep.NewRepository(app.cfg.DbDsn, app.logger)
+func (a *app) initRepo() error {
+	common, err := commonRep.NewRepository(a.cfg.DbDsn, a.logger)
 	if err != nil {
 		return err
 	}
 
-	repo, err := repositories.NewRepository(app.cfg.DbDsn, app.logger, common)
+	repo, err := repositories.NewRepository(a.cfg.DbDsn, a.logger, common)
 	if err != nil {
 		return err
 	}
 
-	app.repo = repo
+	a.repo = repo
 
 	return nil
 }
 
-func (app *app) initMigrations() error {
-	app.logger.Debug("Up migrations")
+func (a *app) initMigrations() error {
+	a.logger.Debug("Up migrations")
 
-	repo, ok := app.repo.(*repositories.SrvRepository)
+	repo, ok := a.repo.(*repositories.SrvRepository)
 
 	if !ok {
 		return fmt.Errorf("cannot cast to pgx store type in init migration")
@@ -91,15 +83,15 @@ func (app *app) initMigrations() error {
 		return err
 	}
 
-	app.logger.Debug("Migration done")
+	a.logger.Debug("Migration done")
 
 	return nil
 }
 
-func (app *app) initLogger() error {
-	logger := logger.Init(app.cfg.LogLvl)
+func (a *app) initLogger() error {
+	logger := logger.Init(a.cfg.LogLvl)
 
-	app.logger = logger
+	a.logger = logger
 
 	return nil
 }
