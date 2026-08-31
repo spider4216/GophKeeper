@@ -12,7 +12,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-chi/chi"
 	"github.com/spider4216/GophKeeper/internal/server/config"
 	"github.com/spider4216/GophKeeper/internal/server/handlers"
 	"github.com/spider4216/GophKeeper/internal/server/middlewares"
@@ -34,26 +33,20 @@ func main() {
 	handler := handlers.New(app.cfg, app.logger, service)
 	middleware := middlewares.New(app.logger, app.cfg, service)
 
-	r := chi.NewRouter()
-
-	r.Route("/", func(r chi.Router) {
-		r.Use(middleware.WithLogging)
-
-		r.Post("/auth/register", http.HandlerFunc(handler.CreateUser))
-		r.Post("/auth/login", http.HandlerFunc(handler.Login))
-		r.With(middleware.WithJwt).Post("/sync", http.HandlerFunc(handler.SyncIn))
-		r.With(middleware.WithJwt).Get("/sync", http.HandlerFunc(handler.SyncOut))
-	})
+	// ----
+	mux := http.NewServeMux()
+	mux.Handle("POST /auth/register", middleware.WithLogging(http.HandlerFunc(handler.CreateUser)))
+	mux.Handle("POST /auth/login", middleware.WithLogging(http.HandlerFunc(handler.Login)))
+	mux.Handle("POST /sync", middleware.WithJwt(middleware.WithLogging(http.HandlerFunc(handler.SyncIn))))
+	mux.Handle("GET /sync", middleware.WithJwt(middleware.WithLogging(http.HandlerFunc(handler.SyncOut))))
 
 	srv := &http.Server{
 		Addr:         app.cfg.ServerAddress,
-		Handler:      r,
+		Handler:      mux,
 		ReadTimeout:  app.cfg.ReadTimeout,
 		WriteTimeout: app.cfg.WriteTimeout,
 		IdleTimeout:  app.cfg.IdleTimeout,
 	}
-
-	// todo https
 
 	var wg sync.WaitGroup
 	wg.Add(1)
