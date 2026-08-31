@@ -65,23 +65,19 @@ func (repo *SrvRepository) GetUserByEmail(ctx context.Context, email string) (*m
 }
 
 func (repo *SrvRepository) CreateItem(ctx context.Context, item models.ItemRepo) (string, error) {
-	sql := "INSERT INTO items (id, type ,user_id) VALUES ($1,$2,$3) RETURNING id"
-
-	var id string
-
-	if err := repo.con.QueryRowContext(ctx, sql, item.ID, item.Type, item.UserID).Scan(&id); err != nil {
-		return "", err
-	}
-
-	return id, nil
+	return repo.createItem(ctx, repo.con, item)
 }
 
 func (repo *SrvRepository) CreateItemTx(ctx context.Context, tx *sql.Tx, item models.ItemRepo) (string, error) {
+	return repo.createItem(ctx, tx, item)
+}
+
+func (repo *SrvRepository) createItem(ctx context.Context, db commonRep.Querier, item models.ItemRepo) (string, error) {
 	sql := "INSERT INTO items (id, type ,user_id) VALUES ($1,$2,$3) RETURNING id"
 
 	var id string
 
-	if err := tx.QueryRowContext(ctx, sql, item.ID, item.Type, item.UserID).Scan(&id); err != nil {
+	if err := db.QueryRowContext(ctx, sql, item.ID, item.Type, item.UserID).Scan(&id); err != nil {
 		return "", err
 	}
 

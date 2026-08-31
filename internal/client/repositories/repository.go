@@ -40,23 +40,19 @@ func (repo *ClientRepository) Source() any {
 }
 
 func (repo *ClientRepository) CreateItem(ctx context.Context, item models.ItemRepo) (string, error) {
-	sql := "INSERT INTO items (type,ciphertext,user_id) VALUES ($1,$2,$3) RETURNING id"
-
-	var id string
-
-	if err := repo.con.QueryRowContext(ctx, sql, item.Type, item.Ciphertext, item.UserID).Scan(&id); err != nil {
-		return "", err
-	}
-
-	return id, nil
+	return repo.createItem(ctx, repo.con, item)
 }
 
 func (repo *ClientRepository) CreateItemTx(ctx context.Context, tx *sql.Tx, item models.ItemRepo) (string, error) {
+	return repo.createItem(ctx, tx, item)
+}
+
+func (repo *ClientRepository) createItem(ctx context.Context, db commonRep.Querier, item models.ItemRepo) (string, error) {
 	sql := "INSERT INTO items (id, type,ciphertext,user_id) VALUES ($1,$2,$3,$4) RETURNING id"
 
 	var id string
 
-	if err := tx.QueryRowContext(ctx, sql, item.ID, item.Type, item.Ciphertext, item.UserID).Scan(&id); err != nil {
+	if err := db.QueryRowContext(ctx, sql, item.ID, item.Type, item.Ciphertext, item.UserID).Scan(&id); err != nil {
 		return "", err
 	}
 
@@ -187,20 +183,17 @@ func (repo *ClientRepository) GetMetadataByItemIDs(ctx context.Context, itemIDs 
 }
 
 func (repo *ClientRepository) DeletePendingByItemIDs(ctx context.Context, itemIDs []string) error {
-	sql := "DELETE FROM pending_changes WHERE item_id = ANY($1)"
-
-	_, err := repo.con.ExecContext(ctx, sql, itemIDs)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return repo.deletePendingByItemIDs(ctx, repo.con, itemIDs)
 }
 
 func (repo *ClientRepository) DeletePendingByItemIDsTx(ctx context.Context, tx *sql.Tx, itemIDs []string) error {
+	return repo.deletePendingByItemIDs(ctx, tx, itemIDs)
+}
+
+func (repo *ClientRepository) deletePendingByItemIDs(ctx context.Context, db commonRep.Querier, itemIDs []string) error {
 	sql := "DELETE FROM pending_changes WHERE item_id = ANY($1)"
 
-	_, err := tx.ExecContext(ctx, sql, itemIDs)
+	_, err := db.ExecContext(ctx, sql, itemIDs)
 	if err != nil {
 		return err
 	}
@@ -209,20 +202,17 @@ func (repo *ClientRepository) DeletePendingByItemIDsTx(ctx context.Context, tx *
 }
 
 func (repo *ClientRepository) UpdateLastUserRev(ctx context.Context, userID int64, rev int64) error {
-	sql := "UPDATE sync_state SET last_server_revision=$1 WHERE user_id=$2"
-
-	_, err := repo.con.ExecContext(ctx, sql, rev, userID)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return repo.updateLastUserRev(ctx, repo.con, userID, rev)
 }
 
 func (repo *ClientRepository) UpdateLastUserRevTx(ctx context.Context, tx *sql.Tx, userID int64, rev int64) error {
+	return repo.updateLastUserRev(ctx, tx, userID, rev)
+}
+
+func (repo *ClientRepository) updateLastUserRev(ctx context.Context, db commonRep.Querier, userID int64, rev int64) error {
 	sql := "UPDATE sync_state SET last_server_revision=$1 WHERE user_id=$2"
 
-	_, err := tx.ExecContext(ctx, sql, rev, userID)
+	_, err := db.ExecContext(ctx, sql, rev, userID)
 	if err != nil {
 		return err
 	}

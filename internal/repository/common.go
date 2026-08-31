@@ -66,20 +66,17 @@ func (repo *CommonRepository) GetMetadataByItemIDs(ctx context.Context, itemIDs 
 }
 
 func (repo *CommonRepository) DeleteUserItemByID(ctx context.Context, itemID string, userID int64) error {
-	sql := "DELETE FROM items WHERE user_id=$1 and id=$2"
-
-	_, err := repo.con.ExecContext(ctx, sql, userID, itemID)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return repo.deleteUserItemByID(ctx, repo.con, itemID, userID)
 }
 
 func (repo *CommonRepository) DeleteUserItemByIDTx(ctx context.Context, tx *sql.Tx, itemID string, userID int64) error {
+	return repo.deleteUserItemByID(ctx, tx, itemID, userID)
+}
+
+func (repo *CommonRepository) deleteUserItemByID(ctx context.Context, db Querier, itemID string, userID int64) error {
 	sql := "DELETE FROM items WHERE user_id=$1 and id=$2"
 
-	_, err := tx.ExecContext(ctx, sql, userID, itemID)
+	_, err := db.ExecContext(ctx, sql, userID, itemID)
 	if err != nil {
 		return err
 	}
@@ -88,20 +85,17 @@ func (repo *CommonRepository) DeleteUserItemByIDTx(ctx context.Context, tx *sql.
 }
 
 func (repo *CommonRepository) DeleteUserMetaByItemID(ctx context.Context, itemID string, userID int64) error {
-	sql := "DELETE FROM metadata md USING items i WHERE i.id = md.item_id AND md.item_id=$1 AND i.user_id=$2"
-
-	_, err := repo.con.ExecContext(ctx, sql, itemID, userID)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return repo.deleteUserMetaByItemID(ctx, repo.con, itemID, userID)
 }
 
 func (repo *CommonRepository) DeleteUserMetaByItemIDTx(ctx context.Context, tx *sql.Tx, itemID string, userID int64) error {
+	return repo.deleteUserMetaByItemID(ctx, tx, itemID, userID)
+}
+
+func (repo *CommonRepository) deleteUserMetaByItemID(ctx context.Context, db Querier, itemID string, userID int64) error {
 	sql := "DELETE FROM metadata md USING items i WHERE i.id = md.item_id AND md.item_id=$1 AND i.user_id=$2"
 
-	_, err := tx.ExecContext(ctx, sql, itemID, userID)
+	_, err := db.ExecContext(ctx, sql, itemID, userID)
 	if err != nil {
 		return err
 	}
@@ -110,23 +104,19 @@ func (repo *CommonRepository) DeleteUserMetaByItemIDTx(ctx context.Context, tx *
 }
 
 func (repo *CommonRepository) CreateMeta(ctx context.Context, itemID string, k string, v string) (int64, error) {
-	sql := "INSERT INTO metadata (item_id,key,value) VALUES ($1,$2,$3) RETURNING id"
-
-	var id int64
-
-	if err := repo.con.QueryRowContext(ctx, sql, itemID, k, v).Scan(&id); err != nil {
-		return 0, err
-	}
-
-	return id, nil
+	return repo.createMeta(ctx, repo.con, itemID, k, v)
 }
 
 func (repo *CommonRepository) CreateMetaTx(ctx context.Context, tx *sql.Tx, itemID string, k string, v string) (int64, error) {
+	return repo.createMeta(ctx, tx, itemID, k, v)
+}
+
+func (repo *CommonRepository) createMeta(ctx context.Context, db Querier, itemID string, k string, v string) (int64, error) {
 	sql := "INSERT INTO metadata (item_id,key,value) VALUES ($1,$2,$3) RETURNING id"
 
 	var id int64
 
-	if err := tx.QueryRowContext(ctx, sql, itemID, k, v).Scan(&id); err != nil {
+	if err := db.QueryRowContext(ctx, sql, itemID, k, v).Scan(&id); err != nil {
 		return 0, err
 	}
 

@@ -7,6 +7,12 @@ import (
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
+type Querier interface {
+	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
+	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
+	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
+}
+
 type CommonRepositoryInterface interface {
 	GetMetadataByItemIDs(ctx context.Context, itemIDs []string) ([]shrModel.MetadataRepo, error)
 	DeleteUserItemByID(ctx context.Context, itemID string, userID int64) error
