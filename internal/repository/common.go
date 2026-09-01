@@ -84,6 +84,17 @@ func (repo *CommonRepository) deleteUserItemByID(ctx context.Context, db Querier
 	return nil
 }
 
+func (repo *CommonRepository) DeleteChunksByItemIDTx(ctx context.Context, tx *sql.Tx, itemID string) error {
+	sql := "DELETE FROM item_chunks WHERE item_id=$1"
+
+	_, err := tx.ExecContext(ctx, sql, itemID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (repo *CommonRepository) DeleteUserMetaByItemID(ctx context.Context, itemID string, userID int64) error {
 	return repo.deleteUserMetaByItemID(ctx, repo.con, itemID, userID)
 }
