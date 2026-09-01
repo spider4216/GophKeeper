@@ -271,7 +271,7 @@ func (s *Service) SaveHugeText(ctx context.Context, userID int64, title string, 
 	// Буфер для чанка
 	buf := make([]byte, chunkSize)
 
-	var chunkNum int = 1
+	chunkNum := 1
 
 	for {
 		n, err := file.Read(buf)
@@ -312,7 +312,10 @@ func (s *Service) GetHugeText(ctx context.Context, userID int64, itemID string, 
 			return fmt.Errorf("cannot decrypt chunk %d, %w", chunk.ChunkNumber, err)
 		}
 
-		w.Write(decrypted)
+		_, err = w.Write(decrypted)
+		if err != nil {
+			return fmt.Errorf("cannot write huge text: %w", err)
+		}
 	}
 
 	return nil
