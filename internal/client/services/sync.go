@@ -310,9 +310,102 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, token string, syncL
 	}
 
 	for page := range s.syncGetPage(ctx, token, syncLimit, rev) {
+		s.logger.Debug("Apply page")
 		if err := s.repo.ApplySync(ctx, userID, page); err != nil {
 			s.logger.Error("cannot apply sync", "error", err)
-			return err
+			return fmt.Errorf("cannot apply sync: %w", err)
+		}
+
+		s.logger.Debug("Download data for page")
+		if err := s.downloadsData(ctx, token, page); err != nil {
+			s.logger.Error("cannot downloads data", "error", err)
+			return fmt.Errorf("cannot downloads data: %w", err)
+		}
+
+		s.logger.Debug("Commit revision for page")
+		if err := s.repo.UpdateLastUserRev(ctx, userID, page.NextRev); err != nil {
+			return fmt.Errorf("update last revision: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func (s *Service) downloadsData(ctx context.Context, token string, page shrModel.SyncGet) error {
+	// Извлекаем идентификаторы страницы с Items которые имеют тип text
+	var itemIDs []string
+	for _, change := range page.Changes {
+		if change.Item.Type == enum.Text.String() {
+			itemIDs = append(itemIDs, change.Item.ID)
+		}
+	}
+
+	if len(itemIDs) <= 0 {
+		s.logger.Debug("Nothing download")
+		return nil
+	}
+
+	// Для каждого item будем получать чанки с данными
+	for _, itemID := range itemIDs {
+		// Скачиваем чанки до тех пор пока чанков более не останется
+		// для выбранного item (вернется 404)
+		chunkNum := 1
+
+		for {
+			s.logger.Debug("Download chunk for iten", "chunk", chunkNum, "item", itemID)
+
+			path := fmt.Sprintf("/items/%s/chunks/%d", itemID, chunkNum)
+
+			url, err := url.JoinPath(s.host, path)
+			if err != nil {
+				return fmt.Errorf("cannot join in downloads data: %w", err)
+			}
+
+			r, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+			if err != nil {
+				return fmt.Errorf("cannot create request for download data operation: %w", err)
+			}
+
+			r.Header.Set("Authorization", token)
+
+			s.logger.Debug("Download...")
+
+			resp, err := s.client.Do(r)
+			if err != nil {
+				return fmt.Errorf("cannot do request: %w", err)
+			}
+
+			defer func() {
+				if err := resp.Body.Close(); err != nil {
+					s.logger.Warn("error closing body", "error", err)
+				}
+			}()
+
+			if resp.StatusCode == http.StatusNotFound {
+				// Более нет чанков, выходим
+				return nil
+			}
+
+			if resp.StatusCode != http.StatusOK {
+				return fmt.Errorf("status download is not OK: %d", resp.StatusCode)
+			}
+
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return fmt.Errorf("cannot read download response: %w", err)
+			}
+
+			var chunkRes shrModel.ChunkGetResp
+
+			if err := json.Unmarshal(body, &chunkRes); err != nil {
+				return err
+			}
+
+			if err := s.repo.GetCommonRepo().InsertItemChunk(ctx, itemID, chunkNum, chunkRes.Ciphertext); err != nil {
+				return fmt.Errorf("cannot put chunk to client db: %w", err)
+			}
+
+			chunkNum++
 		}
 	}
 

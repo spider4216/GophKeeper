@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"io"
 	"log/slog"
 	"net/http"
@@ -266,6 +268,65 @@ func (h Handler) SyncOut(w http.ResponseWriter, r *http.Request) {
 	if _, err := w.Write(b); err != nil {
 		h.logger.Error("failed to write response", "error", err)
 	}
+}
+
+func (h Handler) SyncGetChunk(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	itemID := r.PathValue("itemID")
+	chunkNumRaw := r.PathValue("num")
+
+	if itemID == "" || chunkNumRaw == "" {
+		h.logger.Error("cannot get itemID and chunk num")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// userID := h.service.GetUserIdFromCtx(ctx)
+
+	// todo получить item по ID и пользователю, если нету - то ошибка
+
+	chunkNum, err := strconv.Atoi(chunkNumRaw)
+
+	if err != nil {
+		h.logger.Error("cannot convert chunk num to int")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	chunk, err := h.service.GetItemChunk(ctx, itemID, chunkNum)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			h.logger.Error("record not found")
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		h.logger.Error("cannot get chunk", "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	resp := shrModel.ChunkGetResp{
+		Ciphertext: chunk.Ciphertext,
+		ChunkNum:   chunk.ChunkNumber,
+	}
+
+	data, err := json.Marshal(resp)
+
+	if err != nil {
+		h.logger.Error("cannot marshal response")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+
+	if _, err := w.Write(data); err != nil {
+		h.logger.Error("failed to write response", "error", err)
+	}
+
 }
 
 func (h Handler) SaveChunk(w http.ResponseWriter, r *http.Request) {

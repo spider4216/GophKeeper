@@ -443,10 +443,6 @@ func (repo *ClientRepository) ApplySync(ctx context.Context, userID int64, res s
 		}
 	}
 
-	if err := repo.UpdateLastUserRevTx(ctx, tx, userID, res.NextRev); err != nil {
-		return fmt.Errorf("update last revision: %w", err)
-	}
-
 	if err := tx.Commit(); err != nil {
 		return fmt.Errorf("commit transaction: %w", err)
 	}

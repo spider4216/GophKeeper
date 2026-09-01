@@ -25,4 +25,5 @@ type CommonRepositoryInterface interface {
 	UpdateMetaByItemIDAndKeyTx(ctx context.Context, tx *sql.Tx, itemID string, key string, v string) error
 	InsertItemChunk(ctx context.Context, itemID string, chunkNum int, ciphertext string) error
 	GetItemChunks(ctx context.Context, itemID string) ([]shrModel.ChunkRepo, error)
+	GetItemChunk(ctx context.Context, itemID string, chunkNum int) (*shrModel.ChunkRepo, error)
 }

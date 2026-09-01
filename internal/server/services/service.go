@@ -146,3 +146,7 @@ func (s *Service) IsErrAsDuplicate(err error) bool {
 func (s *Service) InsertItemChunk(ctx context.Context, itemID string, chunkNum int, ciphertext string) error {
 	return s.repo.GetCommonRepo().InsertItemChunk(ctx, itemID, chunkNum, ciphertext)
 }
+
+func (s *Service) GetItemChunk(ctx context.Context, itemID string, chunkNum int) (*shrModel.ChunkRepo, error) {
+	return s.repo.GetCommonRepo().GetItemChunk(ctx, itemID, chunkNum)
+}

@@ -199,3 +199,17 @@ func (repo *CommonRepository) GetItemChunks(ctx context.Context, itemID string) 
 
 	return items, nil
 }
+
+func (repo *CommonRepository) GetItemChunk(ctx context.Context, itemID string, chunkNum int) (*shrModel.ChunkRepo, error) {
+	sql := "SELECT item_id, chunk_number, ciphertext FROM item_chunks WHERE item_id = $1 and chunk_number=$2;"
+
+	var item shrModel.ChunkRepo
+
+	err := repo.con.QueryRowContext(ctx, sql, itemID, chunkNum).Scan(&item.ItemID, &item.ChunkNumber, &item.Ciphertext)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &item, nil
+}
