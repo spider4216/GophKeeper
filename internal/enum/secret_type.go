@@ -8,5 +8,6 @@ func (st SecretType) String() string {
 
 const (
 	LoginPass SecretType = "login_pass"
+	Text      SecretType = "text"
 	// todo more will be here
 )

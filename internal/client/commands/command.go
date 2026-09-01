@@ -25,6 +25,7 @@ const (
 	SyncSend        CmdName = "sync-send"
 	SyncGet         CmdName = "sync-get"
 	Version         CmdName = "version"
+	CreateText      CmdName = "create-text"
 )
 
 type CommandInterface interface {
@@ -38,6 +39,7 @@ type CommandInterface interface {
 	DeleteItem(ctx context.Context, args []string) (string, error)
 	UpdateLoginPass(ctx context.Context, args []string) (string, error)
 	PrintVersion() (string, error)
+	CreateText(ctx context.Context, args []string) (string, error)
 }
 
 type Command struct {

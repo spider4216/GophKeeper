@@ -59,6 +59,8 @@ func main() {
 		msg, err = cmd.UpdateLoginPass(ctx, app.args)
 	case commands.Version:
 		msg, err = cmd.PrintVersion()
+	case commands.CreateText:
+		msg, err = cmd.CreateText(ctx, app.args)
 	default:
 		err = errors.New("command not found")
 	}

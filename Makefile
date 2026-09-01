@@ -45,6 +45,9 @@ client-view:
 client-version:
 	DB_DSN=$(DSN_CLIENT) go run ./cmd/client version
 
+client-create-text:
+	SERVER_HOST=${SERVER_HOST} JWT_KEY=${JWT_KEY} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client create-text --path=${path} --user-id=${userid} --title=${title}
+
 migration-gen:
 	migrate create -ext sql -dir ./migrations/${path} -seq $(name)
 

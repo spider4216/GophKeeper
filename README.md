@@ -254,6 +254,13 @@ go run ./cmd/client update-loginpass --login= --password= --id= --user-id= --met
 make client-update-loginpass login= pass= id= userid= metaid= title=
 ```
 
+### Создание произвольного текста
+
+```
+go run ./cmd/client create-text --path= --user-id= --title=
+make client-create-text path= userid= title=
+```
+
 ## Сертификаты
 
 Сервис может работать в режиме HTTPS. Для активации этого режима нужно на сервере установить значение для переменной окружения ENABLE_HTTPS

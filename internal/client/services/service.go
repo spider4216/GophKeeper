@@ -12,6 +12,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/google/uuid"
 	"github.com/spider4216/GophKeeper/internal/client/models"
@@ -19,6 +20,9 @@ import (
 	"github.com/spider4216/GophKeeper/internal/enum"
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
+
+// todo в конфиг
+const chunkSize = 100 * 1024 // 100 KB
 
 type Option func(*Service) error
 
@@ -250,4 +254,55 @@ func (s *Service) CreateUserPassItem(ctx context.Context, data models.LoginPassR
 	}
 
 	return s.repo.CreateUserPassItem(ctx, item, userID, data.Title)
+}
+
+func (s *Service) SaveHugeText(ctx context.Context, userID int64, title string, filepath string, key string) error {
+	// Создаем Item и Metadata
+	itemID, err := s.repo.CreateItemForHugeText(ctx, userID, title)
+	if err != nil {
+		return fmt.Errorf("cannot create item with metadata for huge text: %w", err)
+	}
+
+	file, err := os.Open(filepath)
+
+	if err != nil {
+		return fmt.Errorf("cannot open file for huge text: %w", err)
+	}
+
+	// Буфер для чанка
+	buf := make([]byte, chunkSize)
+
+	var chunkNum int = 1
+
+	for {
+		n, err := file.Read(buf)
+
+		// Если в чанке есть данные
+		if n > 0 {
+			encrypted, err := s.EncryptData(buf, []byte(key))
+
+			if err != nil {
+				return fmt.Errorf("cannot encrypt chunk: %d, %w", chunkNum, err)
+			}
+
+			s.logger.Debug("Insert chunk", "count", chunkNum)
+			s.logger.Debug("Encrypted chunk", "data", encrypted[:30])
+			if err := s.repo.InsertItemChunk(ctx, itemID, chunkNum, encrypted); err != nil {
+				return err
+			}
+		}
+
+		// Если конец файла
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			return err
+		}
+
+		chunkNum++
+	}
+
+	return nil
 }

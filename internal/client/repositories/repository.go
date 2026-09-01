@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/spider4216/GophKeeper/internal/client/models"
 	"github.com/spider4216/GophKeeper/internal/enum"
@@ -584,4 +585,60 @@ func (repo *ClientRepository) GetToken(ctx context.Context, userID int64) (*mode
 	}
 
 	return &auth, nil
+}
+
+func (repo *ClientRepository) InsertItemChunk(ctx context.Context, itemID string, chunkNum int, ciphertext string) error {
+	sql := "INSERT INTO item_chunks (item_id,chunk_number,ciphertext) VALUES ($1,$2,$3)"
+
+	_, err := repo.con.ExecContext(ctx, sql, itemID, chunkNum, ciphertext)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repo *ClientRepository) CreateItemForHugeText(ctx context.Context, userID int64, title string) (string, error) {
+	tx, err := repo.con.BeginTx(ctx, nil)
+	if err != nil {
+		return "", fmt.Errorf("begin transaction: %w", err)
+	}
+
+	defer func() {
+		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			repo.logger.Warn("cannot rollback in save huge text", "error", err)
+		}
+	}()
+
+	item := models.ItemRepo{
+		ID:     uuid.NewString(),
+		Type:   enum.Text,
+		UserID: userID,
+	}
+
+	// Создаем Item
+	itemID, err := repo.CreateItemTx(ctx, tx, item)
+	if err != nil {
+		return "", err
+	}
+
+	// Создаем Metadata для свободного текста
+	// todo errgroup
+	_, err = repo.GetCommonRepo().CreateMetaTx(ctx, tx, itemID, "title", title)
+
+	if err != nil {
+		return "", err
+	}
+
+	_, err = repo.GetCommonRepo().CreateMetaTx(ctx, tx, itemID, "encoding", "UTF-8")
+
+	if err != nil {
+		return "", err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return "", fmt.Errorf("commit transaction: %w", err)
+	}
+
+	return itemID, nil
 }

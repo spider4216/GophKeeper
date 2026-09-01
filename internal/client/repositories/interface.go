@@ -37,4 +37,6 @@ type Repository interface {
 	CommitSyncChunkTx(ctx context.Context, ids []string, userID int64, lastRev int64) error
 	SaveUserToken(ctx context.Context, userID int64, token string) error
 	GetToken(ctx context.Context, userID int64) (*models.Auth, error)
+	CreateItemForHugeText(ctx context.Context, userID int64, title string) (string, error)
+	InsertItemChunk(ctx context.Context, itemID string, chunkNum int, ciphertext string) error
 }
