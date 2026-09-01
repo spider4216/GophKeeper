@@ -285,7 +285,7 @@ func (s *Service) SaveHugeText(ctx context.Context, userID int64, title string, 
 
 			s.logger.Debug("Insert chunk", "count", chunkNum)
 			s.logger.Debug("Encrypted chunk", "data", encrypted[:30])
-			if err := s.repo.InsertItemChunk(ctx, itemID, chunkNum, encrypted); err != nil {
+			if err := s.repo.GetCommonRepo().InsertItemChunk(ctx, itemID, chunkNum, encrypted); err != nil {
 				return err
 			}
 		}

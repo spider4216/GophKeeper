@@ -39,6 +39,7 @@ func main() {
 	mux.Handle("POST /auth/login", middleware.WithLogging(http.HandlerFunc(handler.Login)))
 	mux.Handle("POST /sync", middleware.WithJwt(middleware.WithLogging(http.HandlerFunc(handler.SyncIn))))
 	mux.Handle("GET /sync", middleware.WithJwt(middleware.WithLogging(http.HandlerFunc(handler.SyncOut))))
+	mux.Handle("PUT /items/{itemID}/chunks/{num}", middleware.WithJwt(middleware.WithLogging(http.HandlerFunc(handler.SaveChunk))))
 
 	srv := &http.Server{
 		Addr:         app.cfg.ServerAddress,

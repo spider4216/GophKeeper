@@ -1,6 +1,6 @@
-package models
+package model
 
-type TextRepo struct {
+type ChunkRepo struct {
 	ItemID      string
 	ChunkNumber int
 	Ciphertext  string

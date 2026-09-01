@@ -39,6 +39,5 @@ type Repository interface {
 	SaveUserToken(ctx context.Context, userID int64, token string) error
 	GetToken(ctx context.Context, userID int64) (*models.Auth, error)
 	CreateItemForHugeText(ctx context.Context, userID int64, title string) (string, error)
-	InsertItemChunk(ctx context.Context, itemID string, chunkNum int, ciphertext string) error
-	GetTextHugeData(ctx context.Context, itemID string) iter.Seq[models.TextRepo]
+	GetTextHugeData(ctx context.Context, itemID string) iter.Seq[shrModel.ChunkRepo]
 }

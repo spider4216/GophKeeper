@@ -11,6 +11,7 @@ import (
 	"net/url"
 
 	"github.com/spider4216/GophKeeper/internal/client/models"
+	"github.com/spider4216/GophKeeper/internal/enum"
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
@@ -43,9 +44,14 @@ func (s *Service) SyncSend(ctx context.Context, userID int64, token string, sync
 		s.logger.Debug("Sync chunk", "start", start+1, "end", end, "len", len(pends))
 
 		// Получаем ревизию изменений
-		lastRev, err := s.syncChunk(ctx, userID, token, chunk)
+		lastRev, err := s.syncChunkSend(ctx, userID, token, chunk)
 		if err != nil {
 			return fmt.Errorf("cannot sync chunk %d-%d: %w", start+1, end, err)
+		}
+
+		// Отправляем загрузку данных, если такая имеется
+		if err := s.uploadChunk(ctx, chunk, token); err != nil {
+			return fmt.Errorf("cannot upload chunk: %w", err)
 		}
 
 		// Коммитим чанк (удляеем pending, обновляем ревизию на клиенте)
@@ -69,7 +75,7 @@ func (s *Service) pendingItemIDs(pends []models.PendChangesRepo) []string {
 	return ids
 }
 
-func (s *Service) syncChunk(ctx context.Context, userID int64, token string, pends []models.PendChangesRepo) (int64, error) {
+func (s *Service) syncChunkSend(ctx context.Context, userID int64, token string, pends []models.PendChangesRepo) (int64, error) {
 	itemIDs := s.pendingItemIDs(pends)
 
 	items, err := s.repo.GetItemsByIDs(ctx, itemIDs)
@@ -136,6 +142,92 @@ func (s *Service) syncChunk(ctx context.Context, userID int64, token string, pen
 	s.logger.Debug("Latest revision for user", "rev", res.LastRev, "user", userID)
 
 	return res.LastRev, nil
+}
+
+func (s *Service) uploadChunk(ctx context.Context, pends []models.PendChangesRepo, token string) error {
+	// todo dry
+	itemIDs := s.pendingItemIDs(pends)
+
+	items, err := s.repo.GetItemsByIDs(ctx, itemIDs)
+
+	if err != nil {
+		return err
+	}
+
+	// Оставляем только items с типом text
+	var filtered []models.ItemRepo
+
+	for _, item := range items {
+		if item.Type == enum.Text {
+			filtered = append(filtered, item)
+		}
+	}
+
+	if len(filtered) <= 0 {
+		s.logger.Debug("nothing upload for chunk")
+		return nil
+	}
+
+	s.logger.Debug("uploads count", "count", len(items))
+
+	for _, i := range filtered {
+		// todo здесь также можно распаралелить синхронизацию между items
+		// получаем чанки item
+		chunks, err := s.repo.GetCommonRepo().GetItemChunks(ctx, i.ID)
+		if err != nil {
+			return err
+		}
+
+		// Отправляем чанки
+		for num, chunk := range chunks {
+			num = num + 1
+			// todo семафор
+			// todo into const
+			path := fmt.Sprintf("/items/%s/chunks/%d", i.ID, num)
+
+			url, err := url.JoinPath(s.host, path)
+			if err != nil {
+				return fmt.Errorf("cannot join sync url to host: %w", err)
+			}
+
+			req := models.UploadReq{
+				Ciphertext: chunk.Ciphertext,
+			}
+
+			data, err := json.Marshal(req)
+
+			if err != nil {
+				return err
+			}
+
+			r, err := http.NewRequestWithContext(ctx, http.MethodPut, url, bytes.NewReader(data))
+			if err != nil {
+				return fmt.Errorf("cannot create upload request: %w", err)
+			}
+
+			r.Header.Set("Content-Type", "application/json")
+			r.Header.Set("Authorization", token)
+
+			s.logger.Debug("Send upload chunk...", "num", num, "item", chunk.ItemID)
+
+			resp, err := s.client.Do(r)
+			if err != nil {
+				return fmt.Errorf("cannot send upload request: %w", err)
+			}
+
+			defer func() {
+				if err := resp.Body.Close(); err != nil {
+					s.logger.Warn("error closing response body", "error", err)
+				}
+			}()
+
+			if resp.StatusCode != http.StatusCreated {
+				return fmt.Errorf("sync status is not OK: %d", resp.StatusCode)
+			}
+		}
+	}
+
+	return nil
 }
 
 func (s *Service) syncGetPage(ctx context.Context, token string, syncLimit int, rev int64) iter.Seq[shrModel.SyncGet] {

@@ -588,17 +588,6 @@ func (repo *ClientRepository) GetToken(ctx context.Context, userID int64) (*mode
 	return &auth, nil
 }
 
-func (repo *ClientRepository) InsertItemChunk(ctx context.Context, itemID string, chunkNum int, ciphertext string) error {
-	sql := "INSERT INTO item_chunks (item_id,chunk_number,ciphertext) VALUES ($1,$2,$3)"
-
-	_, err := repo.con.ExecContext(ctx, sql, itemID, chunkNum, ciphertext)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (repo *ClientRepository) CreateItemForHugeText(ctx context.Context, userID int64, title string) (string, error) {
 	tx, err := repo.con.BeginTx(ctx, nil)
 	if err != nil {
@@ -635,6 +624,10 @@ func (repo *ClientRepository) CreateItemForHugeText(ctx context.Context, userID 
 		return "", err
 	}
 
+	if err := repo.CreatePendingChangeTx(ctx, tx, itemID, enum.OpCreate, userID); err != nil {
+		return "", fmt.Errorf("cannot create pending changes: %w", err)
+	}
+
 	if err := tx.Commit(); err != nil {
 		return "", fmt.Errorf("commit transaction: %w", err)
 	}
@@ -642,8 +635,8 @@ func (repo *ClientRepository) CreateItemForHugeText(ctx context.Context, userID 
 	return itemID, nil
 }
 
-func (repo *ClientRepository) GetTextHugeData(ctx context.Context, itemID string) iter.Seq[models.TextRepo] {
-	return func(yield func(models.TextRepo) bool) {
+func (repo *ClientRepository) GetTextHugeData(ctx context.Context, itemID string) iter.Seq[shrModel.ChunkRepo] {
+	return func(yield func(shrModel.ChunkRepo) bool) {
 		sql := "SELECT item_id, chunk_number, ciphertext FROM item_chunks WHERE item_id=$1 ORDER BY chunk_number ASC;"
 
 		rows, err := repo.con.QueryContext(ctx, sql, itemID)
@@ -659,7 +652,7 @@ func (repo *ClientRepository) GetTextHugeData(ctx context.Context, itemID string
 		}()
 
 		for rows.Next() {
-			var item models.TextRepo
+			var item shrModel.ChunkRepo
 
 			if err := rows.Scan(
 				&item.ItemID,

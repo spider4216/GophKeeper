@@ -10,6 +10,7 @@ import (
 
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 	"github.com/spider4216/GophKeeper/internal/server/config"
+	"github.com/spider4216/GophKeeper/internal/server/models"
 	"github.com/spider4216/GophKeeper/internal/server/services"
 )
 
@@ -263,6 +264,62 @@ func (h Handler) SyncOut(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	if _, err := w.Write(b); err != nil {
+		h.logger.Error("failed to write response", "error", err)
+	}
+}
+
+func (h Handler) SaveChunk(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	// Получаем тело запроса
+	// todo в конфиг
+	r.Body = http.MaxBytesReader(w, r.Body, 253600)
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		h.logger.Error("failed read body", "error", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	var req models.ChunkPutReq
+
+	if err := json.Unmarshal(body, &req); err != nil {
+		h.logger.Error("failed read unmarshal", "error", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	itemID := r.PathValue("itemID")
+	chunkNumRaw := r.PathValue("num")
+
+	if itemID == "" || chunkNumRaw == "" {
+		h.logger.Error("cannot get itemID and chunk num")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// userID := h.service.GetUserIdFromCtx(ctx)
+
+	// todo получить item по ID и пользователю, если нету - то ошибка
+
+	chunkNum, err := strconv.Atoi(chunkNumRaw)
+
+	if err != nil {
+		h.logger.Error("cannot convert chunk num to int")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if err := h.service.InsertItemChunk(ctx, itemID, chunkNum, req.Ciphertext); err != nil {
+		h.logger.Error("cannot insert item chunk")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+
+	if _, err := w.Write(nil); err != nil {
 		h.logger.Error("failed to write response", "error", err)
 	}
 }

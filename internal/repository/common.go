@@ -151,3 +151,51 @@ func (repo *CommonRepository) UpdateMetaByItemIDAndKeyTx(ctx context.Context, tx
 
 	return nil
 }
+
+func (repo *CommonRepository) InsertItemChunk(ctx context.Context, itemID string, chunkNum int, ciphertext string) error {
+	sql := "INSERT INTO item_chunks (item_id,chunk_number,ciphertext) VALUES ($1,$2,$3)"
+
+	_, err := repo.con.ExecContext(ctx, sql, itemID, chunkNum, ciphertext)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repo *CommonRepository) GetItemChunks(ctx context.Context, itemID string) ([]shrModel.ChunkRepo, error) {
+	// todo yield
+	sql := "SELECT item_id, chunk_number, ciphertext FROM item_chunks WHERE item_id = $1;"
+	rows, err := repo.con.QueryContext(ctx, sql, itemID)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err := rows.Close(); err != nil {
+			repo.logger.Warn("Cannot close rows", "error", err)
+		}
+	}()
+
+	var items []shrModel.ChunkRepo
+
+	for rows.Next() {
+		var item shrModel.ChunkRepo
+
+		if err := rows.Scan(
+			&item.ItemID,
+			&item.ChunkNumber,
+			&item.Ciphertext,
+		); err != nil {
+			return nil, err
+		}
+
+		items = append(items, item)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}

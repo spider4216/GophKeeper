@@ -23,4 +23,6 @@ type CommonRepositoryInterface interface {
 	CreateMetaTx(ctx context.Context, tx *sql.Tx, itemID string, k string, v string) (int64, error)
 	UpdateMetaByIDTx(ctx context.Context, tx *sql.Tx, id int64, userID int64, v string) error
 	UpdateMetaByItemIDAndKeyTx(ctx context.Context, tx *sql.Tx, itemID string, key string, v string) error
+	InsertItemChunk(ctx context.Context, itemID string, chunkNum int, ciphertext string) error
+	GetItemChunks(ctx context.Context, itemID string) ([]shrModel.ChunkRepo, error)
 }
