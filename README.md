@@ -261,6 +261,13 @@ go run ./cmd/client create-text --path= --user-id= --title=
 make client-create-text path= userid= title=
 ```
 
+### Отображение произвольного текста
+
+```
+go run ./cmd/client get-text --user-id= --item-id=
+make client-get-text userid= itemid=
+```
+
 ## Сертификаты
 
 Сервис может работать в режиме HTTPS. Для активации этого режима нужно на сервере установить значение для переменной окружения ENABLE_HTTPS

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"iter"
 	"log/slog"
 
 	"github.com/google/uuid"
@@ -641,4 +642,44 @@ func (repo *ClientRepository) CreateItemForHugeText(ctx context.Context, userID 
 	}
 
 	return itemID, nil
+}
+
+func (repo *ClientRepository) GetTextHugeData(ctx context.Context, itemID string) iter.Seq[models.TextRepo] {
+	return func(yield func(models.TextRepo) bool) {
+		sql := "SELECT item_id, chunk_number, ciphertext FROM item_chunks WHERE item_id=$1 ORDER BY chunk_number ASC;"
+
+		rows, err := repo.con.QueryContext(ctx, sql, itemID)
+		if err != nil {
+			repo.logger.Error("Cannot get text data", "error", err)
+			return
+		}
+
+		defer func() {
+			if err := rows.Close(); err != nil {
+				repo.logger.Warn("Cannot close rows", "error", err)
+			}
+		}()
+
+		for rows.Next() {
+			var item models.TextRepo
+
+			if err := rows.Scan(
+				&item.ItemID,
+				&item.ChunkNumber,
+				&item.Ciphertext,
+			); err != nil {
+				repo.logger.Error("cannot scan text data", "error", err)
+				return
+			}
+
+			if !yield(item) {
+				return
+			}
+		}
+
+		if err := rows.Err(); err != nil {
+			repo.logger.Error("row error in get text data", "error", err)
+			return
+		}
+	}
 }

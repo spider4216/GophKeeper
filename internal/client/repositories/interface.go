@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"database/sql"
+	"iter"
 
 	"github.com/spider4216/GophKeeper/internal/client/models"
 	"github.com/spider4216/GophKeeper/internal/enum"
@@ -39,4 +40,5 @@ type Repository interface {
 	GetToken(ctx context.Context, userID int64) (*models.Auth, error)
 	CreateItemForHugeText(ctx context.Context, userID int64, title string) (string, error)
 	InsertItemChunk(ctx context.Context, itemID string, chunkNum int, ciphertext string) error
+	GetTextHugeData(ctx context.Context, itemID string) iter.Seq[models.TextRepo]
 }

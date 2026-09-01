@@ -48,6 +48,9 @@ client-version:
 client-create-text:
 	SERVER_HOST=${SERVER_HOST} JWT_KEY=${JWT_KEY} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client create-text --path=${path} --user-id=${userid} --title=${title}
 
+client-get-text:
+	SERVER_HOST=${SERVER_HOST} JWT_KEY=${JWT_KEY} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client get-text --user-id=${userid} --item-id=${itemid}
+
 migration-gen:
 	migrate create -ext sql -dir ./migrations/${path} -seq $(name)
 

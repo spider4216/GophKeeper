@@ -61,6 +61,8 @@ func main() {
 		msg, err = cmd.PrintVersion()
 	case commands.CreateText:
 		msg, err = cmd.CreateText(ctx, app.args)
+	case commands.GetText:
+		msg, err = cmd.GetText(ctx, app.args)
 	default:
 		err = errors.New("command not found")
 	}
