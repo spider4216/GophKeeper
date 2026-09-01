@@ -264,7 +264,6 @@ func (s *Service) SaveHugeText(ctx context.Context, userID int64, title string, 
 	}
 
 	file, err := os.Open(filepath)
-
 	if err != nil {
 		return fmt.Errorf("cannot open file for huge text: %w", err)
 	}
@@ -280,7 +279,6 @@ func (s *Service) SaveHugeText(ctx context.Context, userID int64, title string, 
 		// Если в чанке есть данные
 		if n > 0 {
 			encrypted, err := s.EncryptData(buf, []byte(key))
-
 			if err != nil {
 				return fmt.Errorf("cannot encrypt chunk: %d, %w", chunkNum, err)
 			}
@@ -310,7 +308,6 @@ func (s *Service) SaveHugeText(ctx context.Context, userID int64, title string, 
 func (s *Service) GetHugeText(ctx context.Context, userID int64, itemID string, key string, w io.Writer) error {
 	for chunk := range s.repo.GetTextHugeData(ctx, itemID) {
 		decrypted, err := s.DecryptData(chunk.Ciphertext, []byte(key))
-
 		if err != nil {
 			return fmt.Errorf("cannot decrypt chunk %d, %w", chunk.ChunkNumber, err)
 		}

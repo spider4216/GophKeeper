@@ -626,13 +626,11 @@ func (repo *ClientRepository) CreateItemForHugeText(ctx context.Context, userID 
 	// Создаем Metadata для свободного текста
 	// todo errgroup
 	_, err = repo.GetCommonRepo().CreateMetaTx(ctx, tx, itemID, "title", title)
-
 	if err != nil {
 		return "", err
 	}
 
 	_, err = repo.GetCommonRepo().CreateMetaTx(ctx, tx, itemID, "encoding", "UTF-8")
-
 	if err != nil {
 		return "", err
 	}
