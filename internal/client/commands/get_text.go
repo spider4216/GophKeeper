@@ -27,7 +27,7 @@ func (c *Command) GetText(ctx context.Context, args []string) (string, error) {
 		return "", err
 	}
 
-	if err := c.Service.GetHugeText(ctx, auth.UserID, *itemID, c.Cfg.EncryptKey, os.Stdout); err != nil {
+	if err := c.Service.GetBinaryData(ctx, auth.UserID, *itemID, c.Cfg.EncryptKey, os.Stdout); err != nil {
 		return "", fmt.Errorf("cannot get huge text: %w", err)
 	}
 

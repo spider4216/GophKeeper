@@ -27,6 +27,10 @@ const (
 	Version         CmdName = "version"
 	CreateText      CmdName = "create-text"
 	GetText         CmdName = "get-text"
+	CreateBinary    CmdName = "create-binary"
+	DownloadBinary  CmdName = "download-binary"
+
+	MetaFileName string = "Filename"
 )
 
 type CommandInterface interface {
@@ -42,6 +46,8 @@ type CommandInterface interface {
 	PrintVersion() (string, error)
 	CreateText(ctx context.Context, args []string) (string, error)
 	GetText(ctx context.Context, args []string) (string, error)
+	CreateBinary(ctx context.Context, args []string) (string, error)
+	DownloadBinary(ctx context.Context, args []string) (string, error)
 }
 
 type Command struct {

@@ -14,7 +14,6 @@ import (
 	"github.com/spider4216/GophKeeper/internal/enum"
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 	commonRep "github.com/spider4216/GophKeeper/internal/repository"
-	"golang.org/x/sync/errgroup"
 )
 
 // PgxStorage хранилище где данные складываются в БД PostgreSQL.
@@ -602,7 +601,7 @@ func (repo *ClientRepository) CreateItemForBinary(ctx context.Context, userID in
 
 	defer func() {
 		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
-			repo.logger.Warn("cannot rollback in save huge text", "error", err)
+			repo.logger.Warn("cannot rollback in save binary", "error", err)
 		}
 	}()
 
@@ -615,23 +614,15 @@ func (repo *ClientRepository) CreateItemForBinary(ctx context.Context, userID in
 	// Создаем Item
 	itemID, err := repo.CreateItemTx(ctx, tx, item)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("cannot create item in binary: %w", err)
 	}
-
-	g, groupCtx := errgroup.WithContext(ctx)
-	g.SetLimit(3)
 
 	for _, m := range meta {
-		g.Go(func() error {
-			var err error
-			_, err = repo.GetCommonRepo().CreateMetaTx(groupCtx, tx, itemID, m.Key, m.Value)
+		_, err = repo.GetCommonRepo().CreateMetaTx(ctx, tx, itemID, m.Key, m.Value)
 
-			return err
-		})
-	}
-
-	if err := g.Wait(); err != nil {
-		return "", err
+		if err != nil {
+			return "", fmt.Errorf("cannot create metadata in binary: %w", err)
+		}
 	}
 
 	if err := repo.CreatePendingChangeTx(ctx, tx, itemID, enum.OpCreate, userID); err != nil {
@@ -645,7 +636,7 @@ func (repo *ClientRepository) CreateItemForBinary(ctx context.Context, userID in
 	return itemID, nil
 }
 
-func (repo *ClientRepository) GetTextHugeData(ctx context.Context, itemID string) iter.Seq[shrModel.ChunkRepo] {
+func (repo *ClientRepository) GetBinaryData(ctx context.Context, itemID string) iter.Seq[shrModel.ChunkRepo] {
 	return func(yield func(shrModel.ChunkRepo) bool) {
 		sql := "SELECT item_id, chunk_number, ciphertext FROM item_chunks WHERE item_id=$1 ORDER BY chunk_number ASC;"
 

@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"path/filepath"
 )
 
-func (c *Command) CreateText(ctx context.Context, args []string) (string, error) {
-	fs := flag.NewFlagSet(CreateText.String(), flag.ExitOnError)
+func (c *Command) CreateBinary(ctx context.Context, args []string) (string, error) {
+	fs := flag.NewFlagSet(CreateBinary.String(), flag.ExitOnError)
 
 	title := fs.String("title", "", "Title")
 	userID := fs.Int64("user-id", 0, "User ID")
@@ -28,12 +29,13 @@ func (c *Command) CreateText(ctx context.Context, args []string) (string, error)
 
 	meta := map[string]string{
 		"Title":       *title,
-		"ContentType": "text",
+		"ContentType": "binary",
+		MetaFileName:  filepath.Base(*filePath),
 	}
 
 	if err := c.Service.SaveBinary(ctx, auth.UserID, meta, *filePath, c.Cfg.EncryptKey); err != nil {
 		return "", err
 	}
 
-	return "Text was successfully saved", nil
+	return "Binary was successfully saved", nil
 }

@@ -268,6 +268,20 @@ go run ./cmd/client get-text --user-id= --item-id=
 make client-get-text userid= itemid=
 ```
 
+### Создание Binary
+
+```
+go run ./cmd/client create-binary --user-id= --title= --path=
+make client-create-binary title= userid= path=
+```
+
+### Загрузка Binary
+
+```
+go run ./cmd/client download-binary --user-id= --item-id= --out=
+make client-download-binary userid= itemid= out=
+```
+
 ## Сертификаты
 
 Сервис может работать в режиме HTTPS. Для активации этого режима нужно на сервере установить значение для переменной окружения ENABLE_HTTPS

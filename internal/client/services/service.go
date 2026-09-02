@@ -315,8 +315,8 @@ func (s *Service) SaveBinary(ctx context.Context, userID int64, meta map[string]
 	return nil
 }
 
-func (s *Service) GetHugeText(ctx context.Context, userID int64, itemID string, key string, w io.Writer) error {
-	for chunk := range s.repo.GetTextHugeData(ctx, itemID) {
+func (s *Service) GetBinaryData(ctx context.Context, userID int64, itemID string, key string, w io.Writer) error {
+	for chunk := range s.repo.GetBinaryData(ctx, itemID) {
 		decrypted, err := s.DecryptData(chunk.Ciphertext, []byte(key))
 		if err != nil {
 			return fmt.Errorf("cannot decrypt chunk %d, %w", chunk.ChunkNumber, err)

@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/spider4216/GophKeeper/internal/client/commands"
 	"github.com/spider4216/GophKeeper/internal/client/services"
@@ -32,8 +34,8 @@ func main() {
 
 	cmd := commands.New(service, app.cfg, app.logger)
 
-	ctx, cancel := context.WithTimeout(context.Background(), app.cfg.CtxTimeout)
-	defer cancel()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
 	var err error
 	var msg string
@@ -63,6 +65,10 @@ func main() {
 		msg, err = cmd.CreateText(ctx, app.args)
 	case commands.GetText:
 		msg, err = cmd.GetText(ctx, app.args)
+	case commands.CreateBinary:
+		msg, err = cmd.CreateBinary(ctx, app.args)
+	case commands.DownloadBinary:
+		msg, err = cmd.DownloadBinary(ctx, app.args)
 	default:
 		err = errors.New("command not found")
 	}
