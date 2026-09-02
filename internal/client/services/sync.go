@@ -210,14 +210,16 @@ func (s *Service) uploadChunk(ctx context.Context, pends []models.PendChangesRep
 				return fmt.Errorf("cannot send upload request: %w", err)
 			}
 
-			defer func() {
+			if resp.StatusCode != http.StatusCreated {
 				if err := resp.Body.Close(); err != nil {
 					s.logger.Warn("error closing response body", "error", err)
 				}
-			}()
 
-			if resp.StatusCode != http.StatusCreated {
-				return fmt.Errorf("sync status is not OK: %d", resp.StatusCode)
+				return fmt.Errorf("upload status is not OK: %d", resp.StatusCode)
+			}
+
+			if err := resp.Body.Close(); err != nil {
+				s.logger.Warn("error closing response body", "error", err)
 			}
 		}
 	}
