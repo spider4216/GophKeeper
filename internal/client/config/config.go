@@ -13,7 +13,7 @@ type Config struct {
 	SrvHost             string        `env:"SERVER_HOST"`                  // Хост сервера
 	TLSHandshakeTimeout time.Duration `env:"TLS_HANDSHAKE_TIMEOUT" envDefault:"3s"`
 	RespHeaderTimeout   time.Duration `env:"RESPONSE_HEADER_TIMEOUT" envDefault:"3s"`
-	DialerTimeout       time.Duration `env:"DEALER_TIMEOUT" envDefault:"5s"`
+	DialerTimeout       time.Duration `env:"DIALER_TIMEOUT" envDefault:"5s"`
 	CliTimeout          time.Duration `env:"CLIENT_TIMEOUT" envDefault:"10s"`
 	CtxTimeout          time.Duration `env:"CTX_TIMEOUT" envDefault:"3s"`
 	SyncChankSize       int           `env:"SYNC_CHANK_SIZE" envDefault:"100"`

@@ -79,7 +79,7 @@ fmt:
 	golangci-lint fmt
 
 crt:
-	go run ./cmd/crtcert
+	go run ./cmd/crt
 
 build-client-linux-amd64:
 	GOOS=linux GOARCH=amd64 go build \
