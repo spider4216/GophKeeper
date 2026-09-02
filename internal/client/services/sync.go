@@ -179,7 +179,6 @@ func (s *Service) uploadChunk(ctx context.Context, pends []models.PendChangesRep
 		// Отправляем чанки
 		for num, chunk := range chunks {
 			num = num + 1
-			// todo семафор
 			path := fmt.Sprintf(chunkURL, i.ID, num)
 
 			url, err := url.JoinPath(s.host, path)
@@ -348,7 +347,6 @@ func (s *Service) downloadsData(ctx context.Context, token string, page shrModel
 		chunkNum := 1
 
 		for {
-			// todo semaphore
 			s.logger.Debug("Download chunk for iten", "chunk", chunkNum, "item", itemID)
 
 			path := fmt.Sprintf("/items/%s/chunks/%d", itemID, chunkNum)

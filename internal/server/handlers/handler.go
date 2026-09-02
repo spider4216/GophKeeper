@@ -280,10 +280,6 @@ func (h Handler) SyncGetChunk(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// userID := h.service.GetUserIdFromCtx(ctx)
-
-	// todo получить item по ID и пользователю, если нету - то ошибка
-
 	chunkNum, err := strconv.Atoi(chunkNumRaw)
 	if err != nil {
 		h.logger.Error("cannot convert chunk num to int")
@@ -351,10 +347,6 @@ func (h Handler) SaveChunk(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
-	// userID := h.service.GetUserIdFromCtx(ctx)
-
-	// todo получить item по ID и пользователю, если нету - то ошибка
 
 	chunkNum, err := strconv.Atoi(chunkNumRaw)
 	if err != nil {
