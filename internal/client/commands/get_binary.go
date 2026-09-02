@@ -30,7 +30,6 @@ func (c *Command) DownloadBinary(ctx context.Context, args []string) (string, er
 	}
 
 	metadata, err := c.Service.GetMetadataByItemID(ctx, *itemID)
-
 	if err != nil {
 		return "", fmt.Errorf("cannot get item id: %w", err)
 	}
@@ -50,7 +49,6 @@ func (c *Command) DownloadBinary(ctx context.Context, args []string) (string, er
 	extPath := filepath.Join(*out, metaName)
 
 	file, err := os.Create(extPath)
-
 	if err != nil {
 		return "", fmt.Errorf("cannot create out file: %w", err)
 	}

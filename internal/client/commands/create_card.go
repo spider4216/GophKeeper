@@ -38,11 +38,10 @@ func (c *Command) CreateCard(ctx context.Context, args []string) (string, error)
 
 	parsedDate, err := time.Parse("02.01.2006", *dateStr)
 	if err != nil {
-		return "", fmt.Errorf("Error parse date: %w", err)
+		return "", fmt.Errorf("error parse date: %w", err)
 	}
 
 	cvc, err := strconv.Atoi(*cvcStr)
-
 	if err != nil {
 		return "", fmt.Errorf("cannot convert cvc to int: %w", err)
 	}

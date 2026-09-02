@@ -619,7 +619,6 @@ func (repo *ClientRepository) CreateItemForBinary(ctx context.Context, userID in
 
 	for _, m := range meta {
 		_, err = repo.GetCommonRepo().CreateMetaTx(ctx, tx, itemID, m.Key, m.Value)
-
 		if err != nil {
 			return "", fmt.Errorf("cannot create metadata in binary: %w", err)
 		}
