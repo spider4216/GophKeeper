@@ -172,6 +172,68 @@ Body
 200 OK
 ```
 
+#### Получение данных (синхронизация)
+
+##### Запрос
+
+```
+GET /sync?since=1
+```
+
+##### Ответ
+
+```
+{
+	"changes": [
+		{
+			"operation": "DELETE",
+			"item": {
+				"id": "ad9cb26f-a066-42c5-a9fa-3b0f1bedd44c",
+				"type": "",
+				"ciphertext": ""
+			},
+			"metadata": null
+		}
+	],
+	"next_revision": 2,
+	"has_more": true
+}
+```
+
+#### Получение чанка
+
+##### Запрос
+
+```
+GET /items/1e29ca13-6e18-4546-b40a-fcb94f2535b0/chunks/19999
+```
+
+##### Ответ
+
+```
+{
+	"ciphertext": "ac216ea9a4b1ff...",
+	"chunk_number": 1
+}
+```
+
+
+#### Отправка чанка
+
+##### Запрос
+
+```
+PUT /items/1e29ca13-6e18-4546-b40a-fcb94f2535b0/chunks/1
+```
+
+##### Ответ
+
+```
+{
+	"ciphertext": "ac216ea9a4b1ff...",
+}
+```
+
 ## Client
 
 ### Команды
