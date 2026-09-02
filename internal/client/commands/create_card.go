@@ -5,7 +5,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/spider4216/GophKeeper/internal/client/models"
@@ -16,19 +15,25 @@ func (c *Command) CreateCard(ctx context.Context, args []string) (string, error)
 
 	pan := fs.String("pan", "", "PAN")
 	dateStr := fs.String("date", "", "Exp date")
-	cvcStr := fs.String("cvc", "", "cvc")
+	cvc := fs.String("cvc", "", "cvc")
 	holder := fs.String("holder", "", "Holder")
 	userID := fs.Int64("user-id", 0, "User ID")
 	title := fs.String("title", "", "Title")
-
-	// todo validate pan and cvc
 
 	if err := fs.Parse(args); err != nil {
 		return "", err
 	}
 
-	if *pan == "" || *dateStr == "" || *cvcStr == "" || *userID == 0 || *holder == "" || *title == "" {
+	if *pan == "" || *dateStr == "" || *cvc == "" || *userID == 0 || *holder == "" || *title == "" {
 		return "", errors.New("pan, date, cvc, holder, title and user-id are required")
+	}
+
+	if !c.Service.ValidatePAN(*pan) {
+		return "", errors.New("validation pan error")
+	}
+
+	if !c.Service.ValidateCVC(*cvc) {
+		return "", errors.New("validation cvc error")
 	}
 
 	auth, err := c.Service.GetToken(ctx, *userID)
@@ -41,14 +46,9 @@ func (c *Command) CreateCard(ctx context.Context, args []string) (string, error)
 		return "", fmt.Errorf("error parse date: %w", err)
 	}
 
-	cvc, err := strconv.Atoi(*cvcStr)
-	if err != nil {
-		return "", fmt.Errorf("cannot convert cvc to int: %w", err)
-	}
-
 	req := models.CardReq{
 		Pan:    *pan,
-		Cvc:    cvc,
+		Cvc:    *cvc,
 		Date:   parsedDate,
 		Holder: *holder,
 		Title:  *title,

@@ -4,7 +4,7 @@ import "time"
 
 type CardReq struct {
 	Pan    string
-	Cvc    int
+	Cvc    string
 	Date   time.Time
 	Holder string
 	Title  string

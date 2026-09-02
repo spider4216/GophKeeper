@@ -51,8 +51,13 @@ func (c *Command) View(ctx context.Context, args []string) (string, error) {
 	var res string
 	var errCmd error
 
-	if item.Type == enum.LoginPass {
+	switch item.Type {
+	case enum.LoginPass:
 		res, errCmd = c.outLoginPass(decrypted, metas)
+	case enum.Card:
+		res, errCmd = c.outCard(decrypted, metas)
+	default:
+		res, errCmd = "", errors.New("undefined type")
 	}
 
 	if errCmd != nil {
@@ -73,6 +78,28 @@ func (c *Command) outLoginPass(decrypted []byte, meta []shrModel.MetadataRepo) (
 
 	fmt.Fprintf(&builder, "Login: %s\n", data.Login)
 	fmt.Fprintf(&builder, "Password: %s\n", data.Pass)
+	fmt.Fprint(&builder, "Meta:\n")
+
+	for _, v := range meta {
+		fmt.Fprintf(&builder, "%d: %s: %s\n", v.ID, v.Key, v.Value)
+	}
+
+	return builder.String(), nil
+}
+
+func (c *Command) outCard(decrypted []byte, meta []shrModel.MetadataRepo) (string, error) {
+	var data models.CardFmt
+
+	if err := json.Unmarshal(decrypted, &data); err != nil {
+		return "", fmt.Errorf("cannot unmaeshall card: %s", err)
+	}
+
+	var builder strings.Builder
+
+	fmt.Fprintf(&builder, "PAN: %s\n", data.Pan)
+	fmt.Fprintf(&builder, "CVC: %s\n", data.Cvc)
+	fmt.Fprintf(&builder, "Holder: %s\n", data.Holder)
+	fmt.Fprintf(&builder, "Date: %s\n", data.Date.Format("02.01.2006"))
 	fmt.Fprint(&builder, "Meta:\n")
 
 	for _, v := range meta {
