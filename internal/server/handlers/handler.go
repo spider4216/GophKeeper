@@ -54,8 +54,6 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// todo валидация почты и пароля
-
 	userID, err := h.service.CreateUser(ctx, req.Email, req.Pass)
 
 	if err != nil && h.service.IsErrAsDuplicate(err) {
@@ -328,9 +326,7 @@ func (h Handler) SyncGetChunk(w http.ResponseWriter, r *http.Request) {
 func (h Handler) SaveChunk(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	// Получаем тело запроса
-	// todo в конфиг
-	r.Body = http.MaxBytesReader(w, r.Body, 253600)
+	r.Body = http.MaxBytesReader(w, r.Body, h.cfg.ChunkBodySize)
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {

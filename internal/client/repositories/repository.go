@@ -402,7 +402,6 @@ func (repo *ClientRepository) DeleteUserItem(ctx context.Context, itemID string,
 		return fmt.Errorf("cannot create pending: %w", err)
 	}
 
-	// todo send req only when it need
 	if err := repo.GetCommonRepo().DeleteChunksByItemIDTx(ctx, tx, itemID); err != nil {
 		return fmt.Errorf("cannot delete chunks: %w", err)
 	}

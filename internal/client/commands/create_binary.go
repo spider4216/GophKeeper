@@ -33,7 +33,7 @@ func (c *Command) CreateBinary(ctx context.Context, args []string) (string, erro
 		MetaFileName:  filepath.Base(*filePath),
 	}
 
-	if err := c.Service.SaveBinary(ctx, auth.UserID, meta, *filePath, c.Cfg.EncryptKey); err != nil {
+	if err := c.Service.SaveBinary(ctx, auth.UserID, meta, *filePath, c.Cfg.EncryptKey, c.Cfg.PartSize); err != nil {
 		return "", err
 	}
 

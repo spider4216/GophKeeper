@@ -31,7 +31,7 @@ func (c *Command) CreateText(ctx context.Context, args []string) (string, error)
 		"ContentType": "text",
 	}
 
-	if err := c.Service.SaveBinary(ctx, auth.UserID, meta, *filePath, c.Cfg.EncryptKey); err != nil {
+	if err := c.Service.SaveBinary(ctx, auth.UserID, meta, *filePath, c.Cfg.EncryptKey, c.Cfg.PartSize); err != nil {
 		return "", err
 	}
 

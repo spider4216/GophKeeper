@@ -175,7 +175,6 @@ func (repo *CommonRepository) InsertItemChunk(ctx context.Context, itemID string
 }
 
 func (repo *CommonRepository) GetItemChunks(ctx context.Context, itemID string) ([]shrModel.ChunkRepo, error) {
-	// todo yield
 	sql := "SELECT item_id, chunk_number, ciphertext FROM item_chunks WHERE item_id = $1;"
 	rows, err := repo.con.QueryContext(ctx, sql, itemID)
 	if err != nil {

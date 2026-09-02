@@ -16,7 +16,8 @@ import (
 )
 
 const (
-	syncURL string = "/sync"
+	syncURL  string = "/sync"
+	chunkURL string = "/items/%s/chunks/%d"
 )
 
 func (s *Service) SyncSend(ctx context.Context, userID int64, token string, syncChunkSize int) error {
@@ -145,7 +146,6 @@ func (s *Service) syncChunkSend(ctx context.Context, userID int64, token string,
 }
 
 func (s *Service) uploadChunk(ctx context.Context, pends []models.PendChangesRepo, token string) error {
-	// todo dry
 	itemIDs := s.pendingItemIDs(pends)
 
 	items, err := s.repo.GetItemsByIDs(ctx, itemIDs)
@@ -170,7 +170,6 @@ func (s *Service) uploadChunk(ctx context.Context, pends []models.PendChangesRep
 	s.logger.Debug("uploads count", "count", len(items))
 
 	for _, i := range filtered {
-		// todo здесь также можно распаралелить синхронизацию между items
 		// получаем чанки item
 		chunks, err := s.repo.GetCommonRepo().GetItemChunks(ctx, i.ID)
 		if err != nil {
@@ -181,8 +180,7 @@ func (s *Service) uploadChunk(ctx context.Context, pends []models.PendChangesRep
 		for num, chunk := range chunks {
 			num = num + 1
 			// todo семафор
-			// todo into const
-			path := fmt.Sprintf("/items/%s/chunks/%d", i.ID, num)
+			path := fmt.Sprintf(chunkURL, i.ID, num)
 
 			url, err := url.JoinPath(s.host, path)
 			if err != nil {

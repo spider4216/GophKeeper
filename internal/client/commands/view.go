@@ -16,7 +16,6 @@ import (
 func (c *Command) View(ctx context.Context, args []string) (string, error) {
 	fs := flag.NewFlagSet(View.String(), flag.ExitOnError)
 
-	// todo validation
 	itemID := fs.String("item_id", "", "Item ID")
 	userID := fs.Int64("user-id", 0, "User ID from server")
 

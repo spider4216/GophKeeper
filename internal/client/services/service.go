@@ -21,9 +21,6 @@ import (
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 )
 
-// todo в конфиг
-const chunkSize = 100 * 1024 // 100 KB
-
 type Option func(*Service) error
 
 type Service struct {
@@ -285,7 +282,7 @@ func (s *Service) CreateUserPassItem(ctx context.Context, data models.LoginPassR
 	return s.repo.CreateUserPassItem(ctx, item, userID, data.Title)
 }
 
-func (s *Service) SaveBinary(ctx context.Context, userID int64, meta map[string]string, filepath string, key string) error {
+func (s *Service) SaveBinary(ctx context.Context, userID int64, meta map[string]string, filepath string, key string, kbpart int) error {
 	// Создаем Item и Metadata
 
 	var metadata []shrModel.MetadataRepo
@@ -308,7 +305,7 @@ func (s *Service) SaveBinary(ctx context.Context, userID int64, meta map[string]
 	}
 
 	// Буфер для чанка
-	buf := make([]byte, chunkSize)
+	buf := make([]byte, kbpart)
 
 	chunkNum := 1
 

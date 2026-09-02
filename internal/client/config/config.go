@@ -18,6 +18,7 @@ type Config struct {
 	CtxTimeout          time.Duration `env:"CTX_TIMEOUT" envDefault:"3s"`
 	SyncChankSize       int           `env:"SYNC_CHANK_SIZE" envDefault:"100"`
 	SyncLimit           int           `env:"SYNC_LIMIT" envDefault:"100"`
+	PartSize            int           `env:"PART_SIZE" envDefault:"102400"` // Размер чанка бинарных данных в КБ
 }
 
 func New() (*Config, error) {

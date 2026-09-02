@@ -19,6 +19,7 @@ type Config struct {
 	Https         bool          `env:"ENABLE_HTTPS" json:"enable_https"`                      // Режим HTTPS
 	PKPath        string        `env:"PK_PATH" envDefault:"certs/private.pem" json:"pk_path"` // Путь до приватного ключа для режимо HTTPS
 	CrtPath       string        `env:"CRT_PATH" envDefault:"certs/cert.pem" json:"crt_path"`  // Путь до сертификата для режимо HTTPS
+	ChunkBodySize int64         `env:"CHUNK_BODY_SIZE" envDefault:"253600"`
 }
 
 func New() (*Config, error) {
