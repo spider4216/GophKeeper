@@ -69,6 +69,8 @@ func main() {
 		msg, err = cmd.CreateBinary(ctx, app.args)
 	case commands.DownloadBinary:
 		msg, err = cmd.DownloadBinary(ctx, app.args)
+	case commands.CreateCard:
+		msg, err = cmd.CreateCard(ctx, app.args)
 	default:
 		err = errors.New("command not found")
 	}

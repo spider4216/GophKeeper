@@ -29,6 +29,7 @@ const (
 	GetText         CmdName = "get-text"
 	CreateBinary    CmdName = "create-binary"
 	DownloadBinary  CmdName = "download-binary"
+	CreateCard      CmdName = "create-card"
 
 	MetaFileName string = "Filename"
 )
@@ -48,6 +49,7 @@ type CommandInterface interface {
 	GetText(ctx context.Context, args []string) (string, error)
 	CreateBinary(ctx context.Context, args []string) (string, error)
 	DownloadBinary(ctx context.Context, args []string) (string, error)
+	CreateCard(ctx context.Context, args []string) (string, error)
 }
 
 type Command struct {

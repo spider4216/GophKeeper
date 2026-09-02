@@ -229,6 +229,35 @@ func (s *Service) GetMetadataByItemID(ctx context.Context, itemID string) ([]shr
 	return s.repo.GetMetadataByItemID(ctx, itemID)
 }
 
+func (s *Service) CreateCardItem(ctx context.Context, data models.CardReq, key string, userID int64) error {
+	// Формат хранения для типа
+	d := models.CardFmt{
+		Pan:    data.Pan,
+		Cvc:    data.Cvc,
+		Date:   data.Date,
+		Holder: data.Holder,
+	}
+
+	b, err := json.Marshal(d)
+	if err != nil {
+		return err
+	}
+
+	encrypted, err := s.EncryptData(b, []byte(key))
+	if err != nil {
+		return err
+	}
+
+	item := models.ItemRepo{
+		ID:         uuid.NewString(),
+		Type:       enum.Card,
+		Ciphertext: encrypted,
+		UserID:     userID,
+	}
+
+	return s.repo.CreateUserPassItem(ctx, item, userID, data.Title)
+}
+
 func (s *Service) CreateUserPassItem(ctx context.Context, data models.LoginPassReq, key string, userID int64) error {
 	// Формат хранения для типа
 	d := models.LoginPassFmt{

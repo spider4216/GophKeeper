@@ -282,6 +282,13 @@ go run ./cmd/client download-binary --user-id= --item-id= --out=
 make client-download-binary userid= itemid= out=
 ```
 
+### Создание карты
+
+```
+go run ./cmd/client create-card --pan= --date=  --cvc= --holder= --user-id= --title=
+make client-create-card pan= date= cvc= holder= userid= title=
+```
+
 ## Сертификаты
 
 Сервис может работать в режиме HTTPS. Для активации этого режима нужно на сервере установить значение для переменной окружения ENABLE_HTTPS
