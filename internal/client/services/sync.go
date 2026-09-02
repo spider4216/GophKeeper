@@ -149,16 +149,15 @@ func (s *Service) uploadChunk(ctx context.Context, pends []models.PendChangesRep
 	itemIDs := s.pendingItemIDs(pends)
 
 	items, err := s.repo.GetItemsByIDs(ctx, itemIDs)
-
 	if err != nil {
 		return err
 	}
 
-	// Оставляем только items с типом text
+	// Оставляем только items с типом binary
 	var filtered []models.ItemRepo
 
 	for _, item := range items {
-		if item.Type == enum.Text {
+		if item.Type == enum.Binary {
 			filtered = append(filtered, item)
 		}
 	}
@@ -195,7 +194,6 @@ func (s *Service) uploadChunk(ctx context.Context, pends []models.PendChangesRep
 			}
 
 			data, err := json.Marshal(req)
-
 			if err != nil {
 				return err
 			}
@@ -332,10 +330,10 @@ func (s *Service) SyncGet(ctx context.Context, userID int64, token string, syncL
 }
 
 func (s *Service) downloadsData(ctx context.Context, token string, page shrModel.SyncGet) error {
-	// Извлекаем идентификаторы страницы с Items которые имеют тип text
+	// Извлекаем идентификаторы страницы с Items которые имеют тип binary
 	var itemIDs []string
 	for _, change := range page.Changes {
-		if change.Item.Type == enum.Text.String() {
+		if change.Item.Type == enum.Binary.String() {
 			itemIDs = append(itemIDs, change.Item.ID)
 		}
 	}
@@ -352,6 +350,7 @@ func (s *Service) downloadsData(ctx context.Context, token string, page shrModel
 		chunkNum := 1
 
 		for {
+			// todo semaphore
 			s.logger.Debug("Download chunk for iten", "chunk", chunkNum, "item", itemID)
 
 			path := fmt.Sprintf("/items/%s/chunks/%d", itemID, chunkNum)

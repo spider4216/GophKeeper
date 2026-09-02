@@ -344,7 +344,6 @@ func (repo *SrvRepository) syncDelete(ctx context.Context, tx *sql.Tx, itemID st
 		return fmt.Errorf("cannot delete sync changes: %w", err)
 	}
 
-	// todo delete chanks only when it need
 	if err := repo.GetCommonRepo().DeleteChunksByItemIDTx(ctx, tx, itemID); err != nil {
 		return fmt.Errorf("cannot delete chunks: %w", err)
 	}

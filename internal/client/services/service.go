@@ -256,16 +256,26 @@ func (s *Service) CreateUserPassItem(ctx context.Context, data models.LoginPassR
 	return s.repo.CreateUserPassItem(ctx, item, userID, data.Title)
 }
 
-func (s *Service) SaveHugeText(ctx context.Context, userID int64, title string, filepath string, key string) error {
+func (s *Service) SaveBinary(ctx context.Context, userID int64, meta map[string]string, filepath string, key string) error {
 	// Создаем Item и Metadata
-	itemID, err := s.repo.CreateItemForHugeText(ctx, userID, title)
+
+	var metadata []shrModel.MetadataRepo
+
+	for k, v := range meta {
+		metadata = append(metadata, shrModel.MetadataRepo{
+			Key:   k,
+			Value: v,
+		})
+	}
+
+	itemID, err := s.repo.CreateItemForBinary(ctx, userID, metadata)
 	if err != nil {
-		return fmt.Errorf("cannot create item with metadata for huge text: %w", err)
+		return fmt.Errorf("cannot create item with metadata for binary: %w", err)
 	}
 
 	file, err := os.Open(filepath)
 	if err != nil {
-		return fmt.Errorf("cannot open file for huge text: %w", err)
+		return fmt.Errorf("cannot open file for binary: %w", err)
 	}
 
 	// Буфер для чанка

@@ -14,6 +14,7 @@ import (
 	"github.com/spider4216/GophKeeper/internal/enum"
 	shrModel "github.com/spider4216/GophKeeper/internal/model"
 	commonRep "github.com/spider4216/GophKeeper/internal/repository"
+	"golang.org/x/sync/errgroup"
 )
 
 // PgxStorage хранилище где данные складываются в БД PostgreSQL.
@@ -593,7 +594,7 @@ func (repo *ClientRepository) GetToken(ctx context.Context, userID int64) (*mode
 	return &auth, nil
 }
 
-func (repo *ClientRepository) CreateItemForHugeText(ctx context.Context, userID int64, title string) (string, error) {
+func (repo *ClientRepository) CreateItemForBinary(ctx context.Context, userID int64, meta []shrModel.MetadataRepo) (string, error) {
 	tx, err := repo.con.BeginTx(ctx, nil)
 	if err != nil {
 		return "", fmt.Errorf("begin transaction: %w", err)
@@ -607,7 +608,7 @@ func (repo *ClientRepository) CreateItemForHugeText(ctx context.Context, userID 
 
 	item := models.ItemRepo{
 		ID:     uuid.NewString(),
-		Type:   enum.Text,
+		Type:   enum.Binary,
 		UserID: userID,
 	}
 
@@ -617,15 +618,19 @@ func (repo *ClientRepository) CreateItemForHugeText(ctx context.Context, userID 
 		return "", err
 	}
 
-	// Создаем Metadata для свободного текста
-	// todo errgroup
-	_, err = repo.GetCommonRepo().CreateMetaTx(ctx, tx, itemID, "title", title)
-	if err != nil {
-		return "", err
+	g, groupCtx := errgroup.WithContext(ctx)
+	g.SetLimit(3)
+
+	for _, m := range meta {
+		g.Go(func() error {
+			var err error
+			_, err = repo.GetCommonRepo().CreateMetaTx(groupCtx, tx, itemID, m.Key, m.Value)
+
+			return err
+		})
 	}
 
-	_, err = repo.GetCommonRepo().CreateMetaTx(ctx, tx, itemID, "encoding", "UTF-8")
-	if err != nil {
+	if err := g.Wait(); err != nil {
 		return "", err
 	}
 

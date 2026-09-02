@@ -287,7 +287,6 @@ func (h Handler) SyncGetChunk(w http.ResponseWriter, r *http.Request) {
 	// todo получить item по ID и пользователю, если нету - то ошибка
 
 	chunkNum, err := strconv.Atoi(chunkNumRaw)
-
 	if err != nil {
 		h.logger.Error("cannot convert chunk num to int")
 		w.WriteHeader(http.StatusBadRequest)
@@ -295,7 +294,6 @@ func (h Handler) SyncGetChunk(w http.ResponseWriter, r *http.Request) {
 	}
 
 	chunk, err := h.service.GetItemChunk(ctx, itemID, chunkNum)
-
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			h.logger.Error("record not found")
@@ -314,7 +312,6 @@ func (h Handler) SyncGetChunk(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data, err := json.Marshal(resp)
-
 	if err != nil {
 		h.logger.Error("cannot marshal response")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -326,7 +323,6 @@ func (h Handler) SyncGetChunk(w http.ResponseWriter, r *http.Request) {
 	if _, err := w.Write(data); err != nil {
 		h.logger.Error("failed to write response", "error", err)
 	}
-
 }
 
 func (h Handler) SaveChunk(w http.ResponseWriter, r *http.Request) {
@@ -365,7 +361,6 @@ func (h Handler) SaveChunk(w http.ResponseWriter, r *http.Request) {
 	// todo получить item по ID и пользователю, если нету - то ошибка
 
 	chunkNum, err := strconv.Atoi(chunkNumRaw)
-
 	if err != nil {
 		h.logger.Error("cannot convert chunk num to int")
 		w.WriteHeader(http.StatusBadRequest)

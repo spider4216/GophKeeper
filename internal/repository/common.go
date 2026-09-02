@@ -217,7 +217,6 @@ func (repo *CommonRepository) GetItemChunk(ctx context.Context, itemID string, c
 	var item shrModel.ChunkRepo
 
 	err := repo.con.QueryRowContext(ctx, sql, itemID, chunkNum).Scan(&item.ItemID, &item.ChunkNumber, &item.Ciphertext)
-
 	if err != nil {
 		return nil, err
 	}

@@ -26,7 +26,11 @@ func (c *Command) CreateText(ctx context.Context, args []string) (string, error)
 		return "", err
 	}
 
-	if err := c.Service.SaveHugeText(ctx, auth.UserID, *title, *filePath, c.Cfg.EncryptKey); err != nil {
+	meta := map[string]string{
+		"Title": *title,
+	}
+
+	if err := c.Service.SaveBinary(ctx, auth.UserID, meta, *filePath, c.Cfg.EncryptKey); err != nil {
 		return "", err
 	}
 
