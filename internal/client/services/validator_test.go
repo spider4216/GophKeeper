@@ -25,6 +25,40 @@ func prepareService() (*Service, error) {
 	)
 }
 
+func TestValidateCVC(t *testing.T) {
+	service, err := prepareService()
+
+	require.NoError(t, err)
+
+	cases := []struct {
+		name      string
+		cvc       string
+		exprected bool
+	}{
+		{
+			name:      "case negative #1",
+			cvc:       "123444",
+			exprected: false,
+		},
+		{
+			name:      "case positive #2",
+			cvc:       "123",
+			exprected: true,
+		},
+		{
+			name:      "case positive #3",
+			cvc:       "024",
+			exprected: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.exprected, service.ValidateCVC(tc.cvc))
+		})
+	}
+}
+
 func TestValidatePAN(t *testing.T) {
 	service, err := prepareService()
 
