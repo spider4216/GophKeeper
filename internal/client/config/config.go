@@ -19,6 +19,7 @@ type Config struct {
 	SyncChankSize       int           `env:"SYNC_CHANK_SIZE" envDefault:"100"`
 	SyncLimit           int           `env:"SYNC_LIMIT" envDefault:"100"`
 	PartSize            int           `env:"PART_SIZE" envDefault:"102400"` // Размер чанка бинарных данных в КБ
+	CACertPath          string        `env:"CA_CERT_PATH" envDefault:"certs/cert.pem"`
 }
 
 func New() (*Config, error) {

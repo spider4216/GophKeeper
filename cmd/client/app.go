@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -107,12 +108,23 @@ func (a *app) initLogger() error {
 }
 
 func (a *app) initCli() error {
+	certPEM, err := os.ReadFile(a.cfg.CACertPath)
+	if err != nil {
+		return fmt.Errorf("cannot reade crt: %w", err)
+	}
+
+	rootCAs := x509.NewCertPool()
+
+	if ok := rootCAs.AppendCertsFromPEM(certPEM); !ok {
+		return errors.New("failed to append CA certificate")
+	}
+
 	dialer := &net.Dialer{
 		Timeout: a.cfg.DialerTimeout,
 	}
 
 	tlsCfg := tls.Config{
-		InsecureSkipVerify: true,
+		RootCAs: rootCAs,
 	}
 
 	trans := &http.Transport{
