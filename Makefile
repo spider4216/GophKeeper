@@ -128,3 +128,6 @@ build-client-darwin-arm64:
 		-ldflags "-X github.com/spider4216/GophKeeper/internal/client/version.Version=$(CLI_VERSION) -X 'github.com/spider4216/GophKeeper/internal/client/version.BuildDate=$(shell date +'%Y/%m/%d %H:%M:%S')'" \
 		-o bin/client-darwin-arm64 \
 		./cmd/client
+
+test:
+	go test -v ./...
