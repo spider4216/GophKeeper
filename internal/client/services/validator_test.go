@@ -11,11 +11,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func prepareService() (*Service, error) {
+func prepareService(store map[string][]string) (*Service, error) {
 	cli := &http.Client{}
 	logger := logger.Init("debug")
-	commonRep := commonRep.NewRepository(logger)
-	rep := reptest.NewRepository(logger, commonRep)
+	commonRep := commonRep.NewRepository(logger, store)
+	rep := reptest.NewRepository(logger, commonRep, store)
 
 	return New(
 		WithHTTPClient(cli),
@@ -26,7 +26,8 @@ func prepareService() (*Service, error) {
 }
 
 func TestValidateCVC(t *testing.T) {
-	service, err := prepareService()
+	store := map[string][]string{}
+	service, err := prepareService(store)
 
 	require.NoError(t, err)
 
@@ -60,7 +61,8 @@ func TestValidateCVC(t *testing.T) {
 }
 
 func TestValidatePAN(t *testing.T) {
-	service, err := prepareService()
+	store := map[string][]string{}
+	service, err := prepareService(store)
 
 	require.NoError(t, err)
 
@@ -94,7 +96,8 @@ func TestValidatePAN(t *testing.T) {
 }
 
 func TestValidateStrongPassword(t *testing.T) {
-	service, err := prepareService()
+	store := map[string][]string{}
+	service, err := prepareService(store)
 
 	require.NoError(t, err)
 
@@ -133,7 +136,8 @@ func TestValidateStrongPassword(t *testing.T) {
 }
 
 func TestValidateEmailFormat(t *testing.T) {
-	service, err := prepareService()
+	store := map[string][]string{}
+	service, err := prepareService(store)
 
 	require.NoError(t, err)
 

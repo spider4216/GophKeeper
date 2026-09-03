@@ -3,6 +3,7 @@ package reptest
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"iter"
 	"log/slog"
 
@@ -14,14 +15,14 @@ import (
 )
 
 type SliceRepository struct {
-	data      []any
+	data      map[string][]string
 	logger    *slog.Logger
 	commonRep *commonRep.SliceRepository
 }
 
-func NewRepository(logger *slog.Logger, commonRep *commonRep.SliceRepository) *SliceRepository {
+func NewRepository(logger *slog.Logger, commonRep *commonRep.SliceRepository, store map[string][]string) *SliceRepository {
 	return &SliceRepository{
-		data:      []any{},
+		data:      store,
 		logger:    logger,
 		commonRep: commonRep,
 	}
@@ -31,6 +32,12 @@ func (r *SliceRepository) Source() any {
 	return nil
 }
 func (r *SliceRepository) CreateItem(ctx context.Context, item models.ItemRepo) (string, error) {
+	_, err := json.Marshal(item)
+
+	if err != nil {
+		return "", err
+	}
+
 	return "", nil
 }
 
@@ -71,16 +78,58 @@ func (r *SliceRepository) GetMetadataByItemID(ctx context.Context, itemID string
 	return nil, nil
 }
 func (r *SliceRepository) GetCommonRepo() repository.CommonRepositoryInterface {
-	return nil
+	return r.commonRep
 }
 func (r *SliceRepository) CreateItemTx(ctx context.Context, tx *sql.Tx, item models.ItemRepo) (string, error) {
-	return "", nil
+	data := map[string]any{
+		"item_id":    item.ID,
+		"user_id":    item.UserID,
+		"type":       item.Type,
+		"ciphertext": item.Ciphertext,
+		"created_at": item.CreatedAt,
+	}
+
+	b, err := json.Marshal(data)
+
+	if err != nil {
+		return "", err
+	}
+
+	r.data["items"] = append(r.data["items"], string(b))
+
+	return item.ID, nil
 }
 func (r *SliceRepository) CreatePendingChangeTx(ctx context.Context, tx *sql.Tx, itemID string, op enum.OpType, userID int64) error {
+	data := map[string]any{
+		"item_id":   itemID,
+		"operation": op,
+		"user_id":   userID,
+	}
+
+	b, err := json.Marshal(data)
+
+	if err != nil {
+		return err
+	}
+
+	r.data["pending_changes"] = append(r.data["pending_changes"], string(b))
+
 	return nil
 }
 func (r *SliceRepository) CreateUserPassItem(ctx context.Context, item models.ItemRepo, userID int64, title string) error {
-	return nil
+	itemID, err := r.CreateItemTx(ctx, nil, item)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = r.commonRep.CreateMetaTx(ctx, nil, itemID, "Title", title)
+
+	if err != nil {
+		return err
+	}
+
+	return r.CreatePendingChangeTx(ctx, nil, itemID, enum.OpCreate, userID)
 }
 func (r *SliceRepository) DeleteUserItem(ctx context.Context, itemID string, userID int64) error {
 	return nil
