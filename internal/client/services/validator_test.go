@@ -11,18 +11,61 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestValidateEmailFormat(t *testing.T) {
+func prepareService() (*Service, error) {
 	cli := &http.Client{}
 	logger := logger.Init("debug")
 	commonRep := commonRep.NewRepository(logger)
 	rep := reptest.NewRepository(logger, commonRep)
 
-	service, err := New(
+	return New(
 		WithHTTPClient(cli),
 		WithHost(""),
 		WithRepo(rep),
 		WithLogger(logger),
 	)
+}
+
+func TestValidateStrongPassword(t *testing.T) {
+	service, err := prepareService()
+
+	require.NoError(t, err)
+
+	cases := []struct {
+		name      string
+		pass      string
+		exprected bool
+	}{
+		{
+			name:      "case negative #1",
+			pass:      "qwerty",
+			exprected: false,
+		},
+		{
+			name:      "case negative #2",
+			pass:      "123",
+			exprected: false,
+		},
+		{
+			name:      "case negative #3",
+			pass:      "testpass123",
+			exprected: false,
+		},
+		{
+			name:      "case positive #4",
+			pass:      "qwertY34",
+			exprected: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.exprected, service.ValidateStrongPassword(tc.pass))
+		})
+	}
+}
+
+func TestValidateEmailFormat(t *testing.T) {
+	service, err := prepareService()
 
 	require.NoError(t, err)
 
