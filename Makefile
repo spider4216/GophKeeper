@@ -1,7 +1,7 @@
 APP_NAME=gophkeeper
 
 DSN?=postgres://postgres:postgres@localhost:5432/gophkeeper
-DSN_CLIENT?=postgres://postgres:postgres@localhost:5432/gophkeeper_client_2
+DSN_CLIENT?=postgres://postgres:postgres@localhost:5432/gophkeeper_client_1
 
 LOG_LEVEL?=debug
 JWT_KEY?=qwerty
@@ -19,46 +19,46 @@ client-reg:
 	SERVER_HOST=${SERVER_HOST} LOG_LEVEL=${LOG_LEVEL} DB_DSN=$(DSN_CLIENT) go run ./cmd/client register --email=${email} --password=${pass}
 
 client-login:
-	SERVER_HOST=${SERVER_HOST} JWT_KEY=${JWT_KEY} LOG_LEVEL=${LOG_LEVEL} DB_DSN=$(DSN_CLIENT) go run ./cmd/client login --email=${email} --password=${pass}
+	SERVER_HOST=${SERVER_HOST} LOG_LEVEL=${LOG_LEVEL} DB_DSN=$(DSN_CLIENT) go run ./cmd/client login --email=${email} --password=${pass}
 
 client-insert-loginpass:
-	SERVER_HOST=${SERVER_HOST} JWT_KEY=${JWT_KEY} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client insert-loginpass --login=${login} --password=${pass} --title=${title} --user-id=${userid}
+	SERVER_HOST=${SERVER_HOST} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client insert-loginpass --login=${login} --password=${pass} --title=${title} --user-id=${userid}
 
 client-update-loginpass:
-	SERVER_HOST=${SERVER_HOST} JWT_KEY=${JWT_KEY} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client update-loginpass --login=${login} --password=${pass} --id=${id} --meta-id=${metaid} --title=${title} --user-id=${userid}
+	SERVER_HOST=${SERVER_HOST} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client update-loginpass --login=${login} --password=${pass} --id=${id} --meta-id=${metaid} --title=${title} --user-id=${userid}
 
 client-create-card:
-	SERVER_HOST=${SERVER_HOST} JWT_KEY=${JWT_KEY} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client create-card --pan=${pan} --date=${date}  --cvc=${cvc} --holder=${holder} --user-id=${userid} --title=${title}
+	SERVER_HOST=${SERVER_HOST} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client create-card --pan=${pan} --date=${date}  --cvc=${cvc} --holder=${holder} --user-id=${userid} --title=${title}
 
 client-delete-item:
-	SERVER_HOST=${SERVER_HOST} JWT_KEY=${JWT_KEY} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client delete-item --id=${id} --user-id=${userid}
+	SERVER_HOST=${SERVER_HOST} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client delete-item --id=${id} --user-id=${userid}
 
 client-sync-send:
-	SERVER_HOST=${SERVER_HOST} JWT_KEY=${JWT_KEY} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client sync-send --user-id=${userid}
+	SERVER_HOST=${SERVER_HOST} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client sync-send --user-id=${userid}
 
 client-sync-get:
-	SERVER_HOST=${SERVER_HOST} JWT_KEY=${JWT_KEY} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client sync-get --user-id=${userid}
+	SERVER_HOST=${SERVER_HOST} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client sync-get --user-id=${userid}
 
 client-list:
-	SERVER_HOST=${SERVER_HOST} JWT_KEY=${JWT_KEY} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client list --user-id=${userid}
+	SERVER_HOST=${SERVER_HOST} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client list --user-id=${userid}
 
 client-view:
-	SERVER_HOST=${SERVER_HOST} JWT_KEY=${JWT_KEY} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client view --item_id=${id} --user-id=${userid}
+	SERVER_HOST=${SERVER_HOST} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client view --item_id=${id} --user-id=${userid}
 
 client-version:
 	DB_DSN=$(DSN_CLIENT) go run ./cmd/client version
 
 client-create-text:
-	SERVER_HOST=${SERVER_HOST} JWT_KEY=${JWT_KEY} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client create-text --path=${path} --user-id=${userid} --title=${title}
+	SERVER_HOST=${SERVER_HOST} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client create-text --path=${path} --user-id=${userid} --title=${title}
 
 client-get-text:
-	SERVER_HOST=${SERVER_HOST} JWT_KEY=${JWT_KEY} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client get-text --user-id=${userid} --item-id=${itemid}
+	SERVER_HOST=${SERVER_HOST} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client get-text --user-id=${userid} --item-id=${itemid}
 
 client-create-binary:
-	SERVER_HOST=${SERVER_HOST} JWT_KEY=${JWT_KEY} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client create-binary --user-id=${userid} --title=${title} --path=${path}
+	SERVER_HOST=${SERVER_HOST} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client create-binary --user-id=${userid} --title=${title} --path=${path}
 
 client-download-binary:
-	SERVER_HOST=${SERVER_HOST} JWT_KEY=${JWT_KEY} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client download-binary --user-id=${userid} --item-id=${itemid} --out=${out}
+	SERVER_HOST=${SERVER_HOST} LOG_LEVEL=${LOG_LEVEL} ENCRYPT_KEY=${ENCRYPT_KEY} DB_DSN=$(DSN_CLIENT) go run ./cmd/client download-binary --user-id=${userid} --item-id=${itemid} --out=${out}
 
 migration-gen:
 	migrate create -ext sql -dir ./migrations/${path} -seq $(name)
