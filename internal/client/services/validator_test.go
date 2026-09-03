@@ -25,6 +25,40 @@ func prepareService() (*Service, error) {
 	)
 }
 
+func TestValidatePAN(t *testing.T) {
+	service, err := prepareService()
+
+	require.NoError(t, err)
+
+	cases := []struct {
+		name      string
+		pan       string
+		exprected bool
+	}{
+		{
+			name:      "case negative #1",
+			pan:       "123",
+			exprected: false,
+		},
+		{
+			name:      "case positive #2",
+			pan:       "4111111111111111",
+			exprected: true,
+		},
+		{
+			name:      "case positive #3",
+			pan:       "5555555555554444",
+			exprected: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.exprected, service.ValidatePAN(tc.pan))
+		})
+	}
+}
+
 func TestValidateStrongPassword(t *testing.T) {
 	service, err := prepareService()
 
