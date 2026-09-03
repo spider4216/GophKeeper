@@ -539,7 +539,7 @@ func (repo *ClientRepository) UpdateLoginPass(ctx context.Context, itemID string
 	return nil
 }
 
-func (repo *ClientRepository) CommitSyncChunkTx(ctx context.Context, ids []string, userID int64, lastRev int64) error {
+func (repo *ClientRepository) CommitSyncChunk(ctx context.Context, ids []string, userID int64, lastRev int64) error {
 	tx, err := repo.con.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("begin transaction: %w", err)

@@ -295,56 +295,56 @@ go run ./cmd/client view --item_id= --user-id=
 make client-view: id= userid=
 ```
 
-### Получение данных с сервера (синхронизация)
+#### Получение данных с сервера (синхронизация)
 
 ```
 go run ./cmd/client sync-get --token=
 make client-sync-get jwt=
 ```
 
-### Удаление данных
+#### Удаление данных
 
 ```
 go run ./cmd/client delete-item --id= --user-id=
 make client-delete-item id= userid=
 ```
 
-### Обновление логина и пароля
+#### Обновление логина и пароля
 
 ```
 go run ./cmd/client update-loginpass --login= --password= --id= --user-id= --meta-id= --title=
 make client-update-loginpass login= pass= id= userid= metaid= title=
 ```
 
-### Создание произвольного текста
+#### Создание произвольного текста
 
 ```
 go run ./cmd/client create-text --path= --user-id= --title=
 make client-create-text path= userid= title=
 ```
 
-### Отображение произвольного текста
+#### Отображение произвольного текста
 
 ```
 go run ./cmd/client get-text --user-id= --item-id=
 make client-get-text userid= itemid=
 ```
 
-### Создание Binary
+#### Создание Binary
 
 ```
 go run ./cmd/client create-binary --user-id= --title= --path=
 make client-create-binary title= userid= path=
 ```
 
-### Загрузка Binary
+#### Загрузка Binary
 
 ```
 go run ./cmd/client download-binary --user-id= --item-id= --out=
 make client-download-binary userid= itemid= out=
 ```
 
-### Создание карты
+#### Создание карты
 
 ```
 go run ./cmd/client create-card --pan= --date=  --cvc= --holder= --user-id= --title=

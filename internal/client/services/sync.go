@@ -56,7 +56,7 @@ func (s *Service) SyncSend(ctx context.Context, userID int64, token string, sync
 		}
 
 		// Коммитим чанк (удляеем pending, обновляем ревизию на клиенте)
-		if err := s.repo.CommitSyncChunkTx(ctx, s.pendingItemIDs(chunk), userID, lastRev); err != nil {
+		if err := s.repo.CommitSyncChunk(ctx, s.pendingItemIDs(chunk), userID, lastRev); err != nil {
 			return fmt.Errorf("cannot commit sync: %w", err)
 		}
 	}

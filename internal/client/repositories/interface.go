@@ -35,7 +35,7 @@ type Repository interface {
 	DeleteUserItem(ctx context.Context, itemID string, userID int64) error
 	ApplySync(ctx context.Context, userID int64, res shrModel.SyncGet) error
 	UpdateLoginPass(ctx context.Context, itemID string, userID int64, encrypted string, metaID int64, title string) error
-	CommitSyncChunkTx(ctx context.Context, ids []string, userID int64, lastRev int64) error
+	CommitSyncChunk(ctx context.Context, ids []string, userID int64, lastRev int64) error
 	SaveUserToken(ctx context.Context, userID int64, token string) error
 	GetToken(ctx context.Context, userID int64) (*models.Auth, error)
 	GetBinaryData(ctx context.Context, itemID string) iter.Seq[shrModel.ChunkRepo]
