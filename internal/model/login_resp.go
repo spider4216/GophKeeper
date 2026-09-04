@@ -1,0 +1,10 @@
+package model
+
+type LoginResp struct {
+	Status    string `json:"status"`
+	Message   string `json:"message"`
+	Token     string `json:"token,omitempty"`
+	ExpiredAt int64  `json:"expired_at,omitempty"`
+	CreatedAt int64  `json:"created_at,omitempty"`
+	UserID    int64  `json:"user_id"`
+}

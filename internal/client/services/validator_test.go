@@ -1,0 +1,176 @@
+package services
+
+import (
+	"net/http"
+	"testing"
+
+	"github.com/spider4216/GophKeeper/internal/client/repositories/reptest"
+	"github.com/spider4216/GophKeeper/internal/logger"
+	commonRep "github.com/spider4216/GophKeeper/internal/repository/reptest"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+func prepareService(store map[string][]string) (*Service, error) {
+	cli := &http.Client{}
+	logger := logger.Init("debug")
+	commonRep := commonRep.NewRepository(logger, store)
+	rep := reptest.NewRepository(logger, commonRep, store)
+
+	return New(
+		WithHTTPClient(cli),
+		WithHost(""),
+		WithRepo(rep),
+		WithLogger(logger),
+	)
+}
+
+func TestValidateCVC(t *testing.T) {
+	store := map[string][]string{}
+	service, err := prepareService(store)
+
+	require.NoError(t, err)
+
+	cases := []struct {
+		name      string
+		cvc       string
+		exprected bool
+	}{
+		{
+			name:      "case negative #1",
+			cvc:       "123444",
+			exprected: false,
+		},
+		{
+			name:      "case positive #2",
+			cvc:       "123",
+			exprected: true,
+		},
+		{
+			name:      "case positive #3",
+			cvc:       "024",
+			exprected: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.exprected, service.ValidateCVC(tc.cvc))
+		})
+	}
+}
+
+func TestValidatePAN(t *testing.T) {
+	store := map[string][]string{}
+	service, err := prepareService(store)
+
+	require.NoError(t, err)
+
+	cases := []struct {
+		name      string
+		pan       string
+		exprected bool
+	}{
+		{
+			name:      "case negative #1",
+			pan:       "123",
+			exprected: false,
+		},
+		{
+			name:      "case positive #2",
+			pan:       "4111111111111111",
+			exprected: true,
+		},
+		{
+			name:      "case positive #3",
+			pan:       "5555555555554444",
+			exprected: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.exprected, service.ValidatePAN(tc.pan))
+		})
+	}
+}
+
+func TestValidateStrongPassword(t *testing.T) {
+	store := map[string][]string{}
+	service, err := prepareService(store)
+
+	require.NoError(t, err)
+
+	cases := []struct {
+		name      string
+		pass      string
+		exprected bool
+	}{
+		{
+			name:      "case negative #1",
+			pass:      "qwerty",
+			exprected: false,
+		},
+		{
+			name:      "case negative #2",
+			pass:      "123",
+			exprected: false,
+		},
+		{
+			name:      "case negative #3",
+			pass:      "testpass123",
+			exprected: false,
+		},
+		{
+			name:      "case positive #4",
+			pass:      "qwertY34",
+			exprected: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.exprected, service.ValidateStrongPassword(tc.pass))
+		})
+	}
+}
+
+func TestValidateEmailFormat(t *testing.T) {
+	store := map[string][]string{}
+	service, err := prepareService(store)
+
+	require.NoError(t, err)
+
+	cases := []struct {
+		name      string
+		email     string
+		exprected bool
+	}{
+		{
+			name:      "case negative #1",
+			email:     "test",
+			exprected: false,
+		},
+		{
+			name:      "case negative #2",
+			email:     "example@",
+			exprected: false,
+		},
+		{
+			name:      "case negative #3",
+			email:     "example@test",
+			exprected: false,
+		},
+		{
+			name:      "case positive #4",
+			email:     "example@test.com",
+			exprected: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.exprected, service.ValidateEmailFormat(tc.email))
+		})
+	}
+}

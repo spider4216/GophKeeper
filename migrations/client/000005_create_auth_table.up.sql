@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS auth (
+    id SERIAL NOT NULL,
+    user_id INT NOT NULL UNIQUE,
+    token TEXT NOT NULL
+);
